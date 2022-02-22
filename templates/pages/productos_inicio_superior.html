@@ -1,0 +1,202 @@
+{% load static %}
+{% load jinja_tags %}
+
+<div class="row">
+    <!-- cabecera de la seccion de productos -->
+    <div class="card direct-chat direct-chat-primary w-98 center {% if detalle_producto == 1 %}collapsed-card{% endif %}">
+        <div class="card-header">
+          <h3 class="card-title"><span id="span_producto" class="link_lineas">{% autoescape off %}{{txt_producto}}{% endautoescape %}</span></h3>
+
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+              <i class="{% if detalle_producto == 1 %}fas fa-plus{% else %}fas fa-minus{% endif %}"></i>
+            </button>
+          </div>
+        </div>
+        <!-- datos para la busqueda -->
+        <div class="card-body overlay-wrapper">
+            <div id="loading_search">
+            </div>
+            <div class="card-body w-100">
+            <table class="w-100">
+                <tr>
+                    <td class="w-2">
+                        &nbsp;
+                    </td>
+                    <td class="w-98">
+                        <table class="table3 w-100">
+                            <tr class="back1">
+                                <td class="w-23 right">Producto :&nbsp;</td>
+                                <td class="w-77 left">
+                                    <input type="text" class="form-control input w-60 left" value="{{producto_session}}" name="producto_search" id="producto_search">
+                                    <button class="btn btn-primary btn-sm" onclick="return buscarProducto();">Buscar<img src="{% static 'img/png/buscar.png' %}" class="ico_img pointer"></button>
+                                </td>
+                            </tr>
+                            
+                            <tr class="back1">
+                                <td colspan="2" class="w-100 left">
+                                    <div class="row w-100">
+                                        <div class="col-sm-4 left">
+                                            <em>Tipo Montura:</em><br>
+                                            {% for lista in lista_tipos_montura %}
+                                                {% for dato_db in tipos_montura_db %}
+                                                    {% if dato_db.tipo_montura_id == lista.tipo_montura_id %}
+                                                        <input type="button" value="{{dato_db.codigo}}" onclick="seleccionaTipoMontura('{{lista.tipo_montura_id}}');" id="tipo_montura_{{lista.tipo_montura_id}}" 
+                                                        onMouseOver=" overlib('{{dato_db.tipo_montura}}',CAPTION,'',WIDTH,'60',RIGHT); return true" onMouseOut=" nd(); return true"
+                                                        style="width: 30px; border: solid 4px; 
+                                                        border-color: {{lista.borde}}; 
+                                                        box-shadow: 2px 2px 2px 4px #CCCCCC; cursor:pointer;">&nbsp;&nbsp;&nbsp;
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endfor %} 
+                                            <!-- <button class="btn btn-primary btn-sm" onclick="filtrarBusqueda();"><img src="{% static 'img/png/buscar.png' %}" class="ico_img pointer"></button> -->
+                                            <br><br>
+                                            <input type="hidden" id="lista_tipos_montura" value="{{p_lista_tipos_montura}}">
+                                            <input type="hidden" id="lista_disenio_lentes" value="{{p_lista_disenio_lentes}}">
+                                            <input type="hidden" id="lista_materiales" value="{{p_lista_materiales}}">
+                                            <input type="hidden" id="lista_colores" value="{{p_lista_colores}}">
+                                            <input type="hidden" id="lista_marcas" value="{{p_lista_marcas}}">
+                                            <input type="hidden" id="color_borde_normal" value="{{color_borde_normal}}">
+                                            <input type="hidden" id="color_borde_resaltado" value="{{color_borde_resaltado}}">
+                                            <input type="hidden" id="oferta" value="{{oferta}}">
+                                            <input type="hidden" id="mas_vendido" value="{{mas_vendido}}">
+                                            <input type="hidden" id="novedad" value="{{novedad}}">
+                                        </div>
+                                        
+                                        <div class="col-sm-4 left">
+                                            <em>Dise&#241;o:</em><br>
+                                            {% for lista in lista_disenio_lentes %}
+                                                {% for m_db in disenio_lentes_db %}
+                                                    {% if m_db.disenio_lente_id == lista.disenio_lente_id %}
+                                                        <input type="button" value="{{m_db.disenio_lente}}" onclick="seleccionaDisenioLente('{{lista.disenio_lente_id}}');" id="disenio_lente_{{lista.disenio_lente_id}}" 
+                                                        style="border: solid 4px; 
+                                                        border-color: {{lista.borde}}; padding-left: 2px; padding-right: 2px; 
+                                                        box-shadow: 2px 2px 2px 4px #CCCCCC; cursor:pointer;">&nbsp;&nbsp;&nbsp;
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endfor %} 
+                                            <!-- <button class="btn btn-primary btn-sm" onclick="filtrarBusqueda();"><img src="{% static 'img/png/buscar.png' %}" class="ico_img pointer"></button> -->
+                                            <br><br>
+                                        </div>
+                                        
+                                        <div class="col-sm-4 left">
+                                            <em>Material:</em><br>
+                                            {% for lista in lista_materiales %}
+                                                {% for m_db in materiales_db %}
+                                                    {% if m_db.material_id == lista.material_id %}
+                                                        <input type="button" value="{{m_db.material}}" onclick="seleccionaMaterial('{{lista.material_id}}');" id="material_{{lista.material_id}}" 
+                                                        style="border: solid 4px; 
+                                                        border-color: {{lista.borde}}; padding-left: 2px; padding-right: 2px; 
+                                                        box-shadow: 2px 2px 2px 4px #CCCCCC; cursor:pointer;">&nbsp;&nbsp;&nbsp;
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endfor %} 
+                                            <!-- <button class="btn btn-primary btn-sm" onclick="filtrarBusqueda();"><img src="{% static 'img/png/buscar.png' %}" class="ico_img pointer"></button> -->
+                                            <br><br>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <tr class="back2">
+                                <td colspan="2" class="w-100 left">
+                                    <div class="row w-100">
+                                        <div class="col-sm-4 left">
+                                            <em>Color:</em><br>
+                                            {% for l_color in lista_colores %}
+                                                {% for c_db in colores_db %}
+                                                    {% if c_db.color_id == l_color.color_id %}
+                                                        <input type="button" value="&nbsp;" onclick="seleccionaColor('{{l_color.color_id}}');" id="color_{{l_color.color_id}}" 
+                                                        onMouseOver=" overlib('{{c_db.color}}',CAPTION,'',WIDTH,'60',RIGHT); return true" onMouseOut=" nd(); return true"
+                                                        style="width: 30px; border: solid 4px; 
+                                                        border-color: {{l_color.borde}}; 
+                                                        box-shadow: 2px 2px 2px 4px #CCCCCC; background-color:{{c_db.color_hex}}; cursor:pointer;">&nbsp;&nbsp;&nbsp;
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endfor %} 
+                                            <!-- <button class="btn btn-primary btn-sm" onclick="filtrarBusqueda();"><img src="{% static 'img/png/buscar.png' %}" class="ico_img pointer"></button> -->
+                                            <br><br>
+                                        </div>
+                                        
+                                        <div class="col-sm-4 left">
+                                            <em>Marca:</em><br>
+                                            {% for l_marca in lista_marcas %}
+                                                {% for m_db in marcas_db %}
+                                                    {% if m_db.marca_id == l_marca.marca_id %}
+                                                        <input type="button" value="{{m_db.marca}}" onclick="seleccionaMarca('{{l_marca.marca_id}}');" id="marca_{{l_marca.marca_id}}" 
+                                                        style="border: solid 4px; 
+                                                        border-color: {{l_marca.borde}}; padding-left: 2px; padding-right: 2px; 
+                                                        box-shadow: 2px 2px 2px 4px #CCCCCC; cursor:pointer;">&nbsp;&nbsp;&nbsp;
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endfor %} 
+                                            <!-- <button class="btn btn-primary btn-sm" onclick="filtrarBusqueda();"><img src="{% static 'img/png/buscar.png' %}" class="ico_img pointer"></button> -->
+                                            <br><br>
+                                        </div>
+                                        
+                                        <div class="col-sm-4 right">
+                                            <button class="btn btn-primary btn-sm" onclick="return filtrarBusqueda();">Filtrar Productos&nbsp;<img src="{% static 'img/png/buscar.png' %}" class="ico_img pointer"></button>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="back2">
+                                <td colspan="2" class="w-100 left">
+                                    <table class="table3 w-100">
+                                        <tr class="back1">
+                                            <td class="w-20 left">
+                                                <div class="custom-control custom-checkbox">
+                                                    <input class="custom-control-input" type="checkbox" id="aux_oferta" name="aux_oferta" onclick="marcarOferta();" {% if oferta == '1' %}checked{% endif %}>
+                                                    <label for="aux_oferta" class="custom-control-label">Oferta</label>
+                                                </div>
+                                            </td>
+                                            <td class="w-35 left">
+                                                <div class="custom-control custom-checkbox">
+                                                    <input class="custom-control-input" type="checkbox" id="aux_mas_vendido" name="aux_mas_vendido" onclick="marcarMasVendido();" {% if mas_vendido == '1' %}checked{% endif %}>
+                                                    <label for="aux_mas_vendido" class="custom-control-label">Mas Vendido</label>
+                                                </div>
+                                            </td>
+                                            <td class="w-25 left">
+                                                <div class="custom-control custom-checkbox">
+                                                    <input class="custom-control-input" type="checkbox" id="aux_novedad" name="aux_novedad" onclick="marcarNovedad();" {% if novedad == '1' %}checked{% endif %}>
+                                                    <label for="aux_novedad" class="custom-control-label">Novedad</label>
+                                                </div>
+                                            </td>
+                                            <td class="w-20 left">
+                                                <!-- <button class="btn btn-primary btn-sm" onclick="filtrarBusqueda();"><img src="{% static 'img/png/buscar.png' %}" class="ico_img pointer"></button> -->
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th colspan="2" class="w-100 left">
+                                    Busqueda por Lineas
+                                </th>
+                            </tr>
+                            {% for linea in lista_lineas %}
+                            {% if linea_session == linea.linea_id %}
+                            <tr class="back{{forloop.counter|back_class}}">
+                                <td colspan="2" class="w-100 left">
+                                    {% autoescape off %}{{linea.espacios}}{% endautoescape %}&#45; <span class="link_productos_down">{{linea.linea}}</span>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr class="back{{forloop.counter|back_class}}">
+                                <td colspan="2" class="w-100 left">
+                                    {% autoescape off %}{{linea.espacios}}{% endautoescape %}&#45; <span class="link_productos pointer" onclick="escogerLinea('{{linea.linea_id}}');">{{linea.linea}}</span>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </table>
+                    </td>
+                </tr>
+            </table>
+            </div>
+            
+        </div>
+        <!-- fin datos para la busqueda -->
+      </div>
+      <!--fin cabecera -->
+</div>

@@ -1,0 +1,336 @@
+{% extends 'base.html' %}
+
+{% load humanize %}
+{% load static %}
+{% load jinja_tags %}
+
+{% block title %} | {{producto.producto}} {% endblock %}
+
+{% block meta %}
+<meta property="og:locale" content="es_ES" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="{{producto.producto}}" />
+<meta property="og:description" content="{{producto.descripcion}}" />
+<meta property="og:site_name" content="ntsoft-bolivia.com/optica" />
+<meta property="og:image" content="https://ntsoft-bolivia.com/optica{% static '/media/productos/' %}{{imagen1}}" />
+
+{% endblock %}
+
+{% block js_modulo %}
+<script type="text/javascript" src="{% static "" %}js/home_page.js"></script>
+{% endblock %}
+
+{% block content %}
+<style>
+    .container {
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .carousel-inner img {
+        width: 100%;
+        height: 100%
+    }
+    
+    #custCarousel .carousel-indicators {
+        position: static;
+        margin-top: 20px
+    }
+    
+    #custCarousel .carousel-indicators>li {
+        width: 100px
+    }
+    
+    #custCarousel .carousel-indicators li img {
+        display: block;
+        opacity: 0.5
+    }
+    
+    #custCarousel .carousel-indicators li.active img {
+        opacity: 1
+    }
+    
+    #custCarousel .carousel-indicators li:hover img {
+        opacity: 0.75
+    }
+    
+    .carousel-item img {
+        width: 100%;
+    }
+    
+</style>
+<script>
+    
+</script>
+
+<br>
+<div id="div_superior" class="center">
+    {% include 'pages/productos_inicio_superior.html' %}
+</div>
+
+<form name="form_producto" method="POST" action="{{url_main}}">
+    {% csrf_token %}
+    <input type="hidden" name="search_producto_x" value="acc">
+    <input type="hidden" name="producto" value="{{producto_session}}">
+    
+    <input type="hidden" name="colores_select" value="{{colores_select}}">
+    <input type="hidden" name="tallas_select" value="{{tallas_select}}">
+    <input type="hidden" name="marcas_select" value="{{marcas_select}}">
+    
+    <input type="hidden" name="oferta" value="{{oferta}}">
+    <input type="hidden" name="mas_vendido" value="{{mas_vendido}}">
+    <input type="hidden" name="novedad" value="{{novedad}}">
+</form>
+<form name="form_linea" method="POST" action="{{url_main}}">
+    {% csrf_token %}
+    <input type="hidden" name="search_linea_x" value="acc">
+    <input type="hidden" name="linea" value="{{linea_session}}">
+    
+    <input type="hidden" name="colores_select" value="{{colores_select}}">
+    <input type="hidden" name="tallas_select" value="{{tallas_select}}">
+    <input type="hidden" name="marcas_select" value="{{marcas_select}}">
+    
+    <input type="hidden" name="oferta" value="{{oferta}}">
+    <input type="hidden" name="mas_vendido" value="{{mas_vendido}}">
+    <input type="hidden" name="novedad" value="{{novedad}}">
+</form>
+
+<form name="form_operation" method="POST" action="{{url_main}}">
+    {% csrf_token %}
+    <input type="hidden" name="operation_x" value="">
+    <input type="hidden" name="id" value="">
+    <input type="hidden" name="url_main" value="{{url_main}}">
+</form>
+<form name="form_inicio" method="POST" action="{{url_index}}">
+    {% csrf_token %}
+</form>
+<form name="form_cart" method="POST" action="{{url_main}}">
+    {% csrf_token %}
+    <input type="hidden" name="operation_x" value="">
+    <input type="hidden" name="id" value="">
+    <input type="hidden" name="url_main" value="{{url_main}}">
+</form>
+<form name="form_detalle" method="GET" action="{{url_main}}">
+    <input type="hidden" name="id" value="">
+    <input type="hidden" name="producto" value="">
+</form>
+
+<div id="div_listado" class="center">
+    <div class="row w-100">
+        <div class="col-12 w-100">
+            <div class="card-body overlay-wrapper w-100">
+                <div id="loading_listado" class="">
+                </div>
+                <div class="card-body w-100">
+                    
+<!--cuadros-->
+<div class="row">
+    <div class="col-md-6">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <div id="custCarousel" class="carousel slide" data-ride="carousel" data-interval="false" align="center">
+                        <!-- slides -->
+                        <div class="carousel-inner">
+                            {% for producto_imagen in productos_imagenes %}
+                            <div class="carousel-item {% if forloop.counter == 1 %}active{% endif %}"> <a href="{% static '/media/productos/' %}{{producto_imagen.imagen}}" class="zoom"><img src="{% static '/media/productos/' %}{{producto_imagen.imagen}}" ></a> </div>
+                            {% endfor %}
+                        </div> <!-- Left right --> <a class="carousel-control-prev" href="#custCarousel" data-slide="prev"> <span class="carousel-control-prev-icon"></span> </a> <a class="carousel-control-next" href="#custCarousel" data-slide="next"> <span class="carousel-control-next-icon"></span> </a> <!-- Thumbnails -->
+                        <ol class="carousel-indicators list-inline">
+                            {% for producto_imagen in productos_imagenes %}
+                            <li class="list-inline-item {% if forloop.counter == 1 %}active{% endif %}"> <a id="carousel-selector-{{forloop.counter|get_forloop_menos1}}" class="selected" data-slide-to="{{forloop.counter|get_forloop_menos1}}" data-target="#custCarousel"> <img src="{% static '/media/productos/' %}{{producto_imagen.imagen_thumb}}" class="img-fluid"> </a> </li>
+                            {% endfor %}
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <span class="espacio_carrusel_movil">&nbsp;</span><br>
+        <table class="w-100">
+            <tr>
+                <td class="w-5">&nbsp;</td>
+                <td class="w-95">
+                    <p class="detalle_titulo">{% autoescape off %}{{producto.producto}}{% endautoescape %}</p>
+                    <p class="detalle_subtitulo">
+                        {% if producto.oferta == 1 %}
+                            <s>{{producto.precio}} Bs.</s><br>
+                            <span class="red">{{producto.precio_oferta}} Bs.</span>
+                        {% else %}
+                            {{producto.precio}} Bs.
+                        {% endif %}
+                    </p>
+                    <p class="detalle_lista_titulo">Caracter&iacute;sticas:</p>
+                    <ul class="detalle_lista left">
+                        {% if producto.descripcion1 != '' %}
+                        <li>{% autoescape off %}{{producto.descripcion1}}{% endautoescape %}</li>
+                        {% endif %}
+                        {% if producto.descripcion2 != '' %}
+                        <li>{% autoescape off %}{{producto.descripcion2}}{% endautoescape %}</li>
+                        {% endif %}
+                        {% if producto.descripcion3 != '' %}
+                        <li>{% autoescape off %}{{producto.descripcion3}}{% endautoescape %}</li>
+                        {% endif %}
+                        {% if producto.descripcion4 != '' %}
+                        <li>{% autoescape off %}{{producto.descripcion4}}{% endautoescape %}</li>
+                        {% endif %}
+                        {% if producto.descripcion5 != '' %}
+                        <li>{% autoescape off %}{{producto.descripcion5}}{% endautoescape %}</li>
+                        {% endif %}
+                        {% if producto.descripcion6 != '' %}
+                        <li>{% autoescape off %}{{producto.descripcion6}}{% endautoescape %}</li>
+                        {% endif %}
+                        {% if producto.descripcion7 != '' %}
+                        <li>{% autoescape off %}{{producto.descripcion7}}{% endautoescape %}</li>
+                        {% endif %}
+                        {% if producto.descripcion8 != '' %}
+                        <li>{% autoescape off %}{{producto.descripcion8}}{% endautoescape %}</li>
+                        {% endif %}
+                        {% if producto.descripcion9 != '' %}
+                        <li>{% autoescape off %}{{producto.descripcion9}}{% endautoescape %}</li>
+                        {% endif %}
+                        {% if producto.descripcion10 != '' %}
+                        <li>{% autoescape off %}{{producto.descripcion10}}{% endautoescape %}</li>
+                        {% endif %}
+                    </ul>
+                    <br>
+                    <input type="text" class="form-control input right w-10" id="producto_{{producto.producto_id}}" autocomplete="off" value="1" onkeyup="{% if vender_fracciones == 'si' %}validarNumeroPunto(this);{% else %}validarNumero(this);{% endif %}">
+                    <input type="hidden" id="producto_nombre_{{producto.producto_id}}" value="{{producto.producto}}">
+                    &nbsp;<i class="nav-icon fas fa-cart-plus pointer carrito_cliente" onclick="return mostrarModalCompra('{{producto.producto_id}}', '{% if producto.oferta == 1 %}{{producto.precio_oferta}}{% else %}{{producto.precio}}{% endif %}');">&nbsp;agregar al carrito</i><br>
+                </td>
+            </tr>
+        </table>
+        
+    </div>
+</div>
+
+<!--productos relacionados-->
+<span class="espacio_carrusel">&nbsp;</span><br>
+<p class="detalle_titulo">Productos Relacionados :</p>
+
+<table class="w-100">
+    <tr>
+        <td class="w-2">&nbsp;</td>
+        <td class="w-96 center">
+            {% for lista_fila in productos_relacionados %}
+            <!--div contenedor-->
+            <div class="row w-100">
+                {% for producto in lista_fila %}
+                <!--columna 1-->
+                <div class="col-sm-4 center">
+                    {% if producto.linea != '' %}
+                    <div class="card w-100">
+                        <div class="card-body w-100">
+                            {% if producto.oferta %}
+                            <div class="ribbon-wrapper">
+                                <div class="ribbon bg-danger">
+                                    Oferta
+                                </div>
+                            </div>
+                            {% else %}
+                                {% if producto.novedad %}
+                                <div class="ribbon-wrapper">
+                                    <div class="ribbon bg-info">
+                                        Novedad
+                                    </div>
+                                </div>
+                                {% else %}
+                                    {% if producto.mas_vendido %}
+                                    <div class="ribbon-wrapper">
+                                        <div class="ribbon bg-success">
+                                            &#43; Vendido
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+                            
+                            <div class="titulo_sucursal w-100 center">{% autoescape off %}{{producto.producto}}{% endautoescape %}</div>
+                            <div class="datos_sucursal w-100">
+                                {% if producto.imagen_thumb != '' %}
+                                <img class="pointer" onclick="detalleProducto('{{producto.producto_id}}', '{{producto.producto}}');" src="{% static '/media/productos/' %}{{producto.imagen_thumb}}">
+                                {% else %}
+                                <img class="pointer" onclick="detalleProducto('{{producto.producto_id}}', '{{producto.producto}}');" src="{% static '/img/producto_sin_imagen.jpg' %}">
+                                {% endif %}
+                            </div>
+                            <div class="datos_sucursal w-100 pointer" onclick="detalleProducto('{{producto.producto_id}}', '{{producto.producto}}');">
+                                <b>{{producto.codigo}}</b><br>
+                                {% if producto.oferta == 1 %}
+                                    <s>{{producto.precio}} Bs.</s><br>
+                                    <span class="red">{{producto.precio_oferta}} Bs.</span>
+                                {% else %}
+                                    {{producto.precio}} Bs.
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+            </div>
+            <!--fin div contenedor-->
+            {% endfor %}
+        </td>
+        <td class="w-2">&nbsp;</td>
+    </tr>
+</table>
+
+</div>
+</div>
+</div>
+</div>
+
+<!--compra de producto-->
+<div aria-hidden="true" aria-labelledby="compraLabel" class="modal fade" id="modalCompra" role="dialog" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="pull-left">Compra de Producto</div>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body">
+                <table class="table3 w-100">
+                    <tr>
+                        <th colspan="4" class="left w-100">Producto</th>
+                    </tr>
+                    <tr class="back2">
+                        <td colspan="2" class="w-40 left">
+                            <span id="pedido_producto">nombre del producto</span>
+                        </td>
+                        <td class="w-15 right">
+                            <input type="text" class="form-control input right w-95" id="pedido_cantidad" value="1" autocomplete="off" maxlength="3" onkeyup="{% if vender_fracciones == 'si' %}validarNumeroPunto(this);{% else %}validarNumero(this);{% endif %}totalPedido();">
+                            <input type="hidden" id="pedido_precio" value="0">
+                            <input type="hidden" id="pedido_producto_id" value="">
+                        </td>
+                        <td class="w-25 right">
+                            <b><span id="pedido_total">1 Bs.</span></b>
+                        </td>
+                    </tr>
+                    <tr class="back1">
+                        <td class="w-100" colspan="4">&nbsp;</td>
+                    </tr>
+                    <tr class="back1">
+                        <td colspan="4" class="w-100 center">
+                            <input type="button" id="add_cart" value="Agregar y Seguir" class="btn btn-primary btn-sm" onclick="return agregarSeguir();">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="button" id="add_cart2" value="Comprar Ahora" class="btn btn-primary btn-sm" onclick="return comprarAhora();">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-sm close" data-dismiss="modal" type="button">Cerrar</button>
+            </div>
+            <!--end modal-content-->
+        </div>
+        <!--end modal-dialoge-->
+    </div>
+    <!--end myModal-->
+</div>
+</div> <!--fin div listado-->
+<br><br><br><br><br><br>
+<!--pie de pagina-->
+{% include 'pages/pie_pagina.html' %}
+
+{% endblock %}

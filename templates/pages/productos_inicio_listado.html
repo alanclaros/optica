@@ -1,0 +1,110 @@
+{% load static %}
+{% load jinja_tags %}
+
+<div class="row w-100">
+    <div class="col-12 w-100">
+        <div class="card-body overlay-wrapper w-100">
+            <div id="loading_listado" class="">
+            </div>
+            <div class="card-body w-100">
+                {% if pages_list|length > 1 %}
+                <table>
+                    <tr>
+                        <td class="link_pages_down">Pages&nbsp;:&nbsp;</td>
+                        {% for pagina in pages_list %}
+                        {% if pagina_actual|lower == pagina|lower %}
+                        <td class="link_pages_down">{{pagina}}</td>
+                        {% else %}
+                        <td class="link_pages pointer" onclick="paginarProductos('{{pagina}}');">{{pagina}}</td>
+                        {% endif %}
+                        {% endfor %}
+                    </tr>
+                </table>
+                <form name="form_page" method="post" action="{{url_main}}">
+                    {% csrf_token %}
+                    <input type="hidden" name="pagina" value="">
+                </form>
+                <br>
+                {% endif %}
+
+                <table class="w-100">
+                    <tr>
+                        <td class="w-2">&nbsp;</td>
+                        <td class="w-96 center">
+                            {% for lista_fila in listado_productos %}
+                            <!--div contenedor-->
+                            <div class="row w-100">
+                                {% for producto in lista_fila %}
+                                <!--columna 1-->
+                                <div class="col-sm-4 center">
+                                    {% if producto.linea != '' %}
+                                    <div class="card w-100">
+                                        <div class="card-body w-100">
+                                            {% if producto.oferta %}
+                                            <div class="ribbon-wrapper">
+                                                <div class="ribbon bg-danger">
+                                                    Oferta
+                                                </div>
+                                            </div>
+                                            {% else %}
+                                                {% if producto.novedad %}
+                                                <div class="ribbon-wrapper">
+                                                    <div class="ribbon bg-info">
+                                                        Novedad
+                                                    </div>
+                                                </div>
+                                                {% else %}
+                                                    {% if producto.mas_vendido %}
+                                                    <div class="ribbon-wrapper">
+                                                        <div class="ribbon bg-success">
+                                                            &#43; Vendido
+                                                        </div>
+                                                    </div>
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endif %}
+                                            
+                                            <div class="titulo_sucursal w-100 center">{% autoescape off %}{{producto.producto}}{% endautoescape %}</div>
+                                            <div class="datos_sucursal w-100">
+                                                {% if producto.imagen_thumb != '' %}
+                                                <img class="pointer" onclick="detalleProducto('{{producto.producto_id}}', '{{producto.producto}}');" src="{% static '/media/productos/' %}{{producto.imagen_thumb}}">
+                                                {% else %}
+                                                <img class="pointer" onclick="detalleProducto('{{producto.producto_id}}', '{{producto.producto}}');" src="{% static '/img/producto_sin_imagen.jpg' %}">
+                                                {% endif %}
+                                            </div>
+                                            <div class="datos_sucursal w-100 pointer" onclick="detalleProducto('{{producto.producto_id}}', '{{producto.producto}}');">
+                                                <b>{{producto.codigo}}</b><br>
+                                                {% if producto.oferta == 1 %}
+                                                    <s>{{producto.precio_oferta}} Bs.</s><br>
+                                                    <span class="red">{{producto.precio}} Bs.</span>
+                                                {% else %}
+                                                    {{producto.precio}} Bs.
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <!-- <div id="loading_{{producto.producto_id}}"> -->
+                                        <div id="loading_{{producto.producto_id}}">
+                                            <!-- <i class="fas fa-2x fa-sync-alt fa-spin"></i> -->
+                                        </div>
+                                        <!-- </div> -->
+                                        <!-- <button type="button" class="btn btn-tool" data-card-widget="card-refresh" data-source="widgets.html" data-source-selector="#card-refresh-content" data-load-on-init="false"><i class="fas fa-sync-alt"></i></button> -->
+                                        <!-- <div class="w-100 center">
+                                            imagen
+                                        </div> -->
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+
+                            </div>
+                            <!--fin div contenedor-->
+                            {% endfor %}
+                        </td>
+                        <td class="w-2">&nbsp;</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+

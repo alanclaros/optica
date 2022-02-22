@@ -1,0 +1,398 @@
+{% load jinja_tags %}
+{% load static %}
+{% load humanize %}
+
+<!--contenedor-->
+<div class="row align-items-center">
+    <div class="col-sm-2">&nbsp;</div>
+    <div class="col-sm-8">
+        <!--contenido-->
+        <!--alerts-->
+        {% include 'partials/_alerts.html' %}
+        <br>
+        {% if puede_eliminar == 0 %}
+        {% with title='Productos' body='No puede Eliminar este producto, tiene registros en otros modulos, consulte con el administrador' %}
+        {% include 'partials/_alert_info_cant_delete.html' %}
+        {% endwith %}
+        {% endif %}
+        <div class="link_blue right">
+            <span class="link_blue pointer" onclick="backWindow();">Volver</span>
+        </div>
+        <br>
+        <form name="formulario" id="formulario" method="post" action="" onsubmit="return false;">
+            {% csrf_token %}
+            <table class="table3 w-100">
+                <tr>
+                    <th colspan="4" class="center w-100">
+                        {% if operation_copy == 'si' %}
+                        Copia de Produto
+                        {% else %}
+                        {% if operation_x == "add" %}Adicionar Producto{% endif %}
+                        {% if operation_x == "modify" %}Modificar Producto{% endif %}
+                        {% if operation_x == "delete" %}Eliminar Producto{% endif %}
+                        {% endif %}
+                    </th>
+                </tr>
+
+                <tr class="back2">
+                    <td class="right w-20">
+                        Producto&nbsp;:&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        {% if operation_copy == 'si' %}
+                        <input type="text" autocomplete="off" class="form-control input left w-90" name="producto" id="producto" onkeyup="txtValid(this);" onblur="txtValid(this);" maxlength="250">
+                        {% else %}
+                        <input type="text" {% if operation_x == "delete" %}readonly="readonly" {% endif %} autocomplete="off" class="form-control input left w-90" {% autoescape off %} {{db_tags.producto}} {% endautoescape %}>
+                        {% endif %}
+                    </td>
+                    <td class="right w-20">
+                        C&oacute;digo&nbsp;:&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        {% if operation_copy == 'si' %}
+                        <input type="text" autocomplete="off" class="form-control input left w-80" name="codigo" id="codigo" onkeyup="txtValid(this);" onblur="txtValid(this);" maxlength="20">
+                        {% else %}
+                        <input type="text" {% if operation_x == "delete" %}readonly="readonly" {% endif %} autocomplete="off" class="form-control input left w-80" {% autoescape off %} {{db_tags.codigo}} {% endautoescape %}>
+                        {% endif %}
+                    </td>
+
+                </tr>
+                
+                <tr class="back1">
+                    <td class="right w-20">
+                        Linea&nbsp;:&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        <select name="linea_id" id="linea_id" class="form-control h-35 input w-90 {% if operation_x == 'delete' %}readonly=" readonly"{% endif %}">
+                            {% for linea in lineas_lista %}
+                            <option value="{{linea.linea_id}}" {% if producto.linea_id.linea_id == linea.linea_id %}selected{% endif %}>{{linea.linea}}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td class="right w-20">
+                        T. Montura&nbsp;:&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        <select name="tipo_montura_id" id="tipo_montura_id" class="form-control h-35 input w-90 {% if operation_x == 'delete' %}readonly=" readonly"{% endif %}">
+                            {% for tipo_montura in tipos_montura_lista %}
+                            <option value="{{tipo_montura.tipo_montura_id}}" {% if producto.tipo_montura_id.tipo_montura_id == tipo_montura.tipo_montura_id %}selected{% endif %}>{{tipo_montura.tipo_montura}}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                
+                <tr class="back1">
+                    <td class="right w-20">
+                        Dise&#241;o&nbsp;:&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        <select name="disenio_lente_id" id="disenio_lente_id" class="form-control h-35 input w-90 {% if operation_x == 'delete' %}readonly=" readonly"{% endif %}">
+                            {% for disenio_lente in disenio_lentes_lista %}
+                            <option value="{{disenio_lente.disenio_lente_id}}" {% if producto.disenio_lente_id.disenio_lente_id == disenio_lente.disenio_lente_id %}selected{% endif %}>{{disenio_lente.disenio_lente}}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td class="right w-20">
+                        Material&nbsp;:&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        <select name="material_id" id="material_id" class="form-control h-35 input w-90 {% if operation_x == 'delete' %}readonly=" readonly"{% endif %}">
+                            {% for material in materiales_lista %}
+                            <option value="{{material.material_id}}" {% if producto.material_id.material_id == material.material_id %}selected{% endif %}>{{material.material}}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                
+                <tr class="back1">
+                    <td class="right w-20">
+                        Color&nbsp;:&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        <select name="color_id" id="color_id" class="form-control h-35 input w-90 {% if operation_x == 'delete' %}readonly=" readonly"{% endif %}">
+                            {% for color in colores_lista %}
+                            <option value="{{color.color_id}}" {% if producto.color_id.color_id == color.color_id %}selected{% endif %}>{{color.color}}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td class="right w-20">
+                        Marca&nbsp;:&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        <select name="marca_id" id="marca_id" class="form-control h-35 input w-90 {% if operation_x == 'delete' %}readonly=" readonly"{% endif %}">
+                            {% for marca in marcas_lista %}
+                            <option value="{{marca.marca_id}}" {% if producto.marca_id.marca_id == marca.marca_id %}selected{% endif %}>{{marca.marca}}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                
+                <tr class="back1">
+                    <td class="right w-20">
+                        Proveedor&nbsp;:&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        <select name="proveedor_id" id="proveedor_id" class="form-control h-35 input w-90 {% if operation_x == 'delete' %}readonly=" readonly"{% endif %}">
+                            {% for proveedor in proveedores_lista %}
+                            <option value="{{proveedor.proveedor_id}}" {% if producto.proveedor_id.proveedor_id == proveedor.proveedor_id %}selected{% endif %}>{{proveedor.proveedor}}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td class="right w-20">
+                        S. Minimo&nbsp;:&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        <input type="text" {% if operation_x == "delete" %}readonly="readonly" {% endif %} autocomplete="off" class="form-control input right w-60" {% autoescape off %} {{db_tags.stock_minimo}} {% endautoescape %}>
+                    </td>
+                </tr>
+
+                <tr class="back1">
+                    <td class="right w-20">
+                        Precio&nbsp;:&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        <input type="text" {% if operation_x == "delete" %}readonly="readonly" {% endif %} autocomplete="off" class="form-control input right w-60" {% autoescape off %} {{db_tags.precio}} {% endautoescape %}> Bs.
+                    </td>
+                    <td class="right w-20">
+                        Activo&nbsp;:&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        <div class="custom-control custom-checkbox">
+                            <input class="custom-control-input" type="checkbox" id="activo" name="activo" value="Hello" {% if operation_x == 'add' %}checked{% endif %}
+                                {% if operation_x == 'modify' %}{% if producto.status_id_id == status_active %}checked{% endif %}{% endif %} {% if operation_x == 'delete' %}{% if producto.status_id_id == status_active %}checked{% endif %}
+                                disabled="disabled" {% endif %}>
+                            <label for="activo" class="custom-control-label">&nbsp;</label>
+                        </div>
+                    </td>
+                </tr>
+                
+                <tr class="back1">
+                    <td class="right w-20">
+                        Novedad&nbsp;:&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        <div class="custom-control custom-checkbox">
+                            <input class="custom-control-input" type="checkbox" id="novedad" name="novedad" {% if operation_x == 'add' %} {% endif %}
+                                {% if operation_x == 'modify' %}{% if producto.novedad == 1 %}checked{% endif %}{% endif %} {% if operation_x == 'delete' %}{% if producto.novedad == 1 %}checked{% endif %}
+                                disabled="disabled" {% endif %}>
+                            <label for="novedad" class="custom-control-label">&nbsp;</label>
+                        </div>
+                    </td>
+                    <td class="right w-20">
+                        Mas Vendido&nbsp;:&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        <div class="custom-control custom-checkbox">
+                            <input class="custom-control-input" type="checkbox" id="mas_vendido" name="mas_vendido" {% if operation_x == 'add' %} {% endif %}
+                                {% if operation_x == 'modify' %}{% if producto.mas_vendido == 1 %}checked{% endif %}{% endif %} {% if operation_x == 'delete' %}{% if producto.mas_vendido == 1 %}checked{% endif %}
+                                disabled="disabled" {% endif %}>
+                            <label for="mas_vendido" class="custom-control-label">&nbsp;</label>
+                        </div>
+                    </td>
+                </tr>
+                
+                <tr class="back1">
+                    <td class="right w-20">
+                        Oferta&nbsp;:&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        <div class="custom-control custom-checkbox">
+                            <input class="custom-control-input" type="checkbox" id="oferta" name="oferta" {% if operation_x == 'add' %} {% endif %}
+                                {% if operation_x == 'modify' %}{% if producto.oferta == 1 %}checked{% endif %}{% endif %} {% if operation_x == 'delete' %}{% if producto.oferta == 1 %}checked{% endif %}
+                                disabled="disabled" {% endif %}>
+                            <label for="oferta" class="custom-control-label">&nbsp;</label>
+                        </div>
+                    </td>
+                    <td class="right w-20">
+                        P. oferta&nbsp;:&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        <input type="text" autocomplete="off" value="{{producto.precio_oferta}}" class="form-control input w-60 right" name="precio_oferta" id="precio_oferta" onkeyup="validarNumeroPunto(this);"> Bs.
+                    </td>
+                </tr>
+                
+                <tr class="back1">
+                    <td colspan="4" class="left w-100">&nbsp;</td>
+                </tr>
+
+                <tr class="back2">
+                    <td class="right v-top w-20">
+                        <span id="label21">Descripci&oacute;n</span>&nbsp;:&nbsp;
+                        <input type="hidden" id="label21_c" value="Desc.">
+                        <br><br>
+                        Negrita &lt;b&gt;..&lt;&#47;b&gt;
+                        <br>
+                        Cursiva &lt;i&gt;..&lt;&#47;i&gt;
+                        <br>
+                        Subrrayado &lt;u&gt;..&lt;&#47;u&gt;
+                        <br>
+                        Tachado &lt;strike&gt;..&lt;&#47;strike&gt;
+                    </td>
+                    <td class="left w-30 v-top">
+                        <input type="text" autocomplete="off" value="{{producto.descripcion1}}" class="form-control input w-95" name="descripcion1" id="descripcion1" maxlength="250" {% if operation_x == "delete" %}readonly="readonly" {% endif %}
+                            onkeyup="crearDescripcion();"><br>
+                        <input type="text" autocomplete="off" value="{{producto.descripcion2}}" class="form-control input w-95" name="descripcion2" id="descripcion2" maxlength="250" {% if operation_x == "delete" %}readonly="readonly" {% endif %}
+                            onkeyup="crearDescripcion();"><br>
+                        <input type="text" autocomplete="off" value="{{producto.descripcion3}}" class="form-control input w-95" name="descripcion3" id="descripcion3" maxlength="250" {% if operation_x == "delete" %}readonly="readonly" {% endif %}
+                            onkeyup="crearDescripcion();"><br>
+                        <input type="text" autocomplete="off" value="{{producto.descripcion4}}" class="form-control input w-95" name="descripcion4" id="descripcion4" maxlength="250" {% if operation_x == "delete" %}readonly="readonly" {% endif %}
+                            onkeyup="crearDescripcion();"><br>
+                        <input type="text" autocomplete="off" value="{{producto.descripcion5}}" class="form-control input w-95" name="descripcion5" id="descripcion5" maxlength="250" {% if operation_x == "delete" %}readonly="readonly" {% endif %}
+                            onkeyup="crearDescripcion();"><br>
+                        <input type="text" autocomplete="off" value="{{producto.descripcion6}}" class="form-control input w-95" name="descripcion6" id="descripcion6" maxlength="250" {% if operation_x == "delete" %}readonly="readonly" {% endif %}
+                            onkeyup="crearDescripcion();"><br>
+                        <input type="text" autocomplete="off" value="{{producto.descripcion7}}" class="form-control input w-95" name="descripcion7" id="descripcion7" maxlength="250" {% if operation_x == "delete" %}readonly="readonly" {% endif %}
+                            onkeyup="crearDescripcion();"><br>
+                        <input type="text" autocomplete="off" value="{{producto.descripcion8}}" class="form-control input w-95" name="descripcion8" id="descripcion8" maxlength="250" {% if operation_x == "delete" %}readonly="readonly" {% endif %}
+                            onkeyup="crearDescripcion();"><br>
+                        <input type="text" autocomplete="off" value="{{producto.descripcion9}}" class="form-control input w-95" name="descripcion9" id="descripcion9" maxlength="250" {% if operation_x == "delete" %}readonly="readonly" {% endif %}
+                            onkeyup="crearDescripcion();"><br>
+                        <input type="text" autocomplete="off" value="{{producto.descripcion10}}" class="form-control input w-95" name="descripcion10" id="descripcion10" maxlength="250" {% if operation_x == "delete" %}readonly="readonly" {% endif %}
+                            onkeyup="crearDescripcion();"><br>
+                    </td>
+                    <td colspan="2" class="left w-50 v-top">
+                        <div id="datos_descripcion">
+
+                            {% autoescape off %} {{datos_descripcion}} {% endautoescape %}
+                        </div>
+                    </td>
+                </tr>
+                
+                <!--productos relacionados-->
+                <tr class="back1">
+                    <td colspan="4" class="w-100 left">
+                        <div id="lista_productos_relacionados">
+                            <table class="table3 w-100">
+                                <tr>
+                                    <th colspan="4" class="w-100 center h-25">Productos Relacionados</th>
+                                </tr>
+                                {% for prelacionado in productos_relacionados %}
+                                <tr class="back{{forloop.counter|back_class}}">
+                                    <td colspan="3" class="left w-80">
+                                        {{prelacionado.producto}}
+                                        <input type="hidden" name="productor_{{forloop.counter}}" value="{{prelacionado.producto_relacionado_id}}">
+                                    </td>
+                                    <td class="center w-20">
+                                        <i class="nav-icon ico_modify_delete pointer fas fa-minus-circle" onclick="nd(); quitarProductoRelacionado('{{prelacionado.producto_relacionado_id}}');"
+                                            onMouseOver="overlib('quitar producto relacionado',CAPTION,'Producto',WIDTH,'120',LEFT); return true" onMouseOut=" nd(); return true"></i>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                <tr class="back1">
+                                    <td colspan="4" class="w-100">&nbsp;</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="back2">
+                    <td colspan="4" class="w-100 left">
+                        <table class="table3 w-100">
+                            <tr>
+                                <th colspan="3" class="w-80 center h-25">
+                                    Buscar Productos Relacionados
+                                </th>
+                                <th class="w-20 right">
+                                        <i class="nav-icon ico_modify_delete pointer fas fa-angle-double-down" onclick="nd(); minimizarBusquedaRelacionado();"
+                                        onMouseOver="overlib('minimizar busqueda producto',CAPTION,'Minimizar',WIDTH,'120',LEFT); return true" onMouseOut=" nd(); return true"></i>
+                                </th>
+                            </tr>
+                            <tr class="back1">
+                                <td class="w-30 left">
+                                    <input type="text" class="form-control search input w-80" id="br_linea" placeholder="Linea">
+                                </td>
+                                <td class="w-30 left">
+                                    <input type="text" class="form-control search input w-80" id="br_producto" placeholder="Producto">
+                                </td>
+                                <td class="w-20 left">
+                                    <input type="text" class="form-control search input w-80" id="br_codigo" placeholder="Codigo">
+                                </td>
+                                <td class="w-20 left">
+                                    <input type="button" id="btn_buscar_relacionado" class="btn btn-primary btn-xs btn_search" value="buscar" onclick="buscarProductosRelacionados();">
+                                </td>
+                            </tr>
+                            <tr class="back2">
+                                <td colspan="4" class="w-100 left">
+                                    <div id="div_busqueda_relacionados">
+                                        <i>resultado busqueda</i>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                
+                <tr class="back1">
+                    <td colspan="4" class="left w-100">&nbsp;</td>
+                </tr>
+
+                <tr class="back1">
+                    <td colspan="4" class="center w-100">
+                        {% if operation_x == "add" %}
+                        <button class="btn btn-secondary btn-sm" name="button_cancel" onclick="backWindow();">
+                            <i class="nav-icon fas fa-arrow-alt-circle-left"></i>&nbsp;&nbsp;Cancelar
+                        </button>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <button class="btn btn-primary btn-sm" name="add_button" onclick="sendFormProducto('add', '');">
+                            <i class="nav-icon fas fa-save"></i>&nbsp;&nbsp;Guardar
+                        </button>
+                        <input type="hidden" name="add_x" value="acc">
+                        <input type="hidden" name="control_form" value="{{control_form}}">
+                        {% endif %}
+                        {% if operation_x == "modify" %}
+                        <button class="btn btn-secondary btn-sm" name="button_cancel" onclick="backWindow();">
+                            <i class="nav-icon fas fa-arrow-alt-circle-left"></i>&nbsp;&nbsp;Cancelar
+                        </button>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <button class="btn btn-primary btn-sm" name="add_button" onclick="sendFormProducto('modify', '');">
+                            <i class="nav-icon fas fa-save"></i>&nbsp;&nbsp;Guardar
+                        </button>
+                        <input type="hidden" name="modify_x" value="acc">
+                        <input type="hidden" name="control_form" value="{{control_form}}">
+                        {% endif %}
+                        {% if operation_x == "delete" and puede_eliminar == 1 %}
+                        <button class="btn btn-secondary btn-sm" name="button_cancel" onclick="backWindow();">
+                            <i class="nav-icon fas fa-arrow-alt-circle-left"></i>&nbsp;&nbsp;Cancelar
+                        </button>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <button class="btn btn-danger btn-sm" name="add_button" onclick="sendFormProducto('delete', 'este Producto');">
+                            <i class="nav-icon far fa-times-circle"></i>&nbsp;&nbsp;Eliminar
+                        </button>
+                        <input type="hidden" name="delete_x" value="acc">
+                        <input type="hidden" name="control_form" value="{{control_form}}">
+                        {% endif %}
+                        <input type="hidden" id="url_main" value="{{url_main}}">
+                        <input type="hidden" id="operation_x" name="operation_x" value="{{operation_x}}">
+                        <input type="hidden" name="module_x" value="{{module_x}}">
+                        <input type="hidden" name="id" value="{{id}}">
+                        <input type="hidden" name="operation_copy" value="{{operation_copy}}">
+                        <input type="hidden" id="pid" value="{{producto.producto_id}}">
+                    </td>
+                </tr>
+
+            </table>
+        </form>
+        <br>
+    </div>
+    <!--fin div contenido-->
+    <div class="col-sm-2">&nbsp;</div>
+</div>
+<!--fin div contenedor-->
+<form name="form_cancel" method="post" action="{{url_main}}">
+    {% csrf_token %}
+</form>
+<form name="form_operation" method="post" action="{{url_main}}">
+    {% csrf_token %}
+    <input type="hidden" name="module_x" value="{{module_x}}">
+    <input type="hidden" name="module_x2" value="{{module_x2}}">
+    <input type="hidden" name="module_x3" value="{{module_x3}}">
+    
+    <input type="hidden" name="operation_x" value="{{operation_x}}">
+    <input type="hidden" name="operation_x2" value="{{operation_x2}}">
+    <input type="hidden" name="operation_x3" value="{{operation_x3}}">
+    
+    <input type="hidden" name="id" value="{{id}}">
+    <input type="hidden" name="id2" value="{{id2}}">
+    <input type="hidden" name="id3" value="{{id3}}">
+</form>
