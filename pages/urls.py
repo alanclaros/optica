@@ -2,7 +2,9 @@ from django.urls import path
 from pages.views import index, notificaciones_pagina, privacy_policy, refund_policy
 from pages.views import delivery_policy, sucursales_empresa, acerca_de, cambiar_password
 from pages.views import carrito, internal_error, terms_service, frecuency_partners, contactenos
-from pages.views import without_permission, productos_inicio, faqs
+from pages.views import without_permission, productos_inicio, faqs, materiales_home, disenios_home
+
+from pages.views import reserva
 
 urlpatterns = [
     path('', index, name='index'),
@@ -17,6 +19,8 @@ urlpatterns = [
     path('delivery_policy/', delivery_policy, name='delivery_policy'),
     path('faqs/', faqs, name='faqs'),
     path('frecuency_partners/', frecuency_partners, name='frecuency_partners'),
+    path('materiales/', materiales_home, name='materiales_home'),
+    path('disenios/', disenios_home, name='disenios_home'),
 
     path('productosinicio/', productos_inicio, name='productos_inicio'),
     path('sucursalesempresa/', sucursales_empresa, name='sucursales_empresa'),
@@ -28,4 +32,6 @@ urlpatterns = [
 
     path('without_permission', without_permission, name='without_permission'),
     path('internal_error', internal_error, name='internal_error'),
+
+    path('reserva/', reserva, name='reserva'),
 ]

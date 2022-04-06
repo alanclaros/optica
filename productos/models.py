@@ -1,7 +1,8 @@
+from pyexpat import model
 from django.db import models
 from status.models import Status
 from utils.custome_db_types import DateTimeFieldCustome
-from configuraciones.models import Lineas, Marcas, Colores, Proveedores, TiposMontura, DisenioLentes, Materiales
+from configuraciones.models import Lineas, Proveedores, TiposMontura, Materiales
 from permisos.models import UsersPerfiles
 
 
@@ -11,15 +12,12 @@ class Productos(models.Model):
     user_perfil_id = models.ForeignKey(UsersPerfiles, to_field='user_perfil_id', on_delete=models.PROTECT, db_column='user_perfil_id')
     status_id = models.ForeignKey(Status, to_field='status_id', on_delete=models.PROTECT, db_column='status_id')
 
-    tipo_montura_id = models.ForeignKey(TiposMontura, to_field='tipo_montura_id', on_delete=models.PROTECT, db_column='tipo_montura_id')
-    disenio_lente_id = models.ForeignKey(DisenioLentes, to_field='disenio_lente_id', on_delete=models.PROTECT, db_column='disenio_lente_id')
-    material_id = models.ForeignKey(Materiales, to_field='material_id', on_delete=models.PROTECT, db_column='material_id')
-    proveedor_id = models.ForeignKey(Proveedores, to_field='proveedor_id', on_delete=models.PROTECT, db_column='proveedor_id')
-    marca_id = models.ForeignKey(Marcas, to_field='marca_id', on_delete=models.PROTECT, db_column='marca_id')
-    color_id = models.ForeignKey(Colores, to_field='color_id', on_delete=models.PROTECT, db_column='color_id')
+    tipo_montura_id = models.CharField(max_length=250, blank=False, null=False)
+    material_id = models.CharField(max_length=250, blank=False, null=False)
 
-    producto = models.CharField(max_length=250, unique=True, blank=False, null=False)
+    producto = models.CharField(max_length=250, blank=False, null=False)
     codigo = models.CharField(max_length=50, blank=False, null=False)
+    codigo_barras = models.CharField(max_length=50, blank=False, null=False, default='')
     precio = models.DecimalField(max_digits=12, decimal_places=2, blank=False, null=False, default=0)
     stock_minimo = models.IntegerField(blank=False, null=False, default=0)
     descripcion1 = models.CharField(max_length=250, blank=False, null=False)
@@ -44,6 +42,24 @@ class Productos(models.Model):
 
     class Meta:
         db_table = 'productos'
+
+
+class ProductosTiposMontura(models.Model):
+    producto_tipo_montura_id = models.AutoField(primary_key=True, db_column='producto_tipo_montura_id')
+    producto_id = models.ForeignKey(Productos, to_field='producto_id', on_delete=models.PROTECT, db_column='producto_id')
+    tipo_montura_id = models.ForeignKey(TiposMontura, to_field='tipo_montura_id', on_delete=models.PROTECT, db_column='tipo_montura_id')
+
+    class Meta:
+        db_table = 'productos_tipos_montura'
+
+
+class ProductosMateriales(models.Model):
+    producto_material_id = models.AutoField(primary_key=True, db_column='producto_material_id')
+    producto_id = models.ForeignKey(Productos, to_field='producto_id', on_delete=models.PROTECT, db_column='producto_id')
+    material_id = models.ForeignKey(Materiales, to_field='material_id', on_delete=models.PROTECT, db_column='material_id')
+
+    class Meta:
+        db_table = 'productos_materiales'
 
 
 class ProductosImagenes(models.Model):

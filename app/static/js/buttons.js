@@ -1,45 +1,30 @@
 
 
-try {
-	url_empresa = document.getElementById('url_empresa').value;
-}
-catch (e) {
-	url_empresa = '';
-}
-
-//settings
-imagen_modulo = '<div class="Loader">Loading...</div>';
-
-//block content
-div_modulo = $("#div_block_content");
-
-
 function module_pagination(page) {
-	token_pagination = document.forms['form_page'].elements['csrfmiddlewaretoken'].value;
+	const token_pagination = document.forms['form_page'].elements['csrfmiddlewaretoken'].value;
+	const module_x = document.forms['form_operation'].elements['module_x'].value;
 
-	datos_pagination = {
-		'module_x': document.forms['form_operation'].elements['module_x'].value,
+	let datos_pagination = {
+		'module_x': module_x,
 		'csrfmiddlewaretoken': token_pagination,
 	}
-	name_var_page = document.forms['form_page'].elements['name_var_page'].value;
+	const name_var_page = document.forms['form_page'].elements['name_var_page'].value;
 
 	datos_pagination[name_var_page] = page;
 
-	let para_cargar = url_empresa;
-	if (para_cargar != '') {
-		para_cargar = url_empresa + '/';
-	}
-
 	div_modulo.html(imagen_modulo);
-	div_modulo.load(para_cargar, datos_pagination, function () {
+	div_modulo.load(hostURL, datos_pagination, function () {
 		//termina de cargar la ventana
+		const setLink = hostURL + '/' + module_x;
+		window.history.pushState({ href: setLink }, '', setLink);
 	});
 }
 
-cont_hide = 0;
+let cont_hide = 0;
 function hideNotifications() {
-	for (im = 0; im <= 20; im++) {
+	for (let im = 0; im <= 20; im++) {
 		try {
+			let existe_message;
 			if (im == 0) {
 				existe_message = document.getElementById('message');
 				//alert(existe_message);
@@ -56,17 +41,12 @@ function hideNotifications() {
 				else {
 					cont_hide = 0;
 					if (im == 0) {
-						//$('#message').fadeOut('slow');
 						$('#message').stop(true);
-						//setTimeout(hideMessage('message'), 5000);
 						$('#message').fadeOut(5000);
-						//console.log('empezando el hide message 0');
 					}
 					else {
 						$('#message' + im).stop(true);
 						$('#message' + im).fadeOut(5000);
-						//setTimeout(hideMessage('message' + im), 5000);
-						//console.log('empezando el hide message ' + im);
 					}
 				}
 			}
@@ -76,11 +56,6 @@ function hideNotifications() {
 		}
 	}
 }
-
-setInterval('hideNotifications()', 5000);
-
-//notificaciones
-setInterval('checkNotifications()', 45000); //45 segundos
 
 //de las notificaciones para abrir los menus
 function notificacionAbrir(tipo) {
@@ -95,12 +70,12 @@ function notificacionAbrir(tipo) {
 			href_header.click();
 		}
 
-		if (tipo === 'E' || tipo === 'R' || tipo === 'F') {
-			openModule('1');
+		if (tipo === 'pedido') {
+			openModule('30');
 		}
-		// if (tipo == 'calendario') {
-		// 	openModule('23');
-		// }
+		if (tipo == 'reserva') {
+			openModule('29');
+		}
 	}
 }
 
@@ -114,10 +89,9 @@ function checkNotifications() {
 
 	if (autenticado == 'si') {
 		try {
-			imagen = '<img src="' + url_empresa + '/static/img/pass/loading2.gif">';
-			url_main = url_empresa + '/notificacionespagina/';
-			token = document.forms['form_notificaciones'].elements['csrfmiddlewaretoken'].value;
-			datos = {
+			const send_url = urlEmpresa + '/notificacionespagina/';
+			const token = document.forms['form_notificaciones'].elements['csrfmiddlewaretoken'].value;
+			const datos = {
 				'check': 'ok',
 				'csrfmiddlewaretoken': token,
 			}
@@ -125,7 +99,7 @@ function checkNotifications() {
 			//verificamos
 			$('#div_notifications').fadeIn('slow');
 			//$("#div_notifications").html(imagen);
-			$("#div_notifications").load(url_main, datos, function () {
+			$("#div_notifications").load(send_url, datos, function () {
 				//termina de cargar la ventana
 				resultadoNotificacion();
 			});
@@ -143,12 +117,17 @@ function resultadoNotificacion() {
 
 function openModule(module_id) {
 	//alert(module_id);
+	//console.log('open module, module_id: ', module_id);
+	let checkModule = module_id;
+	let moduleOperations = [];
+	moduleOperations = checkModule.split('/');
+	//console.log('module operations: ', moduleOperations);
 
-	module_aux = document.getElementById('module_ref_1000');
+	let module_aux = document.getElementById('module_ref_1000');
 	module_aux.className = 'nav-link back_menu';
 
 	//desmarcamos todos los posibles
-	for (mi = 1; mi <= 50; mi++) {
+	for (let mi = 1; mi <= 50; mi++) {
 		try {
 			module_aux = document.getElementById('module_ref_' + mi);
 			module_aux.className = 'nav-link back_menu';
@@ -158,43 +137,151 @@ function openModule(module_id) {
 		}
 	}
 
-	module_ref = document.getElementById('module_ref_' + module_id);
+	const module_ref = document.getElementById('module_ref_' + moduleOperations[0]);
+	const token_module = document.forms['form_notificaciones'].elements['csrfmiddlewaretoken'].value;
+
+	//select module
 	module_ref.className = 'nav-link back_menu_item_select active';
 
-	token_module = document.forms['form_notificaciones'].elements['csrfmiddlewaretoken'].value;
+	//un modulo con una operacion
+	let datos_modulo = {};
+	if (moduleOperations.length === 1) {
+		datos_modulo = {
+			'module_x': moduleOperations[0],
+			'csrfmiddlewaretoken': token_module,
+		}
 
-	datos_modulo = {
-		'module_x': module_id,
-		'csrfmiddlewaretoken': token_module,
+		div_modulo.html(imagen_modulo);
+		div_modulo.load(hostURL, datos_modulo, function (response) {
+			const setURL = hostURL + '/' + moduleOperations[0];
+			window.history.pushState({ href: setURL }, '', setURL);
+		});
 	}
 
-	div_modulo.html(imagen_modulo);
-	let para_cargar = url_empresa;
-	if (para_cargar != '') {
-		para_cargar = url_empresa + '/';
+	//un modulo con operaciones
+	if (moduleOperations.length === 2) {
+		//check id
+		const posID = moduleOperations[1].indexOf('?');
+		let forOperationX = moduleOperations[1];
+		let varName = 'x';
+		let varValue = 'x';
+		if (posID > -1) {
+			forOperationX = moduleOperations[1].substring(0, posID);
+			//console.log('for operation x: ', forOperationX);
+			const parametros = moduleOperations[1].substring(posID + 1, moduleOperations[1].length);
+			//console.log('parametros...: ', parametros);
+			const dataParametros = parametros.split('=');
+			varName = dataParametros[0];
+			varValue = dataParametros[1];
+		}
+
+		//console.log('varname: ', varName, ' varvalue: ', varValue);
+		datos_modulo = {
+			'module_x': moduleOperations[0],
+			'operation_x': forOperationX,
+			'csrfmiddlewaretoken': token_module,
+		}
+		datos_modulo[varName] = varValue;
+		//console.log('datos modulo..: ', datos_modulo);
+
+		div_modulo.html(imagen_modulo);
+		div_modulo.load(hostURL, datos_modulo, function (response) {
+			const setURL = hostURL + '/' + moduleOperations[0] + '/' + moduleOperations[1];
+			window.history.pushState({ href: setURL }, '', setURL);
+		});
 	}
 
-	div_modulo.load(para_cargar, datos_modulo, function () {
-		//termina de cargar la ventana
-	});
+	//un modulo con submodulo y operaciones
+	if (moduleOperations.length === 4) {
+		//console.log('entra... length 4....');
+		//check id
+		const posID = moduleOperations[3].indexOf('?');
+		let forOperationX = moduleOperations[2];
+		let varName = 'x';
+		let varValue = 'x';
+		if (posID > -1) {
+			forOperationX = moduleOperations[3].substring(0, posID);
+			//console.log('for operation x: ', forOperationX);
+			const parametros = moduleOperations[3].substring(posID + 1, moduleOperations[3].length);
+			//console.log('parametros...: ', parametros);
+			const dataParametros = parametros.split('=');
+			varName = dataParametros[0];
+			varValue = dataParametros[1];
+		}
 
-	div_body_class = document.getElementById('div_body').className;
-	pos = div_body_class.indexOf('open');
+		datos_modulo = {
+			'module_x': moduleOperations[0],
+			'operation_x': moduleOperations[2],
+			'operation_x2': forOperationX,
+			'id': moduleOperations[1],
+			'csrfmiddlewaretoken': token_module,
+		}
+		datos_modulo[varName] = varValue;
+		//console.log('datos modulo..: ', datos_modulo);
+
+		div_modulo.html(imagen_modulo);
+		div_modulo.load(hostURL, datos_modulo, function (response) {
+			const setURL = hostURL + '/' + moduleOperations[0] + '/' + moduleOperations[1] + '/' + moduleOperations[2] + '/' + moduleOperations[3];
+			window.history.pushState({ href: setURL }, '', setURL);
+		});
+	}
+
+	//close sidebar when select module (mobile devices)
+	const div_body_class = document.getElementById('div_body').className;
+	const pos = div_body_class.indexOf('open');
 	if (pos > -1) {
-		btn_show_menu = document.getElementById('btn_show_menu');
+		const btn_show_menu = document.getElementById('btn_show_menu');
 		btn_show_menu.click();
 	}
+
+
+
+
+	// div_modulo.html(imagen_modulo);
+	// // let para_cargar = url_empresa;
+	// // if (para_cargar != '') {
+	// // 	para_cargar = url_empresa + '/';
+	// // }
+	// //para_cargar = 'http://127.0.0.1:8000/';
+	// const para_cargar = hostURL;
+	// // const hostName = location.hostname;
+	// // const host = location.host;
+	// // const origin = location.origin;
+	// // console.log('host: ', host, ' hostname: ', hostName, ' origin: ', origin);
+	// //console.log('para cargar: ', para_cargar);
+
+	// div_modulo.load(para_cargar, datos_modulo, function (response) {
+	// 	//console.log('reponse...', response);
+	// 	//termina de cargar la ventana
+
+	// 	//console.log('response: ', response);
+	// 	//document.title = 'modulo ' + module_id;
+	// 	//window.history.pushState({ "html": response, "pageTitle": 'modulo ' + module_id }, "", module_id);
+	// 	//window.history.pushState({ "html": response, "pageTitle": 'modulo ' + module_id }, response, module_id);
+	// 	//window.history.pushState(response, 'modulo ' + module_id, module_id);
+	// 	const setURL = hostURL + '/' + module_id;
+
+	// 	window.history.pushState({ href: setURL }, '', setURL);
+	// });
+
+	// const div_body_class = document.getElementById('div_body').className;
+	// const pos = div_body_class.indexOf('open');
+	// if (pos > -1) {
+	// 	const btn_show_menu = document.getElementById('btn_show_menu');
+	// 	btn_show_menu.click();
+	// }
 
 }
 
 //send order forms
 function sendOrder(order, type, field_order, field_type) {
-	token_search = document.forms['form_order'].elements['csrfmiddlewaretoken'].value;
+	const token_search = document.forms['form_order'].elements['csrfmiddlewaretoken'].value;
+	const module_x = document.forms['form_operation'].elements['module_x'].value;
 
-	datos_search = {
+	let datos_search = {
 		'csrfmiddlewaretoken': token_search,
 
-		'module_x': document.forms['form_operation'].elements['module_x'].value,
+		'module_x': module_x,
 		'module_x2': document.forms['form_operation'].elements['module_x2'].value,
 		'module_x3': document.forms['form_operation'].elements['module_x3'].value,
 
@@ -210,23 +297,22 @@ function sendOrder(order, type, field_order, field_type) {
 	datos_search[field_type] = type;
 
 	div_modulo.html(imagen_modulo);
-	let para_cargar = url_empresa;
-	if (para_cargar != '') {
-		para_cargar = url_empresa + '/';
-	}
-	div_modulo.load(para_cargar, datos_search, function () {
+	div_modulo.load(hostURL, datos_search, function () {
 		//termina de cargar la ventana
+		const setLink = hostURL + '/' + module_x;
+		window.history.pushState({ href: setLink }, '', setLink);
 	});
 }
 
 //boton de adicion
 function sendOperation(operation = '', operation2 = '', operation3 = '', id = '', id2 = '', id3 = '') {
-	token_operation = document.forms['form_operation'].elements['csrfmiddlewaretoken'].value;
+	const token_operation = document.forms['form_operation'].elements['csrfmiddlewaretoken'].value;
+	const module_x = document.forms['form_operation'].elements['module_x'].value;
 
-	datos_operation = {
+	const datos_operation = {
 		'csrfmiddlewaretoken': token_operation,
 
-		'module_x': document.forms['form_operation'].elements['module_x'].value,
+		'module_x': module_x,
 		'module_x2': document.forms['form_operation'].elements['module_x2'].value,
 		'module_x3': document.forms['form_operation'].elements['module_x3'].value,
 
@@ -238,64 +324,86 @@ function sendOperation(operation = '', operation2 = '', operation3 = '', id = ''
 		'id2': id2,
 		'id3': id3,
 	}
-
+	//console.log('entra sendoperation: ', datos_operation);
 	div_modulo.html(imagen_modulo);
-	let para_cargar = url_empresa;
-	if (para_cargar != '') {
-		para_cargar = url_empresa + '/';
-	}
-	div_modulo.load(para_cargar, datos_operation, function () {
+
+	div_modulo.load(hostURL, datos_operation, function () {
 		//termina de cargar la ventana
+		//console.log('operation send operation: ', operation);
+		let setLink = "";
+		if (Trim(operation2) === '') {
+			if (operation === 'delete' || operation === 'anular') {
+				setLink = hostURL + '/' + module_x;
+			}
+			else {
+				setLink = hostURL + '/' + module_x + '/' + operation + '?id=' + id;
+			}
+		}
+		else {
+			//submodulo
+			if (operation2 === 'delete' || operation2 === 'anular') {
+				setLink = hostURL + '/' + module_x + '/' + id + '/' + operation;
+			}
+			else {
+				setLink = hostURL + '/' + module_x + '/' + id + '/' + operation + '/' + operation2 + '?id2=' + id2;
+			}
+		}
+
+		//console.log('setlink...: ', setLink);
+		//const setLink = hostURL + '/' + module_x + '/' + operation + '?id=' + id;
+		window.history.pushState({ href: setLink }, '', setLink);
+		//console.log('window history: ', window.history);
 	});
 }
 
 function backWindow() {
-	token_operation = document.forms['form_operation'].elements['csrfmiddlewaretoken'].value;
+	const token_operation = document.forms['form_operation'].elements['csrfmiddlewaretoken'].value;
+	const module_x = document.forms['form_operation'].elements['module_x'].value;
 
-	datos_operation = {
+	const datos_operation = {
 		'csrfmiddlewaretoken': token_operation,
 
 		'module_x': document.forms['form_operation'].elements['module_x'].value,
 	}
 
 	div_modulo.html(imagen_modulo);
-	let para_cargar = url_empresa;
-	if (para_cargar != '') {
-		para_cargar = url_empresa + '/';
-	}
-	div_modulo.load(para_cargar, datos_operation, function () {
+	div_modulo.load(hostURL, datos_operation, function () {
 		//termina de cargar la ventana
+		//window.history.pushState({ href: module_x }, '', module_x);
+		window.history.pushState({ href: hostURL + '/' + module_x }, '', hostURL + '/' + module_x);
 	});
 }
 
 function backWindow2() {
-	token_operation = document.forms['form_operation'].elements['csrfmiddlewaretoken'].value;
+	const token_operation = document.forms['form_operation'].elements['csrfmiddlewaretoken'].value;
+	const idPrincipal = document.forms['form_operation'].elements['id'].value;
+	const operation_x = document.forms['form_operation'].elements['operation_x'].value;
+	const module_x = document.forms['form_operation'].elements['module_x'].value;
 
-	datos_operation = {
+	const datos_operation = {
 		'csrfmiddlewaretoken': token_operation,
 
-		'module_x': document.forms['form_operation'].elements['module_x'].value,
+		'module_x': module_x,
 		'module_x2': document.forms['form_operation'].elements['module_x2'].value,
 
-		'operation_x': document.forms['form_operation'].elements['operation_x'].value,
+		'operation_x': operation_x,
 
-		'id': document.forms['form_operation'].elements['id'].value,
+		'id': idPrincipal,
 	}
 
 	div_modulo.html(imagen_modulo);
-	let para_cargar = url_empresa;
-	if (para_cargar != '') {
-		para_cargar = url_empresa + '/';
-	}
-	div_modulo.load(para_cargar, datos_operation, function () {
+	div_modulo.load(hostURL, datos_operation, function () {
 		//termina de cargar la ventana
+		const setLink = hostURL + '/' + module_x + '/' + idPrincipal + '/' + operation_x;
+		//console.log('back window 2.....', setLink);
+		window.history.pushState({ href: setLink }, '', setLink);
 	});
 }
 
 function backWindow3() {
-	token_operation = document.forms['form_operation'].elements['csrfmiddlewaretoken'].value;
+	const token_operation = document.forms['form_operation'].elements['csrfmiddlewaretoken'].value;
 
-	datos_operation = {
+	const datos_operation = {
 		'csrfmiddlewaretoken': token_operation,
 
 		'module_x': document.forms['form_operation'].elements['module_x'].value,
@@ -310,11 +418,7 @@ function backWindow3() {
 	}
 
 	div_modulo.html(imagen_modulo);
-	let para_cargar = url_empresa;
-	if (para_cargar != '') {
-		para_cargar = url_empresa + '/';
-	}
-	div_modulo.load(para_cargar, datos_operation, function () {
+	div_modulo.load(hostURL, datos_operation, function () {
 		//termina de cargar la ventana
 	});
 }
@@ -509,7 +613,6 @@ function Trim(str) {
 	return resultado;
 }
 
-
 /**impresion, dialogo modal */
 function closeModalPrint() {
 	modal = document.getElementById("printModal");
@@ -519,16 +622,6 @@ function closeModalPrint() {
 function openModalPrint() {
 	modal = document.getElementById("printModal");
 	modal.style.display = "block";
-}
-
-// Get the modal
-var modal = document.getElementById("printModal");
-
-// When the user clicks anywhere outside of the modal, close it
-window.onclick = function (event) {
-	if (event.target == modal) {
-		modal.style.display = "none";
-	}
 }
 
 function redondeo(numero, decimales) {
@@ -695,16 +788,56 @@ async function sendFormObject(formName, divLoad) {
 	var fd = new FormData(document.forms[formName]);
 
 	divLoad.html(imagen_modulo);
+	let result;
+	try {
+		result = await $.ajax({
+			url: hostURL,
+			method: 'POST',
+			type: 'POST',
+			cache: false,
+			data: fd,
+			contentType: false,
+			processData: false,
+			success: function (response) {
+				if (response != 0) {
+					divLoad.html(response);
+					let currentLink = location.href;
+					//console.log('current link: ', currentLink, ' host url: ', hostURL);
+					currentLink = currentLink.replace(hostURL + '/', '');
+					let moduleOperations = [];
+					moduleOperations = currentLink.split('/');
+					const setLink = hostURL + '/' + moduleOperations[0];
+					window.history.pushState({ href: setLink }, '', setLink);
+				} else {
+					alert('error al realizar la operacion, intentelo de nuevo');
+				}
+			},
+			error: function (qXHR, textStatus, errorThrown) {
+				console.log(errorThrown); console.log(qXHR); console.log(textStatus);
+			},
+		});
+		//alert(result);
+	}
+	catch (e) {
+		console.error(e);
+	}
+}
+
+async function sendFormObjectImg(formName, divLoad, img) {
+	var fd = new FormData(document.forms[formName]);
+
+	// Display the key/value pairs
+	// for (var pair of formData.entries()) {
+	// 	console.log(pair[0]+ ', ' + pair[1]); 
+	// }
+
+	divLoad.html(img);
 
 	let result;
-	let para_cargar = url_empresa;
-	if (para_cargar != '') {
-		para_cargar = url_empresa + '/';
-	}
 
 	try {
 		result = await $.ajax({
-			url: para_cargar,
+			url: hostURL,
 			method: 'POST',
 			type: 'POST',
 			cache: false,

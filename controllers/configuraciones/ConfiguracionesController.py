@@ -27,6 +27,7 @@ class ConfiguracionesController(DefaultValues):
         # control del formulario
         self.control_form = "txt|1|S|cant_per_page|Cantidad por Pagina;"
         self.control_form += "txt|1|S|cant_productos_home|Cantidad Home;"
+        self.control_form += "txt|1|S|numero_actual_venta|Numero Actual Venta;"
         self.control_form += "txt|1|S|minutos_aviso_entregar|Minutos antes de la entrega laboratorio;"
         self.control_form += "txt|1|S|minutos_aviso_entregar_tarde|Minutos antes de la entrega laboratorio (Tarde);"
         self.control_form += "txt|1|S|minutos_aviso_recoger|Minutos antes de recoger laboratorio;"
@@ -52,6 +53,7 @@ class ConfiguracionesController(DefaultValues):
         try:
             cant_per_page = validate_number_int('cantidad pagina', request.POST['cant_per_page'])
             cant_productos_home = validate_number_int('cantidad home', request.POST['cant_productos_home'])
+            numero_actual_venta = validate_number_int('numero actual venta', request.POST['numero_actual_venta'])
             usar_fecha_servidor = validate_string('usar_fecha_servidor', request.POST['usar_fecha_servidor'], remove_specials='yes')
             fecha_sistema = get_date_to_db(fecha=request.POST['fecha_sistema'].strip(), formato_ori='dd-MMM-yyyy', formato='yyyy-mm-dd')
 
@@ -64,6 +66,8 @@ class ConfiguracionesController(DefaultValues):
 
             configuracion = apps.get_model('configuraciones', 'Configuraciones').objects.get(pk=1)
             configuracion.cant_per_page = cant_per_page
+            configuracion.cant_productos_home = cant_productos_home
+            configuracion.numero_actual_venta = numero_actual_venta
             configuracion.usar_fecha_servidor = usar_fecha_servidor
             configuracion.fecha_sistema = fecha_sistema
 

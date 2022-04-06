@@ -125,7 +125,7 @@
     {% csrf_token %}
 </form>
 
-<form name="form_operation" method="post" action="">
+<form name="form_operation" method="post" action="{% url 'index' %}">
     {% csrf_token %}
     <input type="hidden" name="module_x" value="{{module_x}}">
     <input type="hidden" name="module_x2" value="{{module_x2}}">

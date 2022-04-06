@@ -2,9 +2,10 @@ from controllers.DefaultValues import DefaultValues
 from django.conf import settings
 from django.apps import apps
 
-from utils.validators import validate_number_int, validate_string
+from utils.validators import validate_number_int, validate_string, validate_number_decimal
 from controllers.SystemController import SystemController
 import os
+import shutil
 from os import remove
 
 # imagenes
@@ -43,6 +44,8 @@ class MaterialesController(DefaultValues):
         # control del formulario
         self.control_form = "txt|2|S|material|Material"
         self.control_form += ";txt|2|S|codigo|Codigo"
+        self.control_form += ";cbo|0|S|proveedor_id|Proveedor"
+        #self.control_form += ";txt|1|S|costo|Costo"
 
     def index(self, request):
         DefaultValues.index(self, request)
@@ -90,8 +93,12 @@ class MaterialesController(DefaultValues):
         try:
             material_txt = validate_string('material', request.POST['material'], remove_specials='yes')
             codigo_txt = validate_string('codigo', request.POST['codigo'], remove_specials='yes')
+            costo_txt = validate_number_decimal('costo', request.POST['costo'], len_zero='yes')
             descripcion = validate_string('descripcion', request.POST['descripcion'], remove_specials='yes', len_zero='yes')
+            proveedor_id = validate_number_int('proveedor_id', request.POST['proveedor_id'])
             id = validate_number_int('id', request.POST['id'], len_zero='yes')
+
+            proveedor = apps.get_model('configuraciones', 'Proveedores').objects.get(pk=proveedor_id)
 
             if not self.is_in_db(id, material_txt):
                 if 'activo' in request.POST.keys():
@@ -102,30 +109,35 @@ class MaterialesController(DefaultValues):
                 aux = {}
                 aux['nombre_archivo'] = ''
                 aux['nombre_archivo_thumb'] = ''
-                if 'imagen1' in request.FILES.keys():
+                if 'imagen1' in request.FILES.keys() and request.FILES['imagen1'].name.strip() != '':
                     uploaded_filename = request.FILES['imagen1'].name.strip()
+                    aux = system_controller.nombre_imagen('materiales', uploaded_filename)
 
-                    if uploaded_filename != '':
-                        aux = system_controller.nombre_imagen('materiales', uploaded_filename)
-                        # aux = system_controller self.nombre_imagen(uploaded_filename)
+                    full_filename = os.path.join(settings.STATIC_ROOT_APP, 'media', 'materiales', aux['nombre_archivo'])
+                    full_filename_thumb = os.path.join(settings.STATIC_ROOT_APP, 'media', 'materiales', aux['nombre_archivo_thumb'])
 
+                    fout = open(full_filename, 'wb+')
+                    file_content = ContentFile(request.FILES['imagen1'].read())
+                    for chunk in file_content.chunks():
+                        fout.write(chunk)
+                    fout.close()
+
+                    # creamos el thumb
+                    imagen = Image.open(full_filename)
+                    max_size = (settings.PRODUCTOS_THUMB_WIDTH, settings.PRODUCTOS_THUMB_HEIGHT)
+                    imagen.thumbnail(max_size)
+                    imagen.save(full_filename_thumb)
+                else:
+                    if type == 'add':
+                        aux = system_controller.nombre_imagen('materiales', settings.PRODUCTOS_NO_IMAGE)
                         full_filename = os.path.join(settings.STATIC_ROOT_APP, 'media', 'materiales', aux['nombre_archivo'])
                         full_filename_thumb = os.path.join(settings.STATIC_ROOT_APP, 'media', 'materiales', aux['nombre_archivo_thumb'])
 
-                        fout = open(full_filename, 'wb+')
-                        file_content = ContentFile(request.FILES['imagen1'].read())
-                        for chunk in file_content.chunks():
-                            fout.write(chunk)
-                        fout.close()
-
-                        # creamos el thumb
-                        imagen = Image.open(full_filename)
-                        max_size = (settings.PRODUCTOS_THUMB_WIDTH, settings.PRODUCTOS_THUMB_HEIGHT)
-                        imagen.thumbnail(max_size)
-                        imagen.save(full_filename_thumb)
+                        shutil.copyfile(os.path.join(settings.STATIC_ROOT_APP, 'img', settings.PRODUCTOS_NO_IMAGE), full_filename)
+                        shutil.copyfile(os.path.join(settings.STATIC_ROOT_APP, 'img', settings.PRODUCTOS_NO_IMAGE), full_filename_thumb)
 
                 if type == 'add':
-                    material = apps.get_model('configuraciones', 'Materiales').objects.create(material=material_txt, codigo=codigo_txt,
+                    material = apps.get_model('configuraciones', 'Materiales').objects.create(material=material_txt, codigo=codigo_txt, costo=costo_txt, proveedor_id=proveedor,
                                                                                               descripcion=descripcion, imagen=aux['nombre_archivo'], imagen_thumb=aux['nombre_archivo_thumb'], status_id=status_material, created_at='now', updated_at='now')
                     material.save()
                     self.error_operation = ""
@@ -134,16 +146,17 @@ class MaterialesController(DefaultValues):
                 if type == 'modify':
                     material = apps.get_model('configuraciones', 'Materiales').objects.get(pk=id)
                     # verificamos imagen
-                    if material.imagen != '':
-                        full_filename = os.path.join(settings.STATIC_ROOT_APP, 'media', 'materiales', material.imagen)
-                        full_filename_thumb = os.path.join(settings.STATIC_ROOT_APP, 'media', 'materiales', material.imagen_thumb)
-
-                        if os.path.exists(full_filename):
-                            remove(full_filename)
-                        if os.path.exists(full_filename_thumb):
-                            remove(full_filename_thumb)
-
                     if aux['nombre_archivo'] != '':
+                        # se cambio de archivo
+                        if material.imagen != '':
+                            full_filename = os.path.join(settings.STATIC_ROOT_APP, 'media', 'materiales', material.imagen)
+                            full_filename_thumb = os.path.join(settings.STATIC_ROOT_APP, 'media', 'materiales', material.imagen_thumb)
+
+                            if os.path.exists(full_filename):
+                                remove(full_filename)
+                            if os.path.exists(full_filename_thumb):
+                                remove(full_filename_thumb)
+
                         # guardamos la nueva imagen
                         material.imagen = aux['nombre_archivo']
                         material.imagen_thumb = aux['nombre_archivo_thumb']
@@ -152,7 +165,9 @@ class MaterialesController(DefaultValues):
                     material.status_id = status_material
                     material.material = material_txt
                     material.codigo = codigo_txt
+                    material.costo = costo_txt
                     material.descripcion = descripcion
+                    material.proveedor_id = proveedor
                     material.updated_at = 'now'
                     material.save()
                     self.error_operation = ""

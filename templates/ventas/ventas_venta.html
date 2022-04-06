@@ -1,0 +1,586 @@
+{% load jinja_tags %}
+{% load static %}
+
+{% if operation_x == 'pasar_venta' %}
+<link rel="stylesheet" href="{% static 'js/autosuggest/autosuggest.css' %}">
+<script type="text/javascript" src="{% static "" %}js/autosuggest/autosuggest.js"></script>
+<!-- Autosuggest data: -->
+<script type="text/javascript">
+    var suggest_custom_array_2 = [];
+    var lista_monturas_precios= [];
+    var lista_materiales_precios= [];
+    
+    {% for material in materiales_lista %}
+    lista_materiales_precios['{{material.material_id}}']= '{{material.costo}}';
+    {% endfor %}
+    
+    {% for tipo_montura in tipos_montura_lista %}
+    suggest_custom_array_2.push(['{{tipo_montura.proveedor_id.proveedor}} - {{tipo_montura.tipo_montura}}', '{{tipo_montura.tipo_montura_id}}']);
+    lista_monturas_precios['{{tipo_montura.tipo_montura_id}}'] = '{{tipo_montura.costo}}';
+    {% endfor %}
+</script>
+{% endif %}
+
+<!--contenedor-->
+<div class="row align-items-center">
+    <div class="col-sm-2">&nbsp;</div>
+    <div class="col-md-8">
+        <!--contenido-->
+        <!--alerts-->
+        {% include 'partials/_alerts.html' %}
+        <br>
+        {% if puede_anular == 0 %}
+        {% with title='Venta' body='No puede anular esta venta, tiene registros en otros modulos, consulte con el administrador' %}
+        {% include 'partials/_alert_info_cant_delete.html' %}
+        {% endwith %}
+        {% endif %}
+        
+        <div class="link_blue right">
+            <span class="link_blue pointer" onclick="backWindow();">Volver</span>
+        </div>
+        <br>
+        
+        <div class="row w-100">
+            <div class="card card-primary card-tabs w-100">
+                <div class="card-header p-0 pt-1 w-100 back_tabs">
+                    <ul class="nav nav-tabs" id="custom-tabs-one-tab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="custom-tabs-one-home-tab" data-toggle="pill" href="#custom-tabs-one-home" role="tab" aria-controls="custom-tabs-one-home" aria-selected="true">Venta</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="custom-tabs-one-imagenes-tab" data-toggle="pill" href="#custom-tabs-one-imagenes" role="tab" aria-controls="custom-tabs-one-imagenes" aria-selected="false">Imagenes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="custom-tabs-one-historias-tab" data-toggle="pill" href="#custom-tabs-one-historias" role="tab" aria-controls="custom-tabs-one-historias" aria-selected="false">Historias</a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!--content tabs-->
+                <div class="card-body padding_tabs w-100">
+                    <div class="tab-content" id="custom-tabs-one-tabContent">
+                        <div class="tab-pane fade show active w-100" id="custom-tabs-one-home" role="tabpanel" aria-labelledby="custom-tabs-one-home-tab">
+                            <!--primer tab-->
+                            <form name="formulario" method="post" action="" onsubmit="return false;">
+                                {% csrf_token %}
+                                <table class="table3 w-100">
+                                    <tr>
+                                        <th colspan="4" class="center w-100">
+                                            {% if operation_x == 'pasar_venta' %}Pasar a Venta{% endif %}
+                                            {% if operation_x == 'pasar_venta_anular' %}Pasar a Venta Anular{% endif %}
+                                        </th>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <th colspan="4" class="center w-100">
+                                            Cliente
+                                        </th>
+                                    </tr>
+                                    <tr class="back1">
+                                        <td class="right w-20">
+                                            Nombres&nbsp;:&nbsp;
+                                        </td>
+                                        <td class="left w-30">
+                                            <input type="text" readonly="readonly" autocomplete="off" class="form-control input left w-90" name="nombres" id="nombres" value="{{venta.nombres}}" maxlength="150">
+                                        </td>
+                                        <td class="right w-20">
+                                            Apellidos&nbsp;:&nbsp;
+                                        </td>
+                                        <td class="left w-30">
+                                            <input type="text" readonly="readonly" autocomplete="off" class="form-control input left w-90" name="apellidos" id="apellidos" value="{{venta.apellidos}}" maxlength="150">
+                                            <input type="hidden" name="cliente_id" id="cliente_id" value="{{venta.cliente_id.cliente_id}}">
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="back2">
+                                        <td class="right w-20">
+                                            CI/NIT&nbsp;:&nbsp;
+                                        </td>
+                                        <td class="left w-30">
+                                            <input type="text" readonly="readonly" autocomplete="off" class="form-control input left w-90" name="ci_nit" id="ci_nit" value="{{venta.ci_nit}}" maxlength="150">
+                                        </td>
+                                        <td class="right w-20">
+                                            Fonos&nbsp;:&nbsp;
+                                        </td>
+                                        <td class="left w-30">
+                                            <input type="text" readonly="readonly" autocomplete="off" class="form-control input left w-90" name="telefonos" id="telefonos" value="{{venta.telefonos}}" maxlength="150">
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="back1">
+                                        <td class="right w-20">
+                                            Venta&nbsp;:&nbsp;
+                                        </td>
+                                        <td class="left w-30">
+                                            <input type="text" autocomplete="off" class="form-control input right w-90" name="numero_venta" id="numero_venta" value="{{numero_venta}}" readonly="readonly">
+                                        </td>
+                                        <td class="right w-20">
+                                            Factura A&nbsp;:&nbsp;
+                                        </td>
+                                        <td class="left w-30">
+                                            <input type="text" readonly="readonly" autocomplete="off" class="form-control input left w-90" name="factura_a" id="factura_a" value="{{venta.factura_a}}" maxlength="150">
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="back2">
+                                        <td class="right w-20">
+                                            Direccion&nbsp;:&nbsp;
+                                        </td>
+                                        <td colspan="3" class="left w-80">
+                                            <input type="text" readonly="readonly" autocomplete="off" class="form-control input left w-99" name="direccion" id="direccion" value="{{venta.direccion}}">
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="back1">
+                                        <td class="right w-20">
+                                            Fecha&nbsp;:&nbsp;
+                                        </td>
+                                        <td colspan="3" class="left w-80">
+                                            <input name="fecha_preventa" id="fecha_preventa" value="{{fecha_preventa}}" type="text" class="form-control input w-30 left" readonly="readonly">
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <th colspan="4" class="center w-100">
+                                            Lentes / Gafas
+                                        </th>
+                                    </tr>
+                                    
+                                    <tr class="back2">
+                                        <td class="right w-20">
+                                            T Montura&nbsp;:&nbsp;
+                                        </td>
+                                        <td colspan="3" class="left w-80">
+                                            <input type="hidden" name="tipo_montura" id="tipo_montura" value="{{tipo_montura.tipo_montura_id}}" />
+                                            <input type="text" autocomplete="off" id="tb2_tipo_montura" class="form-control input search left w-99" value="{% if tipo_montura.tipo_montura != '' %}{{tipo_montura.proveedor_id.proveedor}} - {{tipo_montura.tipo_montura}}{% endif %}" />
+                                            {% if operation_x == 'pasar_venta' %}
+                                            <script type="text/javascript"> new autosuggest(suggest_custom_array_2, "tb2_tipo_montura", null, function (index, control) { ventaSeleccionMontura('tipo_montura', control.keywords[index], control.values[index]); });
+                                            </script>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- <tr class="back1">
+                                        <td class="right w-20">
+                                            Precio&nbsp;:&nbsp;
+                                        </td>
+                                        <td colspan="3" class="left w-80">
+                                            <input type="text" id="tipo_montura_precio" name="tipo_montura_precio" class="form-control input right w-25" value="{{venta.precio_montura}}" autocomplete="off" readonly="readonly" onchange="ventaCalcularPrecio();"> Bs.
+                                        </td>
+                                    </tr> -->
+                                    <input type="hidden" id="tipo_montura_precio" name="tipo_montura_precio" value="{{venta.precio_montura}}">
+                                    
+                                    <tr class="back1">
+                                        <td class="right w-20">
+                                            Montura&nbsp;:&nbsp;
+                                        </td>
+                                        <td colspan="3" class="left w-80">
+                                            <div id="div_montura_stock">
+                                            {% with cantidad=cantidad_stock stock_monturas=stock_monturas %}
+                                            {% include 'ventas/stock_monturas.html' %}
+                                            {% endwith %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="back1" id="div_montura_stock">
+                                        <td class="right w-20">
+                                            Material&nbsp;:&nbsp;
+                                        </td>
+                                        <td colspan="3" class="left w-80">
+                                            <select class="form-control input w-99 select2" name="materiales_select" id="materiales_select" multiple="multiple" data-placeholder="Material" onchange="ventaCheckMaterialPrecio();">
+                                                {% for material in materiales_lista %}
+                                                {% with is_select=material|check_material_select:materiales_select %}
+                                                <option value="{{material.material_id}}" {% if is_select == 1 %}selected{% endif %}>{{material.material}}</option>
+                                                {% endwith %}
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- <tr class="back1">
+                                        <td class="right w-20">
+                                            Precio&nbsp;:&nbsp;
+                                        </td>
+                                        <td colspan="3" class="left w-80">
+                                            <input type="text" id="material_precio" name="material_precio" class="form-control input right w-25" value="{{venta.precio_material}}" autocomplete="off" readonly="readonly" onchange="ventaCalcularPrecio();"> Bs.
+                                        </td>
+                                    </tr> -->
+                                    <input type="hidden" id="material_precio" name="material_precio" value="{{venta.precio_material}}">
+                                    
+                                    <tr class="back1">
+                                        <td class="right w-20">
+                                            Laboratorio&nbsp;:&nbsp;
+                                        </td>
+                                        <td colspan="3" class="left w-80">
+                                            <select {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} name="laboratorio_id" id="laboratorio_id" class="form-control h-35 input w-90">
+                                                <option value="0">---</option>
+                                                {% for laboratorio in laboratorios_lista %}
+                                                <option value="{{laboratorio.laboratorio_id}}" {% if venta.laboratorio_id == laboratorio.laboratorio_id %}selected{% endif %}>{{laboratorio.laboratorio}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="back1">
+                                        <td class="right w-20">
+                                            Tecnico&nbsp;:&nbsp;
+                                        </td>
+                                        <td colspan="3" class="left w-80">
+                                            <select {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} name="tecnico_id" id="tecnico_id" class="form-control h-35 input w-90">
+                                                <option value="0">---</option>
+                                                {% for tecnico in tecnicos_lista %}
+                                                <option value="{{tecnico.tecnico_id}}" {% if venta.tecnico_id == tecnico.tecnico_id %}selected{% endif %}>{{tecnico.tecnico}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="back1">
+                                        <td class="right w-20">
+                                            Oftalmologo&nbsp;:&nbsp;
+                                        </td>
+                                        <td colspan="3" class="left w-80">
+                                            <select {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} name="oftalmologo_id" id="oftalmologo_id" class="form-control h-35 input w-90">
+                                                <option value="0">---</option>
+                                                {% for oftalmologo in oftalmologos_lista %}
+                                                <option value="{{oftalmologo.oftalmologo_id}}" {% if venta.oftalmologo_id == oftalmologo.oftalmologo_id %}selected{% endif %}>{{oftalmologo.oftalmologo}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="back2">
+                                        <td class="right w-20">
+                                            Nota&nbsp;:&nbsp;
+                                        </td>
+                                        <td colspan="3" class="left w-80">
+                                            <input type="text" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} autocomplete="off" class="form-control input left w-99" name="nota" id="nota" value="{{venta.nota}}">
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <td colspan="4" class="center w-100">
+                                            <div class="row w-100">
+                                                <div class="col-sm-6 center">
+                                                 <table class="tablec w-100">
+                                                     <tr>
+                                                         <th colspan="5" class="w-100 center">
+                                                             MEDIDAS LEJOS
+                                                         </th>
+                                                     </tr>
+                                                     <tr>
+                                                         <th rowspan="2" class="w-20 right">
+                                                             O.<br>
+                                                             D.
+                                                         </th>
+                                                         <td class="w-20 center">
+                                                             <b>Esf</b>
+                                                         </td>
+                                                         <td class="w-20 center">
+                                                             <b>Cli</b>
+                                                         </td>
+                                                         <td class="w-20 center">
+                                                             <b>Eje</b>
+                                                         </td>
+                                                         <td rowspan="4" class="w-20 center">
+                                                             <b>D.I.</b><br>
+                                                             <input type="text" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} class="form-control input right w-99" name="lejos_di" id="lejos_di" value="{{venta.lejos_di}}" autocomplete="off" onkeyup="validarNumeroPunto(this);"> 
+                                                         </td>
+                                                     </tr>
+                                                     <tr>
+                                                         <td class="w-20 center">
+                                                             <input type="text" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} class="form-control input right w-99" name="lejos_od_esf" id="lejos_od_esf" value="{{venta.lejos_od_esf}}" autocomplete="off" onkeyup="validarNumeroPunto(this);"> 
+                                                         </td>
+                                                         <td class="w-20 center">
+                                                             <input type="text" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} class="form-control input right w-99" name="lejos_od_cli" id="lejos_od_cli" value="{{venta.lejos_od_cli}}" autocomplete="off" onkeyup="validarNumeroPunto(this);"> 
+                                                         </td>
+                                                         <td class="w-20 center">
+                                                             <input type="text" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} class="form-control input right w-99" name="lejos_od_eje" id="lejos_od_eje" value="{{venta.lejos_od_eje}}" autocomplete="off" onkeyup="validarNumeroPunto(this);">
+                                                         </td> 
+                                                     </tr>
+                                                     <tr>
+                                                         <th rowspan="2" class="w-20 right">
+                                                             O.<br>
+                                                             I.
+                                                         </th>
+                                                         <td class="w-20 center">
+                                                             <b>Esf</b>
+                                                         </td>
+                                                         <td class="w-20 center">
+                                                             <b>Cli</b>
+                                                         </td>
+                                                         <td class="w-20 center">
+                                                             <b>Eje</b>
+                                                         </td>
+                                                     </tr>
+                                                     <tr>
+                                                         <td class="w-20 center">
+                                                             <input type="text" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} class="form-control input right w-99" name="lejos_oi_esf" id="lejos_oi_esf" value="{{venta.lejos_oi_esf}}" autocomplete="off" onkeyup="validarNumeroPunto(this);">
+                                                         </td>
+                                                         <td class="w-20 center">
+                                                             <input type="text" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} class="form-control input right w-99" name="lejos_oi_cli" id="lejos_oi_cli" value="{{venta.lejos_oi_cli}}" autocomplete="off" onkeyup="validarNumeroPunto(this);"> 
+                                                         </td>
+                                                         <td class="w-20 center">
+                                                             <input type="text" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} class="form-control input right w-99" name="lejos_oi_eje" id="lejos_oi_eje" value="{{venta.lejos_oi_eje}}" autocomplete="off" onkeyup="validarNumeroPunto(this);">
+                                                         </td>
+                                                     </tr>
+                                                 </table>
+                                                </div>
+                                                <div class="col-sm-6 center">
+                                                 <table class="tablec w-100">
+                                                     <tr>
+                                                         <th colspan="5" class="w-100 center">
+                                                             MEDIDAS CERCA
+                                                         </th>
+                                                     </tr>
+                                                     <tr>
+                                                         <th rowspan="2" class="w-20 right">
+                                                             O.<br>
+                                                             D.
+                                                         </th>
+                                                         <td class="w-20 center">
+                                                             <b>Esf</b>
+                                                         </td>
+                                                         <td class="w-20 center">
+                                                             <b>Cli</b>
+                                                         </td>
+                                                         <td class="w-20 center">
+                                                             <b>Eje</b>
+                                                         </td>
+                                                         <td rowspan="4" class="w-20 center">
+                                                             <b>D.I.</b><br>
+                                                             <input type="text" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} class="form-control input right w-99" name="cerca_di" id="cerca_di" value="{{venta.cerca_di}}" autocomplete="off" onkeyup="validarNumeroPunto(this);">
+                                                         </td>
+                                                     </tr>
+                                                     <tr>
+                                                         <td class="w-20 center">
+                                                             <input type="text" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} class="form-control input right w-99" name="cerca_od_esf" id="cerca_od_esf" value="{{venta.cerca_od_esf}}" autocomplete="off" onkeyup="validarNumeroPunto(this);"> 
+                                                         </td>
+                                                         <td class="w-20 center">
+                                                             <input type="text" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} class="form-control input right w-99" name="cerca_od_cli" id="cerca_od_cli" value="{{venta.cerca_od_cli}}" autocomplete="off" onkeyup="validarNumeroPunto(this);"> 
+                                                         </td>
+                                                         <td class="w-20 center">
+                                                             <input type="text" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} class="form-control input right w-99" name="cerca_od_eje" id="cerca_od_eje" value="{{venta.cerca_od_eje}}" autocomplete="off" onkeyup="validarNumeroPunto(this);">
+                                                         </td>
+                                                         
+                                                     </tr>
+                                                     <tr>
+                                                         <th rowspan="2" class="w-20 right">
+                                                             O.<br>
+                                                             I.
+                                                         </th>
+                                                         <td class="w-20 center">
+                                                             <b>Esf</b>
+                                                         </td>
+                                                         <td class="w-20 center">
+                                                             <b>Cli</b>
+                                                         </td>
+                                                         <td class="w-20 center">
+                                                             <b>Eje</b>
+                                                         </td>
+                                                     </tr>
+                                                     <tr>
+                                                         <td class="w-20 center">
+                                                             <input type="text" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} class="form-control input right w-99" name="cerca_oi_esf" id="cerca_oi_esf" value="{{venta.cerca_oi_esf}}" autocomplete="off" onkeyup="validarNumeroPunto(this);"> 
+                                                         </td>
+                                                         <td class="w-20 center">
+                                                             <input type="text" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} class="form-control input right w-99" name="cerca_oi_cli" id="cerca_oi_cli" value="{{venta.cerca_oi_cli}}" autocomplete="off" onkeyup="validarNumeroPunto(this);"> 
+                                                         </td>
+                                                         <td class="w-20 center">
+                                                             <input type="text" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} class="form-control input right w-99" name="cerca_oi_eje" id="cerca_oi_eje" value="{{venta.cerca_oi_eje}}" autocomplete="off" onkeyup="validarNumeroPunto(this);">
+                                                         </td>
+                                                     </tr>
+                                                 </table>
+                                                 </div>
+                                            </div>
+                                        </td> 
+                                     </tr>
+                                    
+                                     <tr class="back2">
+                                        <td colspan="4" class="center w-100">
+                                            &nbsp;
+                                        </td>
+                                    </tr>
+                                    
+                                </table>
+                                
+                                <div id="div_listap" style="display: {% if operation_x == 'add' %}{% endif %};">
+                                    <table class="table3 w-100">
+                                        <tr class="back1">
+                                            <td colspan="2" class="w-100 right">
+                                                Precio : <input type="text" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} onkeyup="ventasCambiaPrecio();" class="form-control input right w-20" name="total_pedido" id="total_pedido" value="{{venta.subtotal}}" autocomplete="off"> Bs.<br>
+                                                
+                                                &#37; Desc. <input type="text" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} autocomplete="off" class="form-control input right w-20" name="porcentaje_descuento" id="porcentaje_descuento" value="{{venta.porcentaje_descuento}}" onkeyup="validarNumeroPunto(this); calcularPorcentajeDescuentoVenta(); totalPedidoPreVenta('');">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+                                                Desc. <input type="text" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} autocomplete="off" class="form-control input right w-20" name="descuento" id="descuento" value="{{venta.descuento}}" onkeyup="validarNumeroPunto(this); totalPedidoPreVenta('descuento');"> Bs.<br>
+                                                
+                                                Total : <input type="text" class="form-control input right w-20" name="total_venta" id="total_venta" value="{{venta.total}}" readonly="readonly"> Bs.
+                                                
+                                                <br>                            
+                                                A cuenta : <input type="text" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} class="form-control input right w-20" name="a_cuenta" id="a_cuenta" autocomplete="off" onkeyup="validarNumeroPunto(this); totalPedidoPreVenta('descuento');" value="{{venta.a_cuenta}}"> Bs.
+                                                
+                                                <br>                            
+                                                Saldo : <input type="text" class="form-control input right w-20" name="saldo" id="saldo" value="{{venta.saldo}}" readonly="readonly"> Bs.
+                                            </td>
+                                        </tr>
+                                        
+                                        
+                                        <tr class="back1">
+                                            <td colspan="2" class="center w-100">&nbsp;</td>
+                                        </tr>
+                                        
+                                        <tr class="back2">
+                                            <td class="w-20 right">
+                                                Venta :&nbsp;
+                                            </td>
+                                            <td class="w-80 left">
+                                                <select name="tipo_venta" onchange="ventaSelectTipoVenta();" id="tipo_venta" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} class="form-control input h-35 w-30">
+                                                    <option value="contado" {% if venta.plan_pago == 0 %}selected{% endif %}>Contado</option>
+                                                    <option value="planpagos" {% if venta.plan_pago == 1 %}selected{% endif %}>PlanPagos</option>
+                                                </select>
+                                                &nbsp;
+                                                Caja : {{caja_usuario.caja}}
+                                            </td>
+                                        </tr>
+                                        
+                                        <tr class="back1">
+                                            <td class="w-20 right">
+                                                <div id="div_planpagos_1" style="display: {% if venta.plan_pago == 0 %}none{% endif %};">Inicio :&nbsp;</div>
+                                            </td>
+                                            <td class="w-80 left">
+                                                <div id="div_planpagos_2" style="display: {% if venta.plan_pago == 0 %}none{% endif %};">
+                                                    <input name="fecha_planpagos" id="fecha_planpagos" value="{{fecha_actual}}" type="text" class="form-control input w-30 left" readonly="readonly"> &nbsp;
+                                                    <script type="text/javascript">
+                                                        var foopicker = new FooPicker({
+                                                            id: 'fecha_planpagos',
+                                                            dateFormat: 'dd-MMM-yyyy'
+                                                        });
+                                                    </script>
+                                                    Cuotas : <input type="text" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} autocomplete="off" value="{{plan_pagos.numero_cuotas}}" class="form-control input right w-10" name="cuotas_planpagos" id="cuotas_planpagos" onkeyup="validarNumero(this);"> &nbsp;
+                                                    Cada :  <input type="text" {% if operation_x == 'pasar_venta_anular' %}readonly="readonly"{% endif %} autocomplete="off" value="{{plan_pagos.tiempo_dias}}" class="form-control input right w-10" name="dias_planpagos" id="dias_planpagos" onkeyup="validarNumero(this);"> dias
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        
+                                        {% if operation_x == "pasar_venta_anular" %}
+                                        <tr class="back2">
+                                            <td class="w-20 right">
+                                                Motivo :&nbsp;
+                                            </td>
+                                            <td class="w-80 left">
+                                                <input type="text" class="form-control input w-90" onkeyup="txtValid(this);" onblur="txtValid(this);" autocomplete="off" value="" maxlength="250" id="motivo_anula" name="motivo_anula">
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+
+                                        <tr class="back2">
+                                            <td colspan="2" class="center w-100">&nbsp;</td>
+                                        </tr>
+                                        <tr class="back1">
+                                            <td colspan="2" class="center w-100">
+                                                {% if operation_x == "pasar_venta" %}
+                                                <button class="btn btn-secondary btn-sm" name="button_cancel" onclick="backWindow();">
+                                                    <i class="nav-icon fas fa-arrow-alt-circle-left"></i>&nbsp;&nbsp;Cancelar
+                                                </button>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                <button class="btn btn-primary btn-sm" name="add_button" onclick="sendFormVenta('pasar_venta', '');">
+                                                    <i class="nav-icon fas fa-save"></i> Confirmar Venta
+                                                </button>
+                                                <input type="hidden" name="pasar_venta_x" value="acc">
+                                                <input type="hidden" name="control_form" value="{{control_form}}">
+                                                <input type="hidden" name="operation" value="{{operation}}">
+                                                {% endif %}
+                                                
+                                                {% if operation_x == "pasar_venta_anular" and puede_anular == 1 %}
+                                                <input type="button" name="button_cancel" value="Cancelar" class="btn btn-secondary btn-sm" onclick="backWindow();">
+                                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                <input type="hidden" name="control_form" value="txt|2|S|motivo_anula|Motivo Anulacion">
+                                                <input type="hidden" name="anular_x" value="acc">
+                                                <input type="hidden" name="operation" value="{{operation}}">
+                                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                <input type="button" name="add_button" value="&nbsp;Anular&nbsp;" class="btn btn-primary btn-sm" onclick="sendFormVenta('pasar_venta_anular', 'esta Venta');">
+                                                {% endif %}
+                                                <input type="hidden" name="id" value="{{id}}">
+                                                <input type="hidden" id="url_main" value="{{url_main}}">
+                                                <input type="hidden" id="url_add" value="{{url_add}}">
+                                                <input type="hidden" id="operation_x" name="operation_x" value="{{operation_x}}">
+                                                <input type="hidden" id="module_x" name="module_x" value="{{module_x}}">
+                                                <input type="hidden" name="almacen_id" id="almacen_id" value="{{almacen.almacen_id}}">
+                                            </td>
+                                        </tr>
+
+                                    </table>
+                                </div>
+                            </form>
+                        <!--fin primer tab-->
+                        </div>
+                            
+                        <div class="tab-pane fade" id="custom-tabs-one-imagenes" role="tabpanel" aria-labelledby="custom-tabs-one-imagenes-tab">
+                            <!--segundo tabl-->
+                            <div id="div_ventas_imagenes">
+                            {% with cliente_id=venta.cliente_id.cliente_id id=id nombres=venta.nombres apellidos=venta.apellidos imagenes=session_imagenes module_x=module_x %}
+                            {% include 'ventas/ventas_imagenes.html' %}
+                            {% endwith %}
+                            </div>
+                            <!--fin segundo tab-->
+                        </div>
+                        
+                        <div class="tab-pane fade" id="custom-tabs-one-historias" role="tabpanel" aria-labelledby="custom-tabs-one-historias-tab">
+                            <!--tercer tabl-->
+                            <div id="div_ventas_historias">
+                            {% with id=id module_x=module_x historias=historias nombres=venta.nombres apellidos=venta.apellidos %}
+                            {% include 'ventas/ventas_historias.html' %}
+                            {% endwith %}
+                            </div>
+                            <!--fin tercer tab-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
+        <br>
+        <br>
+        <br>
+    </div>
+    <!--fin div contenido-->
+    <div class="col-sm-2">&nbsp;</div>
+</div>
+<!--fin div contenedor-->
+
+<script>
+    $(function () {
+      //Initialize Select2 Elements
+      $('.select2').select2()
+
+      //Initialize Select2 Elements
+      $('.select2bs4').select2({
+        theme: 'bootstrap4'
+      })
+    });
+  </script>
+  
+<form name="form_cancel" method="post" action="{% url 'index' %}">
+    {% csrf_token %}
+</form>
+
+<form name="form_print" method="post" action="{% url 'index' %}" target="_blank">
+    {% csrf_token %}
+    <input type="hidden" name="module_x" value="{{module_x}}">
+    <input type="hidden" name="operation_x" value="">
+    <input type="hidden" name="id" value="">
+</form>
+<form name="form_operation" method="post" action="{% url 'index' %}">
+    {% csrf_token %}
+    <input type="hidden" name="module_x" value="{{module_x}}">
+    <input type="hidden" name="module_x2" value="{{module_x2}}">
+    <input type="hidden" name="module_x3" value="{{module_x3}}">
+    
+    <input type="hidden" name="operation_x" value="{{operation_x}}">
+    <input type="hidden" name="operation_x2" value="{{operation_x2}}">
+    <input type="hidden" name="operation_x3" value="{{operation_x3}}">
+    
+    <input type="hidden" name="id" value="{{id}}">
+    <input type="hidden" name="id2" value="{{id2}}">
+    <input type="hidden" name="id3" value="{{id3}}">
+</form>

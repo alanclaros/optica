@@ -1,14 +1,9 @@
 
 function sendSearchPunto() {
-	div_modulo = $("#div_block_content");
 	sendFormObject('search', div_modulo);
 }
 
 function sendFormPunto(operation, message) {
-	//modal function
-	modalFunction = document.getElementById('modalFunctionSuccess');
-	modalF = $('#modalForm');
-
 	switch (operation) {
 		case ('add'):
 			resValidation = verifyForm();
@@ -60,9 +55,6 @@ function sendFormPunto(operation, message) {
 }
 
 function puntoSaveForm() {
-	modalF = $('#modalForm');
-	div_modulo = $("#div_block_content");
-
 	modalF.modal('toggle');
 	document.forms['formulario'].elements['add_button'].disabled = true;
 	document.forms['formulario'].elements['button_cancel'].disabled = true;
@@ -71,14 +63,10 @@ function puntoSaveForm() {
 }
 
 function puntoWarning() {
-	modalF = $('#modalForm');
 	modalF.modal('toggle');
 }
 
 function puntoDelete() {
-	modalF = $('#modalForm');
-	div_modulo = $("#div_block_content");
-
 	modalF.modal('toggle');
 	document.forms['formulario'].elements['add_button'].disabled = true;
 	document.forms['formulario'].elements['button_cancel'].disabled = true;
@@ -120,16 +108,8 @@ function guardarPuntosAlmacenes(formulario, add_button, button_cancel) {
 
 		div_modulo.html(imagen_modulo);
 
-		let para_cargar = url_empresa;
-		if (para_cargar != '') {
-			para_cargar = url_empresa + '/';
-		}
-		// div_modulo.load(para_cargar, datos_operation, function () {
-		// 	//termina de cargar la ventana
-		// });
-
 		$.ajax({
-			url: para_cargar,
+			url: hostURL,
 			type: 'post',
 			data: fd,
 			contentType: false,

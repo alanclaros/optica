@@ -36,7 +36,7 @@ def cabecera(canvas, posY=270.5, **datos):
     if posY == 270.5:
         # hoja vertical
         # logo
-        canvas.drawImage(datos['logo'], 190*mm, (posY-12.5)*mm, width=50, height=50)
+        canvas.drawImage(datos['logo'], 184*mm, (posY-12.5)*mm, width=77, height=35)
 
         # fecha impresion
         textobject.setFont("Helvetica", 9)
@@ -45,7 +45,7 @@ def cabecera(canvas, posY=270.5, **datos):
     else:
         # hoja horizontal
         # logo
-        canvas.drawImage(datos['logo'], 250*mm, (posY-12.5)*mm, width=50, height=50)
+        canvas.drawImage(datos['logo'], 244*mm, (posY-12.5)*mm, width=77, height=35)
 
         # fecha impresion
         textobject.setFont("Helvetica", 9)

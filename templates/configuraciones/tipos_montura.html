@@ -75,7 +75,7 @@
             {% for objeto in lista %}
             <tr class="back{{forloop.counter|back_class_color:objeto.status_id.status_id}}">
                 <td class="left w-70">
-                    {{objeto.tipo_montura}}
+                    {{objeto.tipo_montura}} ({{objeto.costo}} Bs.)
                 </td>
                 <td class="left w-16">
                     {{objeto.codigo}}

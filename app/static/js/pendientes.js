@@ -1,5 +1,4 @@
-//modal function
-modalFunction = document.getElementById('modalFunctionSuccess');
-modalF = $('#modalForm');
-div_modulo = $("#div_block_content");
 
+function sendSearchPendientes() {
+    sendFormObject('search', div_modulo);
+}

@@ -15,7 +15,6 @@ from utils.permissions import get_user_permission_operation, get_permissions_use
 # clases por modulo
 from controllers.inventarios.IngresosAlmacenController import IngresosAlmacenController
 from controllers.ListasController import ListasController
-from controllers.productos.ProductosController import ProductosController
 
 # reportes
 import io
@@ -23,14 +22,14 @@ from django.http import FileResponse
 from reportes.inventarios.rptIngresoAlmacen import rptIngresoAlmacen
 
 ingreso_almacen_controller = IngresosAlmacenController()
-
+lista_controller = ListasController()
 
 # ingresos almacen
+
+
 @user_passes_test(lambda user: get_user_permission_operation(user, settings.MOD_INGRESOS_ALMACEN, 'lista'), 'without_permission')
 def ingresos_almacen_index(request):
     permisos = get_permissions_user(request.user, settings.MOD_INGRESOS_ALMACEN)
-
-    lista_controller = ListasController()
 
     # operaciones
     if 'operation_x' in request.POST.keys():
@@ -113,13 +112,7 @@ def ingresos_almacen_index(request):
 @user_passes_test(lambda user: get_user_permission_operation(user, settings.MOD_INGRESOS_ALMACEN, 'adicionar'), 'without_permission')
 def ingresos_almacen_add(request):
 
-    producto_controller = ProductosController()
-    lista_controller = ListasController()
-    system_settings = get_system_settings()
-    vender_fracciones = 'no'
-
     # guardamos
-    existe_error = False
     if 'add_x' in request.POST.keys():
         if ingreso_almacen_controller.save(request, type='add'):
             request.session['nuevo_mensaje'] = {'type': 'success', 'title': 'Ingresos Almacen!', 'description': 'Se agrego el nuevo ingreso'}
@@ -127,17 +120,19 @@ def ingresos_almacen_add(request):
             return True
         else:
             # error al adicionar
-            existe_error = True
             messages.add_message(request, messages.SUCCESS, {'type': 'warning', 'title': 'Ingresos Almacen!', 'description': ingreso_almacen_controller.error_operation})
 
-    # lista de productos
-    lista_productos = producto_controller.lista_productos()
+    # lista de tipos de montura
+    tipos_montura_lista = lista_controller.get_lista_tipos_montura(request.user)
 
     # restricciones de columna
     db_tags = {}
 
+    user_perfil = apps.get_model('permisos', 'UsersPerfiles').objects.get(user_id=request.user)
+    punto = apps.get_model('configuraciones', 'Puntos').objects.get(pk=user_perfil.punto_id)
+
     # lista de almacenes
-    lista_almacenes = lista_controller.get_lista_almacenes(request.user, None)
+    lista_almacenes = lista_controller.get_lista_almacenes(request.user, punto.sucursal_id)
 
     # cantidad de filas
     filas = []
@@ -146,13 +141,13 @@ def ingresos_almacen_add(request):
 
     context = {
         'url_main': '',
-        'lista_productos': lista_productos,
+        'tipos_montura_lista': tipos_montura_lista,
         'lista_almacenes': lista_almacenes,
         'filas': filas,
         'db_tags': db_tags,
         'control_form': ingreso_almacen_controller.control_form,
         'js_file': ingreso_almacen_controller.modulo_session,
-        'vender_fracciones': vender_fracciones,
+        'vender_fracciones': 'no',
 
         'autenticado': 'si',
 
@@ -216,8 +211,12 @@ def ingresos_almacen_nullify(request, registro_id):
     # restricciones de columna
     db_tags = {}
 
+    user_perfil = apps.get_model('permisos', 'UsersPerfiles').objects.get(user_id=request.user)
+    punto = apps.get_model('configuraciones', 'Puntos').objects.get(pk=user_perfil.punto_id)
+
     # lista de almacenes
-    lista_almacenes = lista_controller.get_lista_almacenes(request.user, None)
+    lista_almacenes = lista_controller.get_lista_almacenes(request.user, punto.sucursal_id)
+
     # detalles
     detalles = RegistrosDetalles.objects.filter(registro_id=registro).order_by('registro_detalle_id')
 

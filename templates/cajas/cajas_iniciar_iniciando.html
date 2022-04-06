@@ -95,10 +95,10 @@
     <div class="col-sm-2">&nbsp;</div>
 </div>
 <!--fin div contenedor-->
-<form name="form_cancel" method="post" action="{{url_main}}">
+<form name="form_cancel" method="post" action="{% url 'index' %}">
     {% csrf_token %}
 </form>
-<form name="form_operation" method="post" action="{{url_main}}">
+<form name="form_operation" method="post" action="{% url 'index' %}">
     {% csrf_token %}
     <input type="hidden" name="module_x" value="{{module_x}}">
     <input type="hidden" name="module_x2" value="{{module_x2}}">

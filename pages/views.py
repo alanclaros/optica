@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.shortcuts import render
 from django.conf import settings
 
@@ -6,12 +7,13 @@ from src.configuraciones.configuraciones import configuraciones_index
 from src.configuraciones.lineas import lineas_index
 from src.configuraciones.materiales import materiales_index
 from src.configuraciones.tipos_montura import tipos_montura_index
-from src.configuraciones.disenio_lentes import disenio_lentes_index
+from src.configuraciones.tecnicos import tecnicos_index
 from src.configuraciones.sucursales import sucursales_index
 from src.configuraciones.puntos import puntos_index
-from src.configuraciones.colores import colores_index
-from src.configuraciones.marcas import marcas_index
+from src.configuraciones.laboratorios import laboratorios_index
+from src.configuraciones.oftalmologos import oftalmologos_index
 from src.configuraciones.proveedores import proveedores_index
+from src.configuraciones.usuarios import usuarios_index
 
 # clientes
 from src.clientes.clientes import clientes_index
@@ -32,6 +34,14 @@ from src.inventarios.ingresos_almacen import ingresos_almacen_index
 from src.inventarios.salidas_almacen import salidas_almacen_index
 from src.inventarios.movimientos_almacen import movimientos_almacen_index
 
+# ventas
+from src.ventas.ventas import ventas_index
+from src.ventas.pendientes import pendientes_index
+from src.ventas.reservas import reservas_index
+from src.ventas.pedidos import pedidos_cliente_index
+# reportes
+from src.reportes.reportes import reportes_index
+
 # password
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
@@ -39,8 +49,9 @@ from django.contrib.auth.hashers import check_password
 from decimal import Decimal
 
 # fechas
-from utils.dates_functions import get_date_to_db, get_date_show, get_date_system
-from utils.permissions import get_system_settings
+from utils.dates_functions import fecha_periodo, get_date_to_db, get_date_show, get_date_system, get_calendario_actividades
+from utils.dates_functions import next_periodo, previous_periodo
+from utils.permissions import get_system_settings, get_user_permission_operation
 
 # mensaje html
 import smtplib
@@ -53,6 +64,14 @@ from django.contrib import messages
 # cursor
 from django.db import connection
 
+# xls
+import openpyxl
+import os
+import zipfile
+from django.http import FileResponse
+
+from pages.utils import reemplazar_codigo_html, get_lista_session, get_lista_cuadros, link_linea, lista_productos
+
 
 def index(request):
     """pagina index"""
@@ -60,9 +79,9 @@ def index(request):
     if 'module_x' in request.POST.keys():
         module_id = int(request.POST['module_x'])
 
-        # # cambiar password
-        # if module_id == 1000:
-        #     return cambiar_password(request)
+        # cambiar password
+        if module_id == 1000:
+            return cambiar_password(request)
 
         if module_id == settings.MOD_CONFIGURACIONES_SISTEMA:
             return configuraciones_index(request)
@@ -76,14 +95,14 @@ def index(request):
         if module_id == settings.MOD_TIPOS_MONTURA:
             return tipos_montura_index(request)
 
-        if module_id == settings.MOD_DISENIO_LENTES:
-            return disenio_lentes_index(request)
+        if module_id == settings.MOD_LABORATORIOS:
+            return laboratorios_index(request)
 
-        if module_id == settings.MOD_COLORES:
-            return colores_index(request)
+        if module_id == settings.MOD_TECNICOS:
+            return tecnicos_index(request)
 
-        if module_id == settings.MOD_MARCAS:
-            return marcas_index(request)
+        if module_id == settings.MOD_OFTALMOLOGOS:
+            return oftalmologos_index(request)
 
         if module_id == settings.MOD_PROVEEDORES:
             return proveedores_index(request)
@@ -94,8 +113,8 @@ def index(request):
         if module_id == settings.MOD_PUNTOS:
             return puntos_index(request)
 
-        # if module_id == settings.MOD_USUARIOS:
-        #     return usuarios_index(request)
+        if module_id == settings.MOD_USUARIOS:
+            return usuarios_index(request)
 
         # cajas
         # cajas
@@ -140,21 +159,27 @@ def index(request):
         if module_id == settings.MOD_MOVIMIENTOS_ALMACEN:
             return movimientos_almacen_index(request)
 
-        # # ventas
-        # if module_id == settings.MOD_VENTAS:
-        #     return ventas_index(request)
+        # ventas
+        if module_id == settings.MOD_VENTAS:
+            return ventas_index(request)
 
-        # # pendientes
-        # if module_id == settings.MOD_PENDIENTES:
-        #     return pendientes_index(request)
+        if module_id == settings.MOD_RESERVAS:
+            return reservas_index(request)
 
-        # # reportes
-        # if module_id == settings.MOD_REPORTES:
-        #     return reportes_index(request)
+        if module_id == settings.MOD_PEDIDOS:
+            return pedidos_cliente_index(request)
 
-        # # backup
-        # if module_id == settings.MOD_TABLAS_BACKUP:
-        #     return backup(request)
+        # pendientes
+        if module_id == settings.MOD_PENDIENTES:
+            return pendientes_index(request)
+
+        # reportes
+        if module_id == settings.MOD_REPORTES:
+            return reportes_index(request)
+
+        # backup
+        if module_id == settings.MOD_TABLAS_BACKUP:
+            return backup(request)
 
         context = {
             'module_id': module_id,
@@ -189,16 +214,20 @@ def index(request):
     status_activo = apps.get_model('status', 'Status').objects.get(pk=1)
     lista_lineas = apps.get_model('configuraciones', 'Lineas').objects.filter(status_id=status_activo, linea_principal=1).order_by('posicion')
     listado_lineas = []
+    listado_lineas_ids = ''
     for linea in lista_lineas:
         listado_lineas.append(linea)
+        listado_lineas_ids += str(linea.linea_id) + ','
         # verficamos sus sublineas
         listado2 = apps.get_model('configuraciones', 'Lineas').objects.filter(status_id=status_activo, linea_superior_id=linea.linea_id).order_by('posicion')
         for linea2 in listado2:
             listado_lineas.append(linea2)
+            listado_lineas_ids += str(linea2.linea_id) + ','
             # tercer nivel
             listado3 = apps.get_model('configuraciones', 'Lineas').objects.filter(status_id=status_activo, linea_superior_id=linea2.linea_id).order_by('posicion')
             for linea3 in listado3:
                 listado_lineas.append(linea3)
+                listado_lineas_ids += str(linea3.linea_id) + ','
 
     listado = []
     cant_fila = 3
@@ -243,10 +272,15 @@ def index(request):
         listado.append(lista_fila)
 
     # listado de ofertas
+    #productos_ofertas = []
     productos_ofertas = lista_productos(request=request, oferta='1')
+
     # listado de mas vendidos
+    #productos_mas_vendidos = []
     productos_mas_vendidos = lista_productos(request=request, mas_vendido='1')
+
     # listado de novedades
+    #productos_novedades = []
     productos_novedades = lista_productos(request=request, novedad='1')
 
     context = {
@@ -276,20 +310,8 @@ def productos_inicio(request):
     else:
         autenticado = 'no'
 
-    try:
-        tipos_montura_select = request.session['productosinicio']['tipos_montura_select']
-        disenio_lentes_select = request.session['productosinicio']['disenio_lentes_select']
-        materiales_select = request.session['productosinicio']['materiales_select']
-        colores_select = request.session['productosinicio']['colores_select']
-        marcas_select = request.session['productosinicio']['marcas_select']
-
-        oferta = request.session['productosinicio']['oferta']
-        mas_vendido = request.session['productosinicio']['mas_vendido']
-        novedad = request.session['productosinicio']['novedad']
-
-    except Exception as ex:
-        # eliminamos la session
-        del request.session['productosinicio']
+    url_main = reverse('productos_inicio')
+    url_carrito = reverse('carrito')
 
     if 'showpid' in request.GET.keys():
         show_pid = request.GET['showpid'].strip()
@@ -377,10 +399,7 @@ def productos_inicio(request):
         request.session['productosinicio']['linea'] = 0
 
         request.session['productosinicio']['tipos_montura_select'] = ''
-        request.session['productosinicio']['disenio_lentes_select'] = ''
         request.session['productosinicio']['materiales_select'] = ''
-        request.session['productosinicio']['colores_select'] = ''
-        request.session['productosinicio']['marcas_select'] = ''
 
         request.session['productosinicio']['oferta'] = '0'
         request.session['productosinicio']['mas_vendido'] = '0'
@@ -390,32 +409,14 @@ def productos_inicio(request):
         request.session['productosinicio']['pagina'] = 1
         request.session['productosinicio']['pages_list'] = []
 
-    if 'search_producto_x' in request.POST.keys():
-        request.session['productosinicio']['producto'] = request.POST['producto'].strip()
-        request.session['productosinicio']['linea'] = 0
-
-        request.session['productosinicio']['tipos_montura_select'] = request.POST['tipos_montura_select'].strip()
-        request.session['productosinicio']['disenio_lentes_select'] = request.POST['disenio_lentes_select'].strip()
-        request.session['productosinicio']['materiales_select'] = request.POST['materiales_select'].strip()
-        request.session['productosinicio']['colores_select'] = request.POST['colores_select'].strip()
-        request.session['productosinicio']['marcas_select'] = request.POST['marcas_select'].strip()
-
-        request.session['productosinicio']['oferta'] = request.POST['oferta'].strip()
-        request.session['productosinicio']['mas_vendido'] = request.POST['mas_vendido'].strip()
-        request.session['productosinicio']['novedad'] = request.POST['novedad'].strip()
-
-        # pagina
-        request.session['productosinicio']['pagina'] = 1
+        request.session.modified = True
 
     if 'search_linea_x' in request.POST.keys():
         request.session['productosinicio']['linea'] = int(request.POST['linea'].strip())
-        request.session['productosinicio']['producto'] = ''
+        request.session['productosinicio']['producto'] = request.POST['producto'].strip()
 
         request.session['productosinicio']['tipos_montura_select'] = request.POST['tipos_montura_select'].strip()
-        request.session['productosinicio']['disenio_lentes_select'] = request.POST['disenio_lentes_select'].strip()
         request.session['productosinicio']['materiales_select'] = request.POST['materiales_select'].strip()
-        request.session['productosinicio']['colores_select'] = request.POST['colores_select'].strip()
-        request.session['productosinicio']['marcas_select'] = request.POST['marcas_select'].strip()
 
         request.session['productosinicio']['oferta'] = request.POST['oferta'].strip()
         request.session['productosinicio']['mas_vendido'] = request.POST['mas_vendido'].strip()
@@ -423,6 +424,7 @@ def productos_inicio(request):
 
         # pagina
         request.session['productosinicio']['pagina'] = 1
+        request.session.modified = True
 
     # si seleccionana una pagina
     if 'pagina' in request.POST.keys():
@@ -442,12 +444,14 @@ def productos_inicio(request):
     # linea1
     linea1 = lista_lineas_aux.first()
     lista_lineas = []
+    lista_lineas_ids = ''
     for linea in lista_lineas_aux:
         linea_obj = {}
         linea_obj['linea_id'] = linea.linea_id
         linea_obj['linea'] = linea.linea
         linea_obj['espacios'] = ''
         lista_lineas.append(linea_obj)
+        lista_lineas_ids += str(linea.linea_id) + ','
 
         # verificamos si tiene lineas inferiores
         lineas_inf1 = apps.get_model('configuraciones', 'Lineas').objects.filter(status_id=status_activo, linea_superior_id=linea.linea_id).order_by('posicion')
@@ -458,6 +462,7 @@ def productos_inicio(request):
             linea_obj['linea'] = linea_dato_inf1.linea
             linea_obj['espacios'] = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
             lista_lineas.append(linea_obj)
+            lista_lineas_ids += str(linea_dato_inf1.linea_id) + ','
 
             # verificamos lineas inferiores nivel2
             lineas_inf2 = apps.get_model('configuraciones', 'Lineas').objects.filter(status_id=status_activo, linea_superior_id=linea_dato_inf1.linea_id).order_by('posicion')
@@ -467,6 +472,7 @@ def productos_inicio(request):
                 linea_obj2['linea'] = linea_dato_inf2.linea
                 linea_obj2['espacios'] = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' * 2
                 lista_lineas.append(linea_obj2)
+                lista_lineas_ids += str(linea_dato_inf2.linea_id) + ','
 
                 # verificamos lineas inferiores nivel3
                 lineas_inf3 = apps.get_model('configuraciones', 'Lineas').objects.filter(status_id=status_activo, linea_superior_id=linea_dato_inf2.linea_id).order_by('posicion')
@@ -476,110 +482,23 @@ def productos_inicio(request):
                     linea_obj3['linea'] = linea_dato_inf3.linea
                     linea_obj3['espacios'] = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' * 3
                     lista_lineas.append(linea_obj3)
+                    lista_lineas_ids += str(linea_dato_inf3.linea_id) + ','
 
     # descripcion del producto
     txt_producto = ''
+    if len(lista_lineas_ids) > 0:
+        lista_lineas_ids = lista_lineas_ids[0:len(lista_lineas_ids)-1]
 
     tipos_montura_select = request.session['productosinicio']['tipos_montura_select']
-    disenio_lentes_select = request.session['productosinicio']['disenio_lentes_select']
     materiales_select = request.session['productosinicio']['materiales_select']
-    colores_select = request.session['productosinicio']['colores_select']
-    marcas_select = request.session['productosinicio']['marcas_select']
-
     oferta = request.session['productosinicio']['oferta']
     mas_vendido = request.session['productosinicio']['mas_vendido']
     novedad = request.session['productosinicio']['novedad']
-
-    #print('tipos montura: ', tipos_montura_select, ' disenio lentes: ', disenio_lentes_select, ' materiales: ', materiales_select, ' colores: ', colores_select, ' marcas: ', marcas_select)
-
-    if producto_busqueda == '':
-        if linea_id == 0:
-            lista_pro = lista_productos(request, linea_id=linea1.linea_id, producto_nombre='', oferta=oferta, mas_vendido=mas_vendido, novedad=novedad,
-                                        tipo_montura=tipos_montura_select, disenio_lente=disenio_lentes_select, material=materiales_select, color=colores_select, marca=marcas_select)
-            # txt_producto = linea1.proveedor_id.proveedor + ' - ' + linea1.linea
-            txt_producto = '<span class="link_lineas pointer" onclick="paginaInicio();">Inicio</span>' + link_linea(linea1.linea_id)
-        else:
-            lista_pro = lista_productos(request, linea_id=linea_id, producto_nombre='', oferta=oferta, mas_vendido=mas_vendido, novedad=novedad, tipo_montura=tipos_montura_select,
-                                        disenio_lente=disenio_lentes_select, material=materiales_select, color=colores_select, marca=marcas_select)
-            linea_actual = apps.get_model('configuraciones', 'Lineas').objects.get(pk=int(linea_id))
-            #txt_producto = linea_actual.proveedor_id.proveedor + ' - ' + linea_actual.linea
-            txt_producto = '<span class="link_lineas pointer" onclick="paginaInicio();">Inicio</span>' + link_linea(linea_actual.linea_id)
-    else:
-        lista_pro = lista_productos(request, linea_id=0, producto_nombre=producto_busqueda, oferta=oferta, mas_vendido=mas_vendido, novedad=novedad,
-                                    tipo_montura=tipos_montura_select, disenio_lente=disenio_lentes_select, material=materiales_select, color=colores_select, marca=marcas_select)
-        txt_producto = '<span class="link_lineas pointer" onclick="paginaInicio();">Inicio</span>' + ' / ' + producto_busqueda
-
-    url_main = reverse('productos_inicio')
-    url_carrito = reverse('carrito')
 
     # carrito de compras
     cantidad_cart = 0
     if 'productos_cart' in request.session.keys():
         cantidad_cart = len(request.session['productos_cart'])
-
-    # listado por defecto
-    # listado por defecto
-    status_activo = apps.get_model('status', 'Status').objects.get(pk=1)
-    tipos_montura_db = apps.get_model('configuraciones', 'TiposMontura').objects.filter(status_id=status_activo).order_by('tipo_montura')
-    disenio_lentes_db = apps.get_model('configuraciones', 'DisenioLentes').objects.filter(status_id=status_activo).order_by('disenio_lente')
-    materiales_db = apps.get_model('configuraciones', 'Materiales').objects.filter(status_id=status_activo).order_by('material')
-    colores_db = apps.get_model('configuraciones', 'Colores').objects.filter(status_id=status_activo).order_by('color')
-    marcas_db = apps.get_model('configuraciones', 'Marcas').objects.filter(status_id=status_activo).order_by('marca')
-
-    lista_tipos_montura_select = get_lista_session(request.session['productosinicio']['tipos_montura_select'])
-    lista_disenio_lentes_select = get_lista_session(request.session['productosinicio']['disenio_lentes_select'])
-    lista_materiales_select = get_lista_session(request.session['productosinicio']['materiales_select'])
-    lista_colores_select = get_lista_session(request.session['productosinicio']['colores_select'])
-    lista_marcas_select = get_lista_session(request.session['productosinicio']['marcas_select'])
-
-    color_borde_resaltado = '#46107F'
-    color_borde_normal = '#FFFFFF'
-
-    p_lista_tipos_montura = ''
-    p_lista_disenio_lentes = ''
-    p_lista_materiales = ''
-    p_lista_colores = ''
-    p_lista_marcas = ''
-
-    # tipos de montura
-    lista_tipos_montura = get_lista_cuadros('tipo_montura_id', request.session['productosinicio']['lista_tipos_montura'], lista_tipos_montura_select, color_borde_normal, color_borde_resaltado)
-    for aux_li in lista_tipos_montura:
-        p_lista_tipos_montura += str(aux_li['tipo_montura_id']) + ','
-    # ajustamos
-    if len(p_lista_tipos_montura) > 0:
-        p_lista_tipos_montura = p_lista_tipos_montura[0:len(p_lista_tipos_montura)-1]
-
-    # disenio lentes
-    lista_disenio_lentes = get_lista_cuadros('disenio_lente_id', request.session['productosinicio']['lista_disenio_lentes'], lista_disenio_lentes_select, color_borde_normal, color_borde_resaltado)
-    for aux_li in lista_disenio_lentes:
-        p_lista_disenio_lentes += str(aux_li['disenio_lente_id']) + ','
-    # ajustamos
-    if len(p_lista_disenio_lentes) > 0:
-        p_lista_disenio_lentes = p_lista_disenio_lentes[0:len(p_lista_disenio_lentes)-1]
-
-    # materiales
-    lista_materiales = get_lista_cuadros('material_id', request.session['productosinicio']['lista_materiales'], lista_materiales_select, color_borde_normal, color_borde_resaltado)
-    for aux_li in lista_materiales:
-        p_lista_materiales += str(aux_li['material_id']) + ','
-    # ajustamos
-    if len(p_lista_materiales) > 0:
-        p_lista_materiales = p_lista_materiales[0:len(p_lista_materiales)-1]
-
-    # colores
-    lista_colores = get_lista_cuadros('color_id', request.session['productosinicio']['lista_colores'], lista_colores_select, color_borde_normal, color_borde_resaltado)
-    for aux_li in lista_colores:
-        p_lista_colores += str(aux_li['color_id']) + ','
-    # ajustamos
-    if len(p_lista_colores) > 0:
-        p_lista_colores = p_lista_colores[0:len(p_lista_colores)-1]
-
-    # marcas
-    lista_marcas = get_lista_cuadros('marca_id', request.session['productosinicio']['lista_marcas'], lista_marcas_select, color_borde_normal, color_borde_resaltado)
-    for aux_li in lista_marcas:
-        p_lista_marcas += str(aux_li['marca_id']) + ','
-    # ajustamos
-    if len(p_lista_marcas) > 0:
-        p_lista_marcas = p_lista_marcas[0:len(p_lista_marcas)-1]
 
     # detalle del producto
     if 'id' in request.GET.keys() and 'producto' in request.GET.keys():
@@ -647,10 +566,7 @@ def productos_inicio(request):
                 dato_producto['producto_id'] = producto_r.producto_relacion_id.producto_id
 
                 dato_producto['tipo_montura_id'] = producto_r.producto_relacion_id.tipo_montura_id
-                dato_producto['disenio_lente_id'] = producto_r.producto_relacion_id.disenio_lente_id
                 dato_producto['material_id'] = producto_r.producto_relacion_id.material_id
-                dato_producto['color_id'] = producto_r.producto_relacion_id.color_id
-                dato_producto['marca_id'] = producto_r.producto_relacion_id.marca_id
                 dato_producto['novedad'] = producto_r.producto_relacion_id.novedad
                 dato_producto['mas_vendido'] = producto_r.producto_relacion_id.mas_vendido
                 dato_producto['oferta'] = producto_r.producto_relacion_id.oferta
@@ -701,74 +617,67 @@ def productos_inicio(request):
             'detalle_producto': 1,
 
             'autenticado': autenticado,
-            'lista_lineas': lista_lineas,
-            'linea_session': request.session['productosinicio']['linea'],
-            'producto_session': request.session['productosinicio']['producto'],
             'url_main': url_main,
             'url_carrito': url_carrito,
             'url_index': reverse('index'),
             'cantidad_cart': cantidad_cart,
-            'txt_producto': txt_producto,
 
             'productos_relacionados': listado,
 
             'producto': producto,
             'imagen1': imagen1,
             'productos_imagenes': productos_imagenes,
-
-            'lista_tipos_montura': lista_tipos_montura,
-            'lista_disenio_lentes': lista_disenio_lentes,
-            'lista_materiales': lista_materiales,
-            'lista_colores': lista_colores,
-            'lista_marcas': lista_marcas,
-
-            'p_lista_tipos_montura': p_lista_tipos_montura,
-            'p_lista_disenio_lentes': p_lista_disenio_lentes,
-            'p_lista_materiales': p_lista_materiales,
-            'p_lista_colores': p_lista_colores,
-            'p_lista_marcas': p_lista_marcas,
-
-            'oferta': oferta,
-            'mas_vendido': mas_vendido,
-            'novedad': novedad,
-
-            'color_borde_normal': color_borde_normal,
-            'color_borde_resaltado': color_borde_resaltado,
-
-            'tipos_montura_select': tipos_montura_select,
-            'disenio_lentes_select': disenio_lentes_select,
-            'materiales_select': materiales_select,
-            'colores_select': colores_select,
-            'marcas_select': marcas_select,
-
-            'tipos_montura_db': tipos_montura_db,
-            'disenio_lentes_db': disenio_lentes_db,
-            'materiales_db': materiales_db,
-            'colores_db': colores_db,
-            'marcas_db': marcas_db,
         }
 
         return render(request, 'pages/productos_inicio_detalle.html', context_p)
 
+    if producto_busqueda == '':
+        if linea_id == 0:
+            lista_pro = lista_productos(request, linea_id=linea1.linea_id, producto_nombre='', oferta=oferta, mas_vendido=mas_vendido, novedad=novedad,
+                                        tipo_montura=tipos_montura_select, material=materiales_select)
+            # txt_producto = linea1.proveedor_id.proveedor + ' - ' + linea1.linea
+            txt_producto = '<span class="link_lineas pointer" onclick="paginaInicio();">Inicio</span>' + link_linea(linea1.linea_id)
+        else:
+            lista_pro = lista_productos(request, linea_id=linea_id, producto_nombre='', oferta=oferta, mas_vendido=mas_vendido, novedad=novedad, tipo_montura=tipos_montura_select,
+                                        material=materiales_select)
+            linea_actual = apps.get_model('configuraciones', 'Lineas').objects.get(pk=int(linea_id))
+            #txt_producto = linea_actual.proveedor_id.proveedor + ' - ' + linea_actual.linea
+            txt_producto = '<span class="link_lineas pointer" onclick="paginaInicio();">Inicio</span>' + link_linea(linea_actual.linea_id)
+    else:
+        lista_pro = lista_productos(request, linea_id=0, producto_nombre=producto_busqueda, oferta=oferta, mas_vendido=mas_vendido, novedad=novedad,
+                                    tipo_montura=tipos_montura_select, material=materiales_select)
+        txt_producto = '<span class="link_lineas pointer" onclick="paginaInicio();">Inicio</span>' + ' / ' + producto_busqueda
+
+    # listado por defecto
+    lista_tipos_montura_select = get_lista_session(request.session['productosinicio']['tipos_montura_select'])
+    lista_materiales_select = get_lista_session(request.session['productosinicio']['materiales_select'])
+
+    color_borde_resaltado = '#46107F'
+    color_borde_normal = '#FFFFFF'
+
+    p_lista_tipos_montura = ''
+    p_lista_materiales = ''
+
+    # tipos de montura
+    # de la funcion buscar_producto, utils.py
+    lista_tipos_montura = request.session['productosinicio']['lista_tipos_montura']
+
+    # materiales
+    # de la funcion buscar_producto, utils.py
+    lista_materiales = request.session['productosinicio']['lista_materiales']
+
     # ajax para la busqueda de productos
+    # si no viene del index
     if 'from_index' not in request.POST.keys():
         if 'search_producto_x' in request.POST.keys() or 'search_linea_x' in request.POST.keys() or 'pagina' in request.POST.keys():
             context2 = {
                 'autenticado': autenticado,
                 'lista_lineas': lista_lineas,
+                'lista_lineas_ids': lista_lineas_ids,
                 'listado_productos': lista_pro,
 
                 'lista_tipos_montura': lista_tipos_montura,
-                'lista_disenio_lentes': lista_disenio_lentes,
                 'lista_materiales': lista_materiales,
-                'lista_colores': lista_colores,
-                'lista_marcas': lista_marcas,
-
-                'p_lista_tipos_montura': p_lista_tipos_montura,
-                'p_lista_disenio_lentes': p_lista_disenio_lentes,
-                'p_lista_materiales': p_lista_materiales,
-                'p_lista_colores': p_lista_colores,
-                'p_lista_marcas': p_lista_marcas,
 
                 'oferta': oferta,
                 'mas_vendido': mas_vendido,
@@ -778,16 +687,7 @@ def productos_inicio(request):
                 'color_borde_resaltado': color_borde_resaltado,
 
                 'tipos_montura_select': tipos_montura_select,
-                'disenio_lentes_select': disenio_lentes_select,
                 'materiales_select': materiales_select,
-                'colores_select': colores_select,
-                'marcas_select': marcas_select,
-
-                'tipos_montura_db': tipos_montura_db,
-                'disenio_lentes_db': disenio_lentes_db,
-                'materiales_db': materiales_db,
-                'colores_db': colores_db,
-                'marcas_db': marcas_db,
 
                 'linea_session': request.session['productosinicio']['linea'],
                 'producto_session': request.session['productosinicio']['producto'],
@@ -813,19 +713,14 @@ def productos_inicio(request):
     context = {
         'autenticado': autenticado,
         'lista_lineas': lista_lineas,
+        'lista_lineas_ids': lista_lineas_ids,
         'listado_productos': lista_pro,
 
         'lista_tipos_montura': lista_tipos_montura,
-        'lista_disenio_lentes': lista_disenio_lentes,
         'lista_materiales': lista_materiales,
-        'lista_colores': lista_colores,
-        'lista_marcas': lista_marcas,
 
-        'p_lista_tipos_montura': p_lista_tipos_montura,
-        'p_lista_disenio_lentes': p_lista_disenio_lentes,
-        'p_lista_materiales': p_lista_materiales,
-        'p_lista_colores': p_lista_colores,
-        'p_lista_marcas': p_lista_marcas,
+        # 'p_lista_tipos_montura': p_lista_tipos_montura,
+        # 'p_lista_materiales': p_lista_materiales,
 
         'oferta': oferta,
         'mas_vendido': mas_vendido,
@@ -834,17 +729,8 @@ def productos_inicio(request):
         'color_borde_normal': color_borde_normal,
         'color_borde_resaltado': color_borde_resaltado,
 
-        'tipos_montura_select': tipos_montura_select,
-        'disenio_lentes_select': disenio_lentes_select,
-        'materiales_select': materiales_select,
-        'colores_select': colores_select,
-        'marcas_select': marcas_select,
-
-        'tipos_montura_db': tipos_montura_db,
-        'disenio_lentes_db': disenio_lentes_db,
-        'materiales_db': materiales_db,
-        'colores_db': colores_db,
-        'marcas_db': marcas_db,
+        'tipos_montura_select': lista_tipos_montura_select,
+        'materiales_select': lista_materiales_select,
 
         'linea_session': request.session['productosinicio']['linea'],
         'producto_session': request.session['productosinicio']['producto'],
@@ -869,676 +755,6 @@ def internal_error(request):
         'error': request.session['internal_error'],
     }
     return render(request, 'pages/internal_error.html', context)
-
-
-def link_linea(linea_id):
-    try:
-        linea = apps.get_model('configuraciones', 'Lineas').objects.get(pk=int(linea_id))
-        retorno = ''
-        if linea.linea_principal == 1:
-            retorno = ' / <span class="link_lineas pointer" onclick="escogerLinea(' + "'" + str(linea.linea_id) + "'" + ');">' + linea.linea + '</span>'
-
-        else:
-            # linea principal antes
-            linea_sup1 = apps.get_model('configuraciones', 'Lineas').objects.get(pk=linea.linea_superior_id)
-
-            if linea_sup1.linea_principal == 1:
-                retorno = ' / <span class="link_lineas pointer" onclick="escogerLinea(' + "'" + str(linea_sup1.linea_id) + "'" + ');">' + linea_sup1.linea + '</span>'
-                retorno += ' / <span class="link_lineas pointer" onclick="escogerLinea(' + "'" + str(linea.linea_id) + "'" + ');">' + linea.linea + '</span>'
-            else:
-                # otra linea superior antes
-                linea_sup2 = apps.get_model('configuraciones', 'Lineas').objects.get(pk=linea_sup1.linea_superior_id)
-
-                if linea_sup2.linea_principal == 1:
-                    retorno = ' / <span class="link_lineas pointer" onclick="escogerLinea(' + "'" + str(linea_sup2.linea_id) + "'" + ');">' + linea_sup2.linea + '</span>'
-                    retorno += ' / <span class="link_lineas pointer" onclick="escogerLinea(' + "'" + str(linea_sup1.linea_id) + "'" + ');">' + linea_sup1.linea + '</span>'
-                    retorno += ' / <span class="link_lineas pointer" onclick="escogerLinea(' + "'" + str(linea.linea_id) + "'" + ');">' + linea.linea + '</span>'
-                else:
-                    linea_sup3 = apps.get_model('configuraciones', 'Lineas').objects.get(pk=linea_sup2.linea_superior_id)
-                    retorno = ' / <span class="link_lineas pointer" onclick="escogerLinea(' + "'" + str(linea_sup3.linea_id) + "'" + ');">' + linea_sup3.linea + '</span>'
-                    retorno += ' / <span class="link_lineas pointer" onclick="escogerLinea(' + "'" + str(linea_sup2.linea_id) + "'" + ');">' + linea_sup2.linea + '</span>'
-                    retorno += ' / <span class="link_lineas pointer" onclick="escogerLinea(' + "'" + str(linea_sup1.linea_id) + "'" + ');">' + linea_sup1.linea + '</span>'
-                    retorno += ' / <span class="link_lineas pointer" onclick="escogerLinea(' + "'" + str(linea.linea_id) + "'" + ');">' + linea.linea + '</span>'
-
-        return retorno
-
-    except Exception as ex:
-        retorno = ''
-        return retorno
-
-
-def lista_productos(request, linea_id=0, producto_nombre='', novedad='0', mas_vendido='0', oferta='0', tipo_montura='', disenio_lente='', material='', color='', marca=''):
-    #print('color...', color)
-    producto = reemplazar_codigo_html(producto_nombre.strip())
-
-    """lista de productos segun linea o ubicacion"""
-    settings_sistema = get_system_settings()
-    cant_per_page = settings_sistema['cant_productos_home']
-
-    # verificamos si escribo busqueda o selecciono combo
-    sql_add = "AND p.status_id='1' AND l.status_id='1' "
-    sql_add_linea = "AND p.status_id='1' AND l.status_id='1' "
-    sql_add_filtro = "AND p.status_id='1' AND l.status_id='1' "
-
-    if len(tipo_montura) > 0:
-        sql_add += f"AND p.tipo_montura_id IN({tipo_montura}) "
-        sql_add_linea += f"AND p.tipo_montura_id IN({tipo_montura}) "
-
-    if len(disenio_lente) > 0:
-        sql_add += f"AND p.disenio_lente_id IN({disenio_lente}) "
-        sql_add_linea += f"AND p.disenio_lente_id IN({disenio_lente}) "
-
-    if len(material) > 0:
-        sql_add += f"AND p.material_id IN({material}) "
-        sql_add_linea += f"AND p.material_id IN({material}) "
-
-    if len(color) > 0:
-        sql_add += f"AND p.color_id IN({color}) "
-        sql_add_linea += f"AND p.color_id IN({color}) "
-
-    if len(marca) > 0:
-        sql_add += f"AND p.marca_id IN({marca}) "
-        sql_add_linea += f"AND p.marca_id IN({marca}) "
-
-    if oferta == '1' or novedad == '1' or mas_vendido == '1':
-        sql_add += "AND ("
-        sql_add_linea += "AND ("
-
-        if oferta == '1':
-            sql_add += "p.oferta='1' OR "
-            sql_add_linea += "p.oferta='1' OR "
-
-        if novedad == '1':
-            sql_add += "p.novedad='1' OR "
-            sql_add_linea += "p.novedad='1' OR "
-
-        if mas_vendido == '1':
-            sql_add += "p.mas_vendido='1' OR "
-            sql_add_linea += "p.mas_vendido='1' OR "
-
-        # quitamos el ultimo OR
-        sql_add = sql_add[0:len(sql_add)-4] + ') '
-        sql_add_linea = sql_add_linea[0:len(sql_add_linea)-4] + ') '
-
-    # linea
-    # if linea_id != 0:
-    #     sql_add = f"AND l.linea_id='{linea_id}' "
-        #sql_add_filtro += f"AND l.linea_id='{linea_id}' "
-
-    if producto != '':
-        division = producto.split(' ')
-        if len(division) == 1:
-            sql_add += f"AND p.producto LIKE '%{producto}%' "
-            sql_add_filtro += f"AND p.producto LIKE '%{producto}%' "
-
-        elif len(division) == 2:
-            sql_add += f"AND (p.producto LIKE '%{division[0]}%{division[1]}%' OR p.producto LIKE '%{division[1]}%{division[0]}%' "
-            sql_add += ') '
-
-            sql_add_filtro += f"AND (p.producto LIKE '%{division[0]}%{division[1]}%' OR p.producto LIKE '%{division[1]}%{division[0]}%' "
-            sql_add_filtro += ') '
-
-        # if len(division) == 3:
-        elif len(division) == 3:
-            sql_add += f"AND (p.producto LIKE '%{division[0]}%{division[1]}%{division[2]}%' "
-            sql_add += f"OR p.producto LIKE '%{division[0]}%{division[2]}%{division[1]}%' "
-
-            sql_add += f"OR p.producto LIKE '%{division[1]}%{division[0]}%{division[2]}%' "
-            sql_add += f"OR p.producto LIKE '%{division[1]}%{division[2]}%{division[0]}%' "
-
-            sql_add += f"OR p.producto LIKE '%{division[2]}%{division[0]}%{division[1]}%' "
-            sql_add += f"OR p.producto LIKE '%{division[2]}%{division[1]}%{division[0]}%' "
-
-            sql_add += ') '
-
-            sql_add_filtro += f"AND (p.producto LIKE '%{division[0]}%{division[1]}%{division[2]}%' "
-            sql_add_filtro += f"OR p.producto LIKE '%{division[0]}%{division[2]}%{division[1]}%' "
-
-            sql_add_filtro += f"OR p.producto LIKE '%{division[1]}%{division[0]}%{division[2]}%' "
-            sql_add_filtro += f"OR p.producto LIKE '%{division[1]}%{division[2]}%{division[0]}%' "
-
-            sql_add_filtro += f"OR p.producto LIKE '%{division[2]}%{division[0]}%{division[1]}%' "
-            sql_add_filtro += f"OR p.producto LIKE '%{division[2]}%{division[1]}%{division[0]}%' "
-
-            sql_add_filtro += ') '
-        else:
-            nuevo_p = '%'
-            for i in range(len(division)):
-                nuevo_p += division[i] + '%'
-
-            sql_add += f"AND p.producto LIKE '{nuevo_p}' "
-            sql_add_filtro += f"AND p.producto LIKE '{nuevo_p}' "
-
-    if not 'productosinicio' in request.session.keys():
-        request.session['productosinicio'] = {}
-        request.session['productosinicio']['producto'] = ''
-        request.session['productosinicio']['linea'] = 0
-
-        request.session['productosinicio']['tipos_montura_select'] = ''
-        request.session['productosinicio']['disenio_lentes_select'] = ''
-        request.session['productosinicio']['materiales_select'] = ''
-        request.session['productosinicio']['colores_select'] = ''
-        request.session['productosinicio']['marcas_select'] = ''
-
-        request.session['productosinicio']['oferta'] = '0'
-        request.session['productosinicio']['mas_vendido'] = '0'
-        request.session['productosinicio']['novedad'] = '0'
-        # pagina
-        request.session['productosinicio']['pagina'] = 1
-        request.session['productosinicio']['pages_list'] = []
-
-        request.session.modified = True
-
-    pages_limit_bottom = (int(request.session['productosinicio']['pagina']) - 1) * cant_per_page
-    pages_limit_top = cant_per_page
-
-    # listado de productos
-    lista_pp = []
-    cant_total = 0
-
-    # listados generales de color, marca, etc producto o linea
-    # sin contar los otros filtros, para que el usuario pueda filtrar solo de este grupo
-    listado_tipos_montura = []
-    listado_disenio_lentes = []
-    listado_materiales = []
-    listado_colores = []
-    listado_marcas = []
-
-    # busqueda por de texto de productos
-    if linea_id == 0:
-        # listados del grupo por busqueda de producto txt
-        sql = "SELECT DISTINCT p.tipo_montura_id, p.disenio_lente_id, p.material_id, p.color_id, p.marca_id FROM productos p, lineas l WHERE p.linea_id=l.linea_id "
-        sql += sql_add_filtro
-        #print('sql..: ', sql)
-        with connection.cursor() as cursor:
-            cursor.execute(sql)
-            rows = cursor.fetchall()
-            for row in rows:
-                # tipos montura
-                existe = 0
-                for lis_tp in listado_tipos_montura:
-                    if str(lis_tp) == str(row[0]):
-                        existe = 1
-                if existe == 0:
-                    listado_tipos_montura.append(row[0])
-
-                # disenio lentes
-                existe = 0
-                for list_dl in listado_disenio_lentes:
-                    if str(list_dl) == str(row[0]):
-                        existe = 1
-                if existe == 0:
-                    listado_disenio_lentes.append(row[0])
-
-                # disenio materiales
-                existe = 0
-                for list_ma in listado_materiales:
-                    if str(list_ma) == str(row[0]):
-                        existe = 1
-                if existe == 0:
-                    listado_materiales.append(row[0])
-
-                # colores
-                existe = 0
-                for lis_col in listado_colores:
-                    if str(lis_col) == str(row[0]):
-                        existe = 1
-                if existe == 0:
-                    listado_colores.append(row[0])
-
-                # marcas
-                existe = 0
-                for lis_mar in listado_marcas:
-                    if str(lis_mar) == str(row[1]):
-                        existe = 1
-                if existe == 0:
-                    listado_marcas.append(row[1])
-
-        sql = "SELECT l.linea, p.producto, p.codigo, p.precio, p.precio_oferta, p.producto_id, l.linea_id, "
-        sql += "p.tipo_montura_id, p.disenio_lente_id, p.material_id, p.color_id, p.marca_id, p.novedad, p.mas_vendido, p.oferta "
-        sql += "FROM productos p, lineas l WHERE p.linea_id=l.linea_id " + sql_add
-        sql += "ORDER BY l.linea, p.producto "
-        #print('sql: ', sql)
-
-        with connection.cursor() as cursor:
-            cursor.execute(sql)
-            rows = cursor.fetchall()
-            for row in rows:
-                cant_total = cant_total + 1
-                # imagen del producto
-                sql_imagen = f"SELECT imagen, imagen_thumb FROM productos_imagenes WHERE producto_id='{row[5]}' ORDER BY posicion LIMIT 0,1 "
-                imagen = ''
-                imagen_thumb = ''
-                with connection.cursor() as cursor2:
-                    cursor2.execute(sql_imagen)
-                    row_imagen = cursor2.fetchone()
-                    if row_imagen:
-                        imagen = row_imagen[0]
-                        imagen_thumb = row_imagen[1]
-
-                dato_producto = {}
-                dato_producto['linea'] = row[0]
-                dato_producto['producto'] = reemplazar_codigo_html(row[1])
-                dato_producto['codigo'] = row[2]
-                dato_producto['precio'] = row[3]
-                dato_producto['precio_oferta'] = row[4]
-                dato_producto['imagen'] = imagen
-                dato_producto['imagen_thumb'] = imagen_thumb
-                dato_producto['producto_id'] = row[5]
-
-                dato_producto['tipo_montura_id'] = row[7]
-                dato_producto['disenio_lente_id'] = row[8]
-                dato_producto['material_id'] = row[9]
-                dato_producto['color_id'] = row[10]
-                dato_producto['marca_id'] = row[11]
-                dato_producto['novedad'] = row[12]
-                dato_producto['mas_vendido'] = row[13]
-                dato_producto['oferta'] = row[14]
-
-                lista_pp.append(dato_producto)
-
-    # busqueda por seleccion de linea
-    # busqueda por seleccion de linea
-    if linea_id != 0:
-        # listados del grupo por busqueda de producto txt
-        sql = f"SELECT DISTINCT p.tipo_montura_id, p.disenio_lente_id, p.material_id, p.color_id, p.marca_id FROM productos p, lineas l WHERE p.linea_id=l.linea_id AND l.linea_id='{linea_id}' "
-        sql += sql_add_filtro
-        with connection.cursor() as cursor:
-            cursor.execute(sql)
-            rows = cursor.fetchall()
-            for row in rows:
-                # tipos montura
-                existe = 0
-                for lis_tp in listado_tipos_montura:
-                    if str(lis_tp) == str(row[0]):
-                        existe = 1
-                if existe == 0:
-                    listado_tipos_montura.append(row[0])
-
-                # disenio lentes
-                existe = 0
-                for list_dl in listado_disenio_lentes:
-                    if str(list_dl) == str(row[0]):
-                        existe = 1
-                if existe == 0:
-                    listado_disenio_lentes.append(row[0])
-
-                # disenio materiales
-                existe = 0
-                for list_ma in listado_materiales:
-                    if str(list_ma) == str(row[0]):
-                        existe = 1
-                if existe == 0:
-                    listado_materiales.append(row[0])
-
-                # colores
-                existe = 0
-                for lis_col in listado_colores:
-                    if str(lis_col) == str(row[0]):
-                        existe = 1
-                if existe == 0:
-                    listado_colores.append(row[0])
-
-                # marcas
-                existe = 0
-                for lis_mar in listado_marcas:
-                    if str(lis_mar) == str(row[1]):
-                        existe = 1
-                if existe == 0:
-                    listado_marcas.append(row[1])
-
-        # entramos un nivel
-        sql = "SELECT l.linea, p.producto, p.codigo, p.precio, p.precio_oferta, p.producto_id, l.linea_id, "
-        sql += "p.tipo_montura_id, p.disenio_lente_id, p.material_id, p.color_id, p.marca_id, p.novedad, p.mas_vendido, p.oferta "
-        sql += f"FROM productos p, lineas l WHERE p.linea_id=l.linea_id AND l.linea_id='{linea_id}' "
-        sql += sql_add_linea
-        sql += "ORDER BY l.linea, p.producto "
-        #print('sql: ', sql)
-
-        with connection.cursor() as cursor22:
-            cursor22.execute(sql)
-            rows2 = cursor22.fetchall()
-
-            for row2 in rows2:
-                cant_total = cant_total + 1
-                # imagen del producto
-                sql_imagen = f"SELECT imagen, imagen_thumb FROM productos_imagenes WHERE producto_id='{row2[5]}' ORDER BY posicion LIMIT 0,1 "
-                imagen = ''
-                imagen_thumb = ''
-                with connection.cursor() as cursor33:
-                    cursor33.execute(sql_imagen)
-                    row_imagen3 = cursor33.fetchone()
-                    if row_imagen3:
-                        imagen = row_imagen3[0]
-                        imagen_thumb = row_imagen3[1]
-
-                dato_producto = {}
-                dato_producto['linea'] = row2[0]
-                dato_producto['producto'] = reemplazar_codigo_html(row2[1])
-                dato_producto['codigo'] = row2[2]
-                dato_producto['precio'] = row2[3]
-                dato_producto['precio_oferta'] = row2[4]
-                dato_producto['imagen'] = imagen
-                dato_producto['imagen_thumb'] = imagen_thumb
-                dato_producto['producto_id'] = row2[5]
-
-                dato_producto['tipo_montura_id'] = row2[7]
-                dato_producto['disenio_lente_id'] = row2[8]
-                dato_producto['material_id'] = row2[9]
-                dato_producto['color_id'] = row2[10]
-                dato_producto['marca_id'] = row2[11]
-                dato_producto['novedad'] = row2[12]
-                dato_producto['mas_vendido'] = row2[13]
-                dato_producto['oferta'] = row2[14]
-
-                lista_pp.append(dato_producto)
-
-        # lineas inferior segundo nivel
-        sql = f"SELECT linea_id FROM lineas WHERE linea_superior_id='{linea_id}' "
-        with connection.cursor() as cursor10:
-            cursor10.execute(sql)
-            rows10 = cursor10.fetchall()
-            for row10 in rows10:
-
-                # segundo nivel
-                # listados del grupo por busqueda de producto txt
-                sql = f"SELECT DISTINCT p.tipo_montura_id, p.disenio_lente_id, p.material_id, p.color_id, p.marca_id  FROM productos p, lineas l WHERE p.linea_id=l.linea_id AND l.linea_id='{row10[0]}' "
-                sql += sql_add_filtro
-                with connection.cursor() as cursor:
-                    cursor.execute(sql)
-                    rows = cursor.fetchall()
-                    for row in rows:
-                        # tipos montura
-                        existe = 0
-                        for lis_tp in listado_tipos_montura:
-                            if str(lis_tp) == str(row[0]):
-                                existe = 1
-                        if existe == 0:
-                            listado_tipos_montura.append(row[0])
-
-                        # disenio lentes
-                        existe = 0
-                        for list_dl in listado_disenio_lentes:
-                            if str(list_dl) == str(row[0]):
-                                existe = 1
-                        if existe == 0:
-                            listado_disenio_lentes.append(row[0])
-
-                        # disenio materiales
-                        existe = 0
-                        for list_ma in listado_materiales:
-                            if str(list_ma) == str(row[0]):
-                                existe = 1
-                        if existe == 0:
-                            listado_materiales.append(row[0])
-
-                        # colores
-                        existe = 0
-                        for lis_col in listado_colores:
-                            if str(lis_col) == str(row[0]):
-                                existe = 1
-                        if existe == 0:
-                            listado_colores.append(row[0])
-
-                        # marcas
-                        existe = 0
-                        for lis_mar in listado_marcas:
-                            if str(lis_mar) == str(row[1]):
-                                existe = 1
-                        if existe == 0:
-                            listado_marcas.append(row[1])
-
-                # segundo nivel
-                sql = "SELECT l.linea, p.producto, p.codigo, p.precio, p.precio_oferta, p.producto_id, l.linea_id, "
-                sql += "p.tipo_montura_id, p.disenio_lente_id, p.material_id, p.color_id, p.marca_id, p.novedad, p.mas_vendido, p.oferta "
-                sql += f"FROM productos p, lineas l WHERE p.linea_id=l.linea_id AND l.linea_id='{row10[0]}' "
-                sql += sql_add_linea
-                sql += "ORDER BY l.linea, p.producto "
-                #print('sql2: ', sql)
-                with connection.cursor() as cursor44:
-                    cursor44.execute(sql)
-                    rows4 = cursor44.fetchall()
-                    for row4 in rows4:
-                        cant_total = cant_total + 1
-
-                        # imagen del producto
-                        sql_imagen = f"SELECT imagen, imagen_thumb FROM productos_imagenes WHERE producto_id='{row4[5]}' ORDER BY posicion LIMIT 0,1 "
-                        imagen = ''
-                        imagen_thumb = ''
-                        with connection.cursor() as cursor55:
-                            cursor55.execute(sql_imagen)
-                            row_imagen5 = cursor55.fetchone()
-                            if row_imagen5:
-                                imagen = row_imagen5[0]
-                                imagen_thumb = row_imagen5[1]
-
-                        dato_producto = {}
-                        dato_producto['linea'] = row4[0]
-                        dato_producto['producto'] = reemplazar_codigo_html(row4[1])
-                        dato_producto['codigo'] = row4[2]
-                        dato_producto['precio'] = row4[3]
-                        dato_producto['precio_oferta'] = row4[4]
-                        dato_producto['imagen'] = imagen
-                        dato_producto['imagen_thumb'] = imagen_thumb
-                        dato_producto['producto_id'] = row4[5]
-
-                        dato_producto['tipo_montura_id'] = row4[7]
-                        dato_producto['disenio_lente_id'] = row4[8]
-                        dato_producto['material_id'] = row4[9]
-                        dato_producto['color_id'] = row4[10]
-                        dato_producto['marca_id'] = row4[11]
-                        dato_producto['novedad'] = row4[12]
-                        dato_producto['mas_vendido'] = row4[13]
-                        dato_producto['oferta'] = row4[14]
-
-                        lista_pp.append(dato_producto)
-
-                # tercer nivel
-                sql = f"SELECT linea_id FROM lineas WHERE linea_superior_id='{row10[0]}' "
-                with connection.cursor() as cursor20:
-                    cursor20.execute(sql)
-                    rows20 = cursor20.fetchall()
-                    for row20 in rows20:
-                        # tercer nivel
-                        # listados del grupo por busqueda de producto txt
-                        sql = f"SELECT DISTINCT p.tipo_montura_id, p.disenio_lente_id, p.material_id, p.color_id, p.marca_id FROM productos p, lineas l WHERE p.linea_id=l.linea_id AND l.linea_id='{row20[0]}' "
-                        sql += sql_add_filtro
-                        with connection.cursor() as cursor:
-                            cursor.execute(sql)
-                            rows = cursor.fetchall()
-                            for row in rows:
-                                # tipos montura
-                                existe = 0
-                                for lis_tp in listado_tipos_montura:
-                                    if str(lis_tp) == str(row[0]):
-                                        existe = 1
-                                if existe == 0:
-                                    listado_tipos_montura.append(row[0])
-
-                                # disenio lentes
-                                existe = 0
-                                for list_dl in listado_disenio_lentes:
-                                    if str(list_dl) == str(row[0]):
-                                        existe = 1
-                                if existe == 0:
-                                    listado_disenio_lentes.append(row[0])
-
-                                # disenio materiales
-                                existe = 0
-                                for list_ma in listado_materiales:
-                                    if str(list_ma) == str(row[0]):
-                                        existe = 1
-                                if existe == 0:
-                                    listado_materiales.append(row[0])
-
-                                # colores
-                                existe = 0
-                                for lis_col in listado_colores:
-                                    if str(lis_col) == str(row[0]):
-                                        existe = 1
-                                if existe == 0:
-                                    listado_colores.append(row[0])
-
-                                # marcas
-                                existe = 0
-                                for lis_mar in listado_marcas:
-                                    if str(lis_mar) == str(row[1]):
-                                        existe = 1
-                                if existe == 0:
-                                    listado_marcas.append(row[1])
-
-                        # tercer nivel
-                        sql = "SELECT l.linea, p.producto, p.codigo, p.precio, p.precio_oferta, p.producto_id, l.linea_id, "
-                        sql += "p.tipo_montura_id, p.disenio_lente_id, p.material_id, p.color_id, p.marca_id, p.novedad, p.mas_vendido, p.oferta "
-                        sql += f"FROM productos p, lineas l WHERE p.linea_id=l.linea_id AND l.linea_id='{row20[0]}' "
-                        sql += sql_add_linea
-                        sql += "ORDER BY l.linea, p.producto "
-                        #print('sql 3: ', sql)
-                        with connection.cursor() as cursor66:
-                            cursor66.execute(sql)
-                            rows6 = cursor66.fetchall()
-                            for row6 in rows6:
-                                cant_total = cant_total + 1
-
-                                # imagen del producto
-                                sql_imagen = f"SELECT imagen, imagen_thumb FROM productos_imagenes WHERE producto_id='{row6[5]}' ORDER BY posicion LIMIT 0,1 "
-                                imagen = ''
-                                imagen_thumb = ''
-                                with connection.cursor() as cursor77:
-                                    cursor77.execute(sql_imagen)
-                                    row_imagen7 = cursor77.fetchone()
-                                    if row_imagen7:
-                                        imagen = row_imagen7[0]
-                                        imagen_thumb = row_imagen7[1]
-
-                                dato_producto = {}
-                                dato_producto['linea'] = row6[0]
-                                dato_producto['producto'] = reemplazar_codigo_html(row6[1])
-                                dato_producto['codigo'] = row6[2]
-                                dato_producto['precio'] = row6[3]
-                                dato_producto['precio_oferta'] = row6[4]
-                                dato_producto['imagen'] = imagen
-                                dato_producto['imagen_thumb'] = imagen_thumb
-                                dato_producto['producto_id'] = row6[5]
-
-                                dato_producto['tipo_montura_id'] = row6[7]
-                                dato_producto['disenio_lente_id'] = row6[8]
-                                dato_producto['material_id'] = row6[9]
-                                dato_producto['color_id'] = row6[10]
-                                dato_producto['marca_id'] = row6[11]
-                                dato_producto['novedad'] = row6[12]
-                                dato_producto['mas_vendido'] = row6[13]
-                                dato_producto['oferta'] = row6[14]
-
-                                lista_pp.append(dato_producto)
-
-    # listados generales
-    # print('listado_colores: ', listado_colores)
-    # print('listado_marcas: ', listado_marcas)
-    # print('listado_tallas: ', listado_tallas)
-
-    # paginacion
-    #print('cant total: ', cant_total)
-    j = 1
-    i = 0
-    pages_list = []
-    while i < cant_total:
-        pages_list.append(j)
-        i = i + cant_per_page
-        j += 1
-        if j > 15:
-            break
-
-    request.session['productosinicio']['pages_list'] = pages_list
-    request.session.modified = True
-
-    # listado de retorno
-    listado = []
-    cant_fila = 3
-    cant_actual = 0
-    lista_fila = []
-    contador = 0
-
-    #print('lista prodd: ', lista_pp)
-    #print('limit bottom: ', pages_limit_bottom, ' limit top: ', pages_limit_top)
-    for producto_p in lista_pp:
-        if contador >= pages_limit_bottom and contador < (pages_limit_bottom+pages_limit_top):
-            if cant_actual < cant_fila:
-                lista_fila.append(producto_p)
-
-            # aumentamos la columna
-            cant_actual += 1
-
-            if cant_actual == cant_fila:
-                listado.append(lista_fila)
-                cant_actual = 0
-                lista_fila = []
-
-        contador += 1
-
-    # print('lista colores: ', lista_colores)
-    # print('lista tallas: ', lista_tallas)
-    # print('lista marcas: ', lista_marcas)
-    request.session['productosinicio']['lista_tipos_montura'] = listado_tipos_montura
-    request.session['productosinicio']['lista_disenio_lentes'] = listado_disenio_lentes
-    request.session['productosinicio']['lista_materiales'] = listado_materiales
-    request.session['productosinicio']['lista_colores'] = listado_colores
-    request.session['productosinicio']['lista_marcas'] = listado_marcas
-    request.session.modified = True
-
-    # termina los productos
-    if cant_actual > 0:
-        # no termino de llenarse los datos de la fila
-        for i in range(cant_actual, cant_fila):
-            dato_producto = {}
-            dato_producto['linea'] = ''
-            dato_producto['producto'] = ''
-            dato_producto['codigo'] = ''
-            dato_producto['precio'] = ''
-            dato_producto['precio_oferta'] = 0
-            dato_producto['producto_id'] = 0
-            lista_fila.append(dato_producto)
-
-        # aniadimos a la lista principal
-        listado.append(lista_fila)
-
-    # devolvemos los productos
-    #print('listado...: ', listado)
-    return listado
-
-
-def reemplazar_codigo_html(cadena):
-    retorno = cadena
-    retorno = retorno.replace('&', "&#38;")
-    retorno = retorno.replace('#', "&#35;")
-
-    retorno = retorno.replace("'", "&#39;")
-    retorno = retorno.replace('"', "&#34;")
-    retorno = retorno.replace('á', "&#225;")
-    retorno = retorno.replace('é', "&#233;")
-    retorno = retorno.replace('í', "&#237;")
-    retorno = retorno.replace('ó', "&#243;")
-    retorno = retorno.replace('ú', "&#250;")
-    retorno = retorno.replace('Á', "&#193;")
-    retorno = retorno.replace('É', "&#201;")
-    retorno = retorno.replace('Í', "&#205;")
-    retorno = retorno.replace('Ó', "&#211;")
-    retorno = retorno.replace('Ú', "&#218;")
-    retorno = retorno.replace('!', "&#33;")
-
-    retorno = retorno.replace('$', "&#36;")
-    retorno = retorno.replace('%', "&#37;")
-    retorno = retorno.replace('*', "&#42;")
-    retorno = retorno.replace('+', "&#43;")
-    retorno = retorno.replace('-', "&#45;")
-    retorno = retorno.replace('', "")
-    retorno = retorno.replace('', "")
-    retorno = retorno.replace('', "")
-    retorno = retorno.replace('', "")
-    retorno = retorno.replace('', "")
-    retorno = retorno.replace('', "")
-
-    return retorno
 
 
 def sucursales_empresa(request):
@@ -1587,6 +803,54 @@ def acerca_de(request):
     return render(request, 'pages/acerca_de.html', context)
 
 
+def materiales_home(request):
+    """acerca la empresa"""
+    usuario = request.user
+    id_usuario = usuario.id
+    if id_usuario:
+        autenticado = 'si'
+    else:
+        autenticado = 'no'
+
+    # carrito de compras
+    cantidad_cart = 0
+    if 'productos_cart' in request.session.keys():
+        cantidad_cart = len(request.session['productos_cart'])
+
+    context = {
+        'autenticado': autenticado,
+        'cantidad_cart': cantidad_cart,
+        'url_carrito': reverse('carrito'),
+        'pagina_actual': 'materiales',
+    }
+
+    return render(request, 'pages/materiales.html', context)
+
+
+def disenios_home(request):
+    """acerca la empresa"""
+    usuario = request.user
+    id_usuario = usuario.id
+    if id_usuario:
+        autenticado = 'si'
+    else:
+        autenticado = 'no'
+
+    # carrito de compras
+    cantidad_cart = 0
+    if 'productos_cart' in request.session.keys():
+        cantidad_cart = len(request.session['productos_cart'])
+
+    context = {
+        'autenticado': autenticado,
+        'cantidad_cart': cantidad_cart,
+        'url_carrito': reverse('carrito'),
+        'pagina_actual': 'disenio_lentes',
+    }
+
+    return render(request, 'pages/disenios.html', context)
+
+
 def contactenos(request):
     """formulario de contacto"""
     usuario = request.user
@@ -1609,58 +873,6 @@ def contactenos(request):
                 email_cliente = request.POST['email'].strip()
                 mensaje = request.POST['mensaje'].strip()
 
-                # # create message object instance
-                # msg = MIMEMultipart()
-
-                # message = f"Mensaje: <br>{apellidos} {nombres}<br>Fonos: {telefonos}<br>Email: {email_cliente}<br>Mensaje: {mensaje}"
-
-                # # setup the parameters of the message
-                # password = "Austin...316!"
-                # msg['From'] = "acc.claros@gmail.com"
-                # msg['To'] = "acc.claros@gmail.com"
-                # msg['Subject'] = "Mensaje PVI"
-
-                # # add in the message body
-                # msg.attach(MIMEText(message, 'plain'))
-
-                # # create server
-                # server = smtplib.SMTP('smtp.gmail.com: 587')
-
-                # server.starttls()
-
-                # # Login Credentials for sending the mail
-                # server.login(msg['From'], password)
-
-                # # send the message via the server.
-                # server.sendmail(msg['From'], msg['To'], msg.as_string())
-
-                # server.quit()
-
-                # # formato html
-                # #server = smtplib.SMTP('smtp.gmail.com:587')
-                #
-                # email_content = f"Mensaje: <br>Nombre: {apellidos} {nombres}<br>Fonos: {telefonos}<br>Email: {email_cliente}<br>Mensaje: {mensaje}"
-                #
-                # msg = email.message.Message()
-                # msg['Subject'] = 'Mensaje PVI'
-                #
-                # msg['From'] = 'acc.claros@gmail.com'
-                # msg['To'] = 'acc.claros@gmail.com'
-                # password = "Austin...316!"
-                # msg.add_header('Content-Type', 'text/html')
-                # msg.set_payload(email_content)
-                #
-                # s = smtplib.SMTP('smtp.gmail.com: 587')
-                # s.starttls()
-                #
-                # # Login Credentials for sending the mail
-                # s.login(msg['From'], password)
-                #
-                # s.sendmail(msg['From'], [msg['To']], msg.as_string())
-                #
-                # #print("successfully sent email to %s: ", msg['To'])
-                # #print("successfully sent email to %s:" % (msg['To']))
-
                 # Import the email modules we'll need
                 from email.message import EmailMessage
 
@@ -1672,7 +884,7 @@ def contactenos(request):
 
                 # me == the sender's email address
                 # you == the recipient's email address
-                msg['Subject'] = 'PVI - mensaje'
+                msg['Subject'] = 'Optica Ideal - mensaje'
                 msg['From'] = settings.EMAIL_CONTACT_FROM
                 # msg['To'] = settings.EMAIL_CONTACT_TO
                 msg['To'] = 'acc.claros@gmail.com, alan_claros13@hotmail.com'
@@ -1723,8 +935,8 @@ def cambiar_password(request):
     # por defecto
     usuario_actual = User.objects.get(pk=request.user.id)
 
-    if 'operation' in request.POST.keys():
-        operation = request.POST['operation']
+    if 'operation_x' in request.POST.keys():
+        operation = request.POST['operation_x']
         # busqueda cliente por ci
         if operation == 'add':
             # verificamos
@@ -1738,8 +950,6 @@ def cambiar_password(request):
                 messages.add_message(request, messages.SUCCESS, {'type': 'warning', 'title': 'Usuario!', 'description': 'Debe llenar su nuevo password y su repeticion'})
 
             if error == 0 and not check_password(password, usuario_actual.password):
-                print('db ', usuario_actual.password)
-                print('puso ', password)
                 error = 1
                 messages.add_message(request, messages.SUCCESS, {'type': 'warning', 'title': 'Usuario!', 'description': 'Error en su password'})
 
@@ -1760,6 +970,7 @@ def cambiar_password(request):
     context = {
         'autenticado': autenticado,
         'usuario_actual': usuario_actual,
+        'module_x': 1000,
     }
 
     return render(request, 'pages/cambiar_password.html', context)
@@ -1886,7 +1097,7 @@ def carrito(request):
                     usuario_perfil = apps.get_model('permisos', 'UsersPerfiles').objects.get(user_id=usuario)
                     punto = apps.get_model('configuraciones', 'Puntos').objects.get(pk=usuario_perfil.punto_id)
 
-                    cliente = apps.get_model('clientes', 'Clientes').objects.create(status_id=status_activo, user_id=usuario, punto_id=punto, ci_nit=ci, apellidos=apellidos,
+                    cliente = apps.get_model('clientes', 'Clientes').objects.create(status_id=status_activo, user_perfil_id=usuario_perfil, punto_id=punto, ci_nit=ci, apellidos=apellidos,
                                                                                     nombres=nombres, telefonos=telefonos, direccion=direccion, email=email, razon_social=apellidos, factura_a=apellidos, created_at='now', updated_at='now')
                     cliente.save()
 
@@ -2044,6 +1255,7 @@ def carrito(request):
 # notificaciones para el usuario
 def notificaciones_pagina(request):
     url_pedidos_cliente = reverse('index')
+    url_reservas = reverse('index')
 
     usuario = request.user
     id_usuario = usuario.id
@@ -2064,7 +1276,6 @@ def notificaciones_pagina(request):
     try:
         user_perfil = apps.get_model('permisos', 'UsersPerfiles').objects.get(user_id=request.user)
         punto = apps.get_model('configuraciones', 'Puntos').objects.get(pk=user_perfil.punto_id)
-        sucursal = apps.get_model('configuraciones', 'Sucursales').objects.get(pk=punto.sucursal_id.sucursal_id)
 
         # lista de puntos y sucursales
         estado_activo = 1
@@ -2076,11 +1287,11 @@ def notificaciones_pagina(request):
 
         notificaciones = []
         cantidad = 0
-        cantidad_rojos = 0
+        cantidad_danger = 0
+        cantidad_warning = 0
 
         # lista pedidos
         sql = "SELECT p.pedido_id, p.apellidos, p.nombres, p.total, p.created_at AS fecha FROM pedidos p "
-        #sql += f"WHERE p.status_id='{estado_activo}' AND p.created_at>='{fecha1}' AND p.created_at<='{fecha2}' ORDER BY p.created_at "
         sql += f"WHERE p.status_id='{estado_activo}' ORDER BY p.created_at "
         #print('sql: ', sql)
 
@@ -2090,19 +1301,55 @@ def notificaciones_pagina(request):
 
             for row in rows:
                 cantidad += 1
-                cantidad_rojos += 1
+                cantidad_danger += 1
                 dato = {}
                 dato['tipo'] = 'pedido'
+                dato['tipo_notificacion'] = 'danger'
                 fecha = get_date_show(fecha=row[4], formato='dd-MMM-yyyy HH:ii', formato_ori='yyyy-mm-dd HH:ii:ss')
-                dato['descripcion'] = fecha + ', ' + row[1] + ' ' + row[2] + ', ' + str(row[3])
+
+                cliente = ""
+                if row[2] and row[2].strip() != '':
+                    cliente += row[2].strip()[0:1] + '.'
+
+                if row[1] and row[1].strip() != '':
+                    cliente += row[1].strip()[0:1] + '.'
+
+                dato['descripcion'] = fecha + ', ' + cliente + ', ' + str(row[3]) + 'Bs.'
                 dato['url'] = url_pedidos_cliente
+                notificaciones.append(dato)
+
+        # lista de RESERVAS
+        estado_preventa = settings.STATUS_PREVENTA
+        sql = f"SELECT r.reserva_id, r.nombres, r.apellidos, r.fecha_inicio FROM reservas r WHERE r.status_id='{estado_preventa}' "
+        sql += "ORDER BY r.fecha_inicio "
+        with connection.cursor() as cursor:
+            cursor.execute(sql)
+            rows = cursor.fetchall()
+
+            for row in rows:
+                cantidad += 1
+                cantidad_warning += 1
+                dato = {}
+                dato['tipo'] = 'reserva'
+                dato['tipo_notificacion'] = 'warning'
+                fecha = get_date_show(fecha=row[3], formato='dd-MMM-yyyy HH:ii', formato_ori='yyyy-mm-dd HH:ii:ss')
+
+                cliente = ""
+                if row[1] and row[1].strip() != '':
+                    cliente += row[1].strip() + ' '
+
+                if row[2] and row[2].strip() != '':
+                    cliente += row[2].strip()[0:1] + '.'
+
+                dato['descripcion'] = fecha + ', ' + cliente
+                dato['url'] = url_reservas
                 notificaciones.append(dato)
 
         # context para el html
         context = {
             'notificaciones': notificaciones,
             'cantidad': cantidad,
-            'cantidad_rojos': cantidad_rojos,
+            'cantidad_danger': cantidad_danger,
             'autenticado': autenticado,
         }
 
@@ -2112,7 +1359,7 @@ def notificaciones_pagina(request):
         print('ERROR ' + str(e))
         context = {
             'cantidad': 0,
-            'cantidad_rojos': 0,
+            'cantidad_danger': 0,
             'notificaciones': {},
             'autenticado': autenticado,
         }
@@ -2203,34 +1450,306 @@ def frecuency_partners(request):
     return render(request, 'pages/frequency_partners.html', context)
 
 
-def get_lista_session(session_var):
-    lista_select = []
-    if len(session_var) > 0:
-        div_lista = session_var.split(',')
-        for dato in div_lista:
-            lista_select.append(dato.strip())
+def backup(request):
+    """backup"""
+    usuario = request.user
+    id_usuario = usuario.id
+    if id_usuario:
+        autenticado = 'si'
+    else:
+        autenticado = 'no'
+        return render(request, 'pages/without_permission.html')
 
-    return lista_select
+    if not get_user_permission_operation(request.user, settings.MOD_TABLAS_BACKUP, 'lista'):
+        return render(request, 'pages/without_permission.html')
+
+    if 'operation_x' in request.POST.keys():
+        operation = request.POST['operation_x']
+        lista_tablas = [['auth', 'User', 'auth_user'], ['status', 'Status', 'status'],
+
+                        ['permisos', 'Perfiles', 'perfiles'],
+                        ['permisos', 'Modulos', 'modulos'],
+                        ['permisos', 'UsersPerfiles', 'users_perfiles'],
+                        ['permisos', 'UsersModulos', 'users_modulos'],
+
+                        ['configuraciones', 'Configuraciones', 'configuraciones'],
+                        ['configuraciones', 'Paises', 'paises'],
+                        ['configuraciones', 'Ciudades', 'ciudades'],
+                        ['configuraciones', 'Sucursales', 'sucursales'],
+                        ['configuraciones', 'Puntos', 'puntos'],
+                        ['configuraciones', 'TiposMonedas', 'tipos_monedas'],
+                        ['configuraciones', 'Monedas', 'monedas'],
+                        ['configuraciones', 'Cajas', 'cajas'],
+                        ['configuraciones', 'Almacenes', 'almacenes'],
+                        ['configuraciones', 'Lineas', 'lineas'],
+                        ['configuraciones', 'PuntosAlmacenes', 'puntos_almacenes'],
+                        ['configuraciones', 'Proveedores', 'proveedores'],
+                        ['configuraciones', 'Materiales', 'materiales'],
+                        ['configuraciones', 'TiposMontura', 'tipos_montura'],
+                        ['configuraciones', 'Laboratorios', 'laboratorios'],
+                        ['configuraciones', 'Tecnicos', 'tecnicos'],
+                        ['configuraciones', 'Oftalmologos', 'oftalmologos'],
+                        ['configuraciones', 'Cupones', 'cupones'],
+
+                        ['cajas', 'CajasIngresos', 'cajas_ingresos'],
+                        ['cajas', 'CajasEgresos', 'cajas_egresos'],
+                        ['cajas', 'CajasOperaciones', 'cajas_operaciones'],
+                        ['cajas', 'CajasOperacionesDetalles', 'cajas_operaciones_detalles'],
+                        ['cajas', 'CajasMovimientos', 'cajas_movimientos'],
+
+                        ['clientes', 'Clientes', 'clientes'],
+
+                        ['productos', 'Productos', 'productos'],
+                        ['productos', 'ProductosImagenes', 'productos_imagenes'],
+                        ['productos', 'ProductosRelacionados', 'productos_relacionados'],
+                        ['productos', 'ProductosTiposMontura', 'productos_tipos_montura'],
+                        ['productos', 'ProductosMateriales', 'productos_materiales'],
+
+                        ['inventarios', 'Registros', 'registros'],
+                        ['inventarios', 'RegistrosDetalles', 'registros_detalles'],
+                        ['inventarios', 'Stock', 'stock'],
+
+                        ['ventas', 'Dosificaciones', 'dosificaciones'],
+                        ['ventas', 'Facturas', 'facturas'],
+                        ['ventas', 'PlanPagos', 'plan_pagos'],
+                        ['ventas', 'PlanPagosDetalles', 'plan_pagos_detalles'],
+                        ['ventas', 'PlanPagosPagos', 'plan_pagos_pagos'],
+                        ['ventas', 'Ventas', 'ventas'],
+                        ['ventas', 'VentasDetalles', 'ventas_detalles'],
+                        ['ventas', 'VentasImagenes', 'ventas_imagenes'],
+                        ]
+
+        if operation == 'add':
+            # leemos las tablas y realizamos la copia
+            wb = openpyxl.Workbook()
+            # creamos las hojas
+            for tabla in lista_tablas:
+                ws = wb.create_sheet(tabla[2])
+                modelo = apps.get_model(tabla[0], tabla[1])
+
+                # print('modelo...: ', modelo)
+                # for field in modelo._meta.fields:
+                #     columna = field.get_attname_column()
+                #     print('columna: ', columna)
+
+                #columna = modelo._meta.get_field(arg)
+                #ws.append(('111', '22222'))
+
+                # columnas = modelo._meta.fields
+                # print('columnas...: ', len(columnas))
+
+                aux_columnas = modelo._meta.fields
+                len_columnas = len(aux_columnas)
+
+                lista_filas = []
+                lista_select = ''
+                for field in modelo._meta.fields:
+                    #columna = field[1]
+                    #print('columna: ', columna)
+                    columna = field.get_attname_column()
+                    nombre_columna = columna[1]
+                    lista_filas.append(nombre_columna)
+                    lista_select += nombre_columna + ','
+
+                if len(lista_select) > 0:
+                    lista_select = lista_select[0:len(lista_select)-1]
+
+                # titulos columnas
+                ws.append(lista_filas)
+
+                # datos
+                nombre_tabla = tabla[2]
+                sql = f"SELECT {lista_select} FROM {nombre_tabla} "
+                with connection.cursor() as cursor:
+                    cursor.execute(sql)
+                    rows = cursor.fetchall()
+                    for row in rows:
+                        fila = []
+                        for i in range(len_columnas):
+                            #print('i...: ', i)
+                            fila.append(row[i])
+
+                        # aniadimos la fila
+                        ws.append(fila)
+
+            # response = HttpResponse(content_type="application/msexcel")
+            # response["Content-Disposition"] = "attachment; filename=backup.xlsx"
+            # wb.save(response)
+            # return response
+            ruta_settings = settings.STATICFILES_DIRS[0]
+            ruta_guardar = os.path.join(ruta_settings, 'img', 'files_download', 'backup.xlsx')
+            loczip = os.path.join(ruta_settings, 'img', 'files_download', 'backup.zip')
+
+            # eliminamos archivos si es que existen
+            if os.path.isfile(ruta_guardar):
+                os.unlink(ruta_guardar)
+            if os.path.isfile(loczip):
+                os.unlink(loczip)
+
+            wb.save(ruta_guardar)
+            wb.close()
+
+            zip = zipfile.ZipFile(loczip, "w")
+            # con path
+            # zip.write(ruta_guardar)
+            # quitando el path
+            zip.write(ruta_guardar, os.path.basename(ruta_guardar))
+            zip.close()
+
+            zip_file = open(loczip, 'rb')
+            return FileResponse(zip_file)
+
+            # print('zip fileee....: ', zip_file)
+            # response = HttpResponse(zip_file, content_type='application/force-download')
+            # print('response...: ', response)
+            # response['Content-Disposition'] = 'attachment; filename="%s"' % 'backup.zip'
+            # return response
+
+    context = {
+        'autenticado': autenticado,
+        'url_main': '',
+        'module_x': settings.MOD_TABLAS_BACKUP,
+        'module_x2': '',
+        'module_x3': '',
+
+        'operation_x': 'add',
+        'operation_x2': '',
+        'operation_x3': '',
+
+        'id': '',
+        'id2': '',
+        'id3': '',
+    }
+
+    return render(request, 'pages/backup.html', context)
 
 
-def get_lista_cuadros(col_name, lista_session, lista_select, borde_nomal, borde_resaltado):
+def reserva(request):
+    """reserva"""
+    usuario = request.user
+    id_usuario = usuario.id
+    if id_usuario:
+        autenticado = 'si'
+    else:
+        autenticado = 'no'
 
-    # listado
-    listado = []
-    if len(lista_session) > 0:
-        for ax_d in lista_session:
-            dato = {}
-            dato[col_name] = ax_d
-            existe = 0
-            for lcs in lista_select:
-                if str(lcs) == str(ax_d):
-                    existe = 1
+    # registro de reserva
+    if 'add_reserva' in request.POST.keys():
+        error = 0
+        fecha_mostrar = ''
+        try:
+            nombres = request.POST['nombres'].strip()
+            apellidos = request.POST['apellidos'].strip()
+            telefonos = request.POST['telefonos'].strip()
+            mensaje = request.POST['mensaje'].strip()
+            aux_dia = request.POST['dia'].strip()
+            dia = aux_dia if len(aux_dia) == 2 else '0' + aux_dia
+            dia_semana = request.POST['dia_semana'].strip()
+            hora = request.POST['hora'].strip()
+            periodo = request.POST['periodo'].strip()
 
-            if existe == 0:
-                dato['borde'] = borde_nomal
-            else:
-                dato['borde'] = borde_resaltado
+            reserva_dia = apps.get_model('reservas', 'ReservasDias').objects.get(pk=int(dia_semana))
+            reserva_hora = apps.get_model('reservas', 'ReservasHoras').objects.get(pk=int(hora))
+            status_preventa = apps.get_model('status', 'Status').objects.get(pk=settings.STATUS_PREVENTA)
 
-            listado.append(dato)
+            fecha_inicio = fecha_periodo(periodo, dia) + ' ' + reserva_hora.hora + ':00'
+            fecha_mostrar = get_date_show(fecha=fecha_inicio, formato_ori='yyyy-mm-dd HH:ii:ss', formato='dd-MMM-yyyy HH:ii')
 
-    return listado
+            reserva = apps.get_model('reservas', 'Reservas').objects.create(
+                nombres=nombres, apellidos=apellidos, telefonos=telefonos, mensaje=mensaje,
+                reserva_dia_id=reserva_dia, reserva_hora_id=reserva_hora, status_id=status_preventa,
+                fecha_inicio=fecha_inicio, fecha_fin=fecha_inicio,
+                created_at='now', updated_at='now'
+            )
+            reserva.save()
+
+        except Exception as ex:
+            print('ERROR reserva: ', str(ex))
+            error = 1
+
+        context = {
+            'error': error,
+            'fecha_mostrar': fecha_mostrar,
+            'dia': aux_dia,
+        }
+
+        return render(request, 'pages/reserva_respuesta.html', context)
+
+    # busqueda de nuevo mes
+    if 'search_periodo' in request.POST.keys():
+        periodo = request.POST['search_periodo'].strip()
+        anio = periodo[0:4]
+        mes = periodo[4:6]
+
+        periodo_next = next_periodo(periodo)
+        periodo_ant = previous_periodo(periodo)
+        calendario = get_calendario_actividades(periodo)
+
+        context = {
+            'calendario': calendario,
+            'periodo_actual': periodo,
+            'periodo_next': periodo_next,
+            'periodo_ant': periodo_ant,
+            'autenticado': autenticado,
+            'status_preventa': settings.STATUS_PREVENTA,
+            'status_venta': settings.STATUS_VENTA,
+            'status_finalizado': settings.STATUS_FINALIZADO,
+            'status_anulado': settings.STATUS_ANULADO,
+        }
+
+        return render(request, 'pages/reserva_calendario.html', context)
+
+    anio = int(datetime.now().year)
+    mes = int(datetime.now().month)
+    anio_str = str(anio)
+    mes_str = str(mes)
+    if len(mes_str) == 1:
+        mes_str = "0" + mes_str
+
+    periodo_actual = anio_str + mes_str
+    periodo_next = next_periodo(periodo_actual)
+    periodo_ant = previous_periodo(periodo_actual)
+
+    calendario = get_calendario_actividades(periodo_actual)
+
+    # carrito de compras
+    cantidad_cart = 0
+    if 'productos_cart' in request.session.keys():
+        cantidad_cart = len(request.session['productos_cart'])
+
+    # web push
+    # usuarios para la notificacion
+    status_activo = apps.get_model('status', 'Status').objects.get(pk=1)
+    usuarios_notificacion = apps.get_model('permisos', 'UsersPerfiles').objects.filter(status_id=status_activo, notificacion=1).order_by('user_perfil_id')
+    lista_notificacion = ''
+    for usuario_notif in usuarios_notificacion:
+        lista_notificacion += str(usuario_notif.user_id.id) + '|'
+
+    if len(lista_notificacion) > 0:
+        lista_notificacion = lista_notificacion[0:len(lista_notificacion)-1]
+
+    # url push
+    url_push = settings.SUB_URL_EMPRESA
+    if url_push == 'pvi':
+        url_push = '/send_push'
+    else:
+        url_push = '/' + settings.SUB_URL_EMPRESA + '/send_push'
+
+    context = {
+        'url_push': url_push,
+        'lista_notificacion': lista_notificacion,
+
+        'cantidad_cart': cantidad_cart,
+        'calendario': calendario,
+        'periodo_actual': periodo_actual,
+        'periodo_next': periodo_next,
+        'periodo_ant': periodo_ant,
+        'url_carrito': reverse('carrito'),
+        'autenticado': autenticado,
+        'status_preventa': settings.STATUS_PREVENTA,
+        'status_venta': settings.STATUS_VENTA,
+        'status_finalizado': settings.STATUS_FINALIZADO,
+        'status_anulado': settings.STATUS_ANULADO,
+    }
+
+    return render(request, 'pages/reserva.html', context)

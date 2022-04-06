@@ -334,7 +334,7 @@ class CajasEgresosController(DefaultValues):
         # verificamos si es operacion externa
         try:
             ce_check = CajasEgresos.objects.get(pk=id_valor)
-            if ce_check.caja_movimiento_id > 0 or ce_check.venta_id > 0:
+            if ce_check.caja_movimiento_id > 0 or ce_check.venta_id > 0 or ce_check.plan_pago_id > 0 or ce_check.plan_pago_detalle_id > 0 or ce_check.plan_pago_pago_id > 0:
                 self.error_operation = 'Debe anular esta operacion desde su origen'
                 return False
 

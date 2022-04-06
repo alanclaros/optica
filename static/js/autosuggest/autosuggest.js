@@ -31,7 +31,6 @@ var autosuggest_url = ""; // Global link to the server-side script, that gives y
 // Used for controls that do not define their own server script urls.
 
 function autosuggest(id, url, onSelect) {
-
 	var array = suggest_custom_array_2;
 	var field = document.getElementById(id);
 	var exists = field.autosuggest;

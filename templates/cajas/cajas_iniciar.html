@@ -81,7 +81,7 @@
     <!--fin div contenedor-->
     <div class="col-sm-2">&nbsp;</div>
 </div>
-<form name="form_operation" method="post" action="{{url_main}}">
+<form name="form_operation" method="post" action="{% url 'index' %}">
     {% csrf_token %}
     <input type="hidden" name="module_x" value="{{module_x}}">
     <input type="hidden" name="module_x2" value="{{module_x2}}">
@@ -95,7 +95,7 @@
     <input type="hidden" name="id2" value="{{id2}}">
     <input type="hidden" name="id3" value="{{id3}}">
 </form>
-<form name="form_print" method="post" action="{{url_main}}" target="_blank">
+<form name="form_print" method="post" action="{% url 'index' %}" target="_blank">
     {% csrf_token %}
     <input type="hidden" name="module_x" value="{{module_x}}">
     <input type="hidden" name="operation_x" value="">

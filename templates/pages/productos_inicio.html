@@ -5,8 +5,19 @@
 {% load jinja_tags %}
 
 {% block title %} | Productos {% endblock %}
+
 {% block js_modulo %}
-<script type="text/javascript" src="{% static "" %}js/home_page.js"></script>
+<script>
+    $(function () {
+      //Initialize Select2 Elements
+      $('.select2').select2()
+
+      //Initialize Select2 Elements
+      $('.select2bs4').select2({
+        theme: 'bootstrap4'
+      })
+    });
+  </script>
 {% endblock %}
 
 {% block content %}
@@ -22,10 +33,7 @@
     <input type="hidden" name="producto" value="{{producto_session}}">
     
     <input type="hidden" name="tipos_montura_select" value="{{tipos_montura_select}}">
-    <input type="hidden" name="disenio_lentes_select" value="{{disenio_lentes_select}}">
     <input type="hidden" name="materiales_select" value="{{materiales_select}}">
-    <input type="hidden" name="colores_select" value="{{colores_select}}">
-    <input type="hidden" name="marcas_select" value="{{marcas_select}}">
     
     <input type="hidden" name="oferta" value="{{oferta}}">
     <input type="hidden" name="mas_vendido" value="{{mas_vendido}}">
@@ -33,14 +41,12 @@
 </form>
 <form name="form_linea" method="POST" action="{{url_main}}">
     {% csrf_token %}
+    <input type="hidden" name="producto" value="{{producto_session}}">
     <input type="hidden" name="search_linea_x" value="acc">
     <input type="hidden" name="linea" value="{{linea_session}}">
     
     <input type="hidden" name="tipos_montura_select" value="{{tipos_montura_select}}">
-    <input type="hidden" name="disenio_lentes_select" value="{{disenio_lentes_select}}">
     <input type="hidden" name="materiales_select" value="{{materiales_select}}">
-    <input type="hidden" name="colores_select" value="{{colores_select}}">
-    <input type="hidden" name="marcas_select" value="{{marcas_select}}">
     
     <input type="hidden" name="oferta" value="{{oferta}}">
     <input type="hidden" name="mas_vendido" value="{{mas_vendido}}">
@@ -51,6 +57,7 @@
     <input type="hidden" name="operation_x" value="">
     <input type="hidden" name="id" value="">
     <input type="hidden" name="url_main" value="{{url_main}}">
+    <input type="hidden" name="lista_lineas_ids" value="{{lista_lineas_ids}}">
 </form>
 <form name="form_inicio" method="POST" action="{{url_index}}">
     {% csrf_token %}

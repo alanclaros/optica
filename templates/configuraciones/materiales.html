@@ -75,7 +75,7 @@
             {% for material in materiales %}
             <tr class="back{{forloop.counter|back_class_color:material.status_id.status_id}}">
                 <td class="left w-70">
-                    {{material.material}}
+                    {{material.material}} ({{material.costo}} Bs.)
                 </td>
                 <td class="left w-16">
                     {{material.codigo}}

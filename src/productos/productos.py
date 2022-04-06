@@ -292,11 +292,7 @@ def productos_add(request):
     # lista de lineas
     lineas_lista = lista_controller.get_lista_lineas(request.user)
     tipos_montura_lista = lista_controller.get_lista_tipos_montura(request.user)
-    disenio_lentes_lista = lista_controller.get_lista_disenio_lentes(request.user)
     materiales_lista = lista_controller.get_lista_materiales(request.user)
-    colores_lista = lista_controller.get_lista_colores(request.user)
-    marcas_lista = lista_controller.get_lista_marcas(request.user)
-    proveedores_lista = lista_controller.get_lista_proveedores(request.user)
 
     # restricciones de columna
     if existe_error:
@@ -311,16 +307,14 @@ def productos_add(request):
         'url_main': '',
         'lineas_lista': lineas_lista,
         'tipos_montura_lista': tipos_montura_lista,
-        'disenio_lentes_lista': disenio_lentes_lista,
         'materiales_lista': materiales_lista,
-        'colores_lista': colores_lista,
-        'marcas_lista': marcas_lista,
-        'proveedores_lista': proveedores_lista,
         'db_tags': db_tags,
         'control_form': producto_controller.control_form,
         'js_file': producto_controller.modulo_session,
 
         'autenticado': 'si',
+        'tipos_montura_select': [],
+        'materiales_select': [],
 
         'module_x': settings.MOD_PRODUCTOS,
         'module_x2': '',
@@ -388,11 +382,11 @@ def productos_modify(request, producto_id):
     # lista de lineas
     lineas_lista = lista_controller.get_lista_lineas(request.user)
     tipos_montura_lista = lista_controller.get_lista_tipos_montura(request.user)
-    disenio_lentes_lista = lista_controller.get_lista_disenio_lentes(request.user)
     materiales_lista = lista_controller.get_lista_materiales(request.user)
-    colores_lista = lista_controller.get_lista_colores(request.user)
-    marcas_lista = lista_controller.get_lista_marcas(request.user)
-    proveedores_lista = lista_controller.get_lista_proveedores(request.user)
+
+    # tipos montura select
+    tipos_montura_select = apps.get_model('productos', 'ProductosTiposMontura').objects.filter(producto_id=producto)
+    materiales_select = apps.get_model('productos', 'ProductosMateriales').objects.filter(producto_id=producto)
 
     # productos relacionados
     lista_pr = ProductosRelacionados.objects.select_related('producto_relacion_id').select_related('producto_relacion_id__linea_id').filter(
@@ -424,14 +418,13 @@ def productos_modify(request, producto_id):
         'producto': producto,
         'datos_descripcion': datos_descripcion,
 
+        'tipos_montura_select': tipos_montura_select,
+        'materiales_select': materiales_select,
+
         'productos_relacionados': lista_relacionado,
         'lineas_lista': lineas_lista,
         'tipos_montura_lista': tipos_montura_lista,
-        'disenio_lentes_lista': disenio_lentes_lista,
         'materiales_lista': materiales_lista,
-        'colores_lista': colores_lista,
-        'marcas_lista': marcas_lista,
-        'proveedores_lista': proveedores_lista,
         'db_tags': db_tags,
         'control_form': producto_controller.control_form,
         'js_file': producto_controller.modulo_session,

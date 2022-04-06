@@ -29,21 +29,19 @@ from reportes.inventarios.rptSalidaAlmacen import rptSalidaAlmacen
 
 salida_almacen_controller = SalidasAlmacenController()
 lista_controller = ListasController()
-
-# salidas almacen
+stock_controller = StockController()
 
 
 @user_passes_test(lambda user: get_user_permission_operation(user, settings.MOD_SALIDAS_ALMACEN, 'lista'), 'without_permission')
 def salidas_almacen_index(request):
     permisos = get_permissions_user(request.user, settings.MOD_SALIDAS_ALMACEN)
-    stock_controller = StockController()
 
     vender_fracciones = 'no'
 
     # operaciones
     if 'operation_x' in request.POST.keys():
         operation = request.POST['operation_x']
-        if not operation in ['', 'add', 'anular', 'print', 'stock_producto']:
+        if not operation in ['', 'add', 'anular', 'print', 'stock_monturas']:
             return render(request, 'pages/without_permission.html', {})
 
         if operation == 'add':
@@ -76,28 +74,22 @@ def salidas_almacen_index(request):
             else:
                 return render(request, 'pages/without_permission.html', {})
 
-        # stock del producto
-        if operation == 'stock_producto':
-            producto_id = request.POST['id'].strip()
-            almacen_id = request.POST['almacen'].strip()
+        # stock de monturas
+        if operation == 'stock_monturas':
+            tipo_montura_id = request.POST['tipo_montura_id'].strip()
+            almacen_id = request.POST['almacen_id'].strip()
 
-            stock_producto = stock_controller.stock_producto(producto_id=producto_id, user_perfil=request.user, almacen_id=almacen_id)
-            # lista de ids
-            stock_ids = ''
-            for stock in stock_producto:
-                stock_ids += str(stock.stock_id) + ','
-            if len(stock_ids) > 0:
-                stock_ids = stock_ids[0:len(stock_ids)-1]
+            stock_monturas = stock_controller.get_stock_montura(tipo_montura_id=tipo_montura_id, almacen_id=almacen_id, vendidas=0)
+            filas = []
+            for i in range(1, 51):
+                filas.append(i)
 
             context_stock = {
-                'stock_producto': stock_producto,
-                'stock_ids': stock_ids,
-                'producto_id': producto_id,
-                'vender_fracciones': vender_fracciones,
+                'stock_monturas': stock_monturas,
                 'autenticado': 'si',
-                'stock_js': 'SA',
+                'filas': filas,
             }
-            return render(request, 'inventarios/stock_producto_sin_fechas_lote.html', context_stock)
+            return render(request, 'inventarios/stock_monturas.html', context_stock)
 
     # verificamos mensajes
     if 'nuevo_mensaje' in request.session.keys():
@@ -155,15 +147,15 @@ def salidas_almacen_add(request):
             # error al adicionar
             messages.add_message(request, messages.SUCCESS, {'type': 'warning', 'title': 'Salidas Almacen!', 'description': salida_almacen_controller.error_operation})
 
-    # lista de productos
-    #lista_productos = producto_controller.lista_productos(combos=1)
-    lista_productos = producto_controller.lista_productos()
+    user_perfil = apps.get_model('permisos', 'UsersPerfiles').objects.get(user_id=request.user)
+    punto = apps.get_model('configuraciones', 'Puntos').objects.get(pk=user_perfil.punto_id)
+
+    # lista de tipos de montura
+    tipos_montura_lista = lista_controller.get_lista_tipos_montura(request.user)
+    lista_almacenes = lista_controller.get_lista_almacenes(request.user, punto.sucursal_id)
 
     # restricciones de columna
     db_tags = {}
-
-    # lista de almacenes
-    lista_almacenes = lista_controller.get_lista_almacenes(request.user, None)
 
     # cantidad de filas
     filas = []
@@ -173,7 +165,7 @@ def salidas_almacen_add(request):
     context = {
         'url_main': '',
         'operation_x': 'add',
-        'lista_productos': lista_productos,
+        'tipos_montura_lista': tipos_montura_lista,
         'lista_almacenes': lista_almacenes,
         'filas': filas,
         'db_tags': db_tags,

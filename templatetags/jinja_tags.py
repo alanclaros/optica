@@ -3,7 +3,7 @@ from django import template
 from django.conf import settings
 from django.apps import apps
 
-from utils.dates_functions import get_date_show
+from utils.dates_functions import get_date_show, show_periodo
 
 from controllers.SystemController import SystemController
 
@@ -236,16 +236,14 @@ def toint(number):
     return retorno
 
 
-@register.filter('venta_to_gastos')
-def venta_to_gastos(estado, tipo):
+@register.filter('venta_to_cobros')
+def venta_to_cobros(estado, tipo):
     try:
         retorno = 0
-        if tipo == 'add_gasto' or tipo == 'add_cobro':
-            if estado in [settings.STATUS_VENTA, settings.STATUS_SALIDA_ALMACEN, settings.STATUS_VUELTA_ALMACEN]:
+        if tipo == 'add_cobro':
+            if estado in [settings.STATUS_VENTA]:
                 retorno = 1
-        if tipo == 'add_items':
-            if estado in [settings.STATUS_VENTA, settings.STATUS_SALIDA_ALMACEN]:
-                retorno = 1
+
     except Exception as ex:
         retorno = 0
 
@@ -327,3 +325,54 @@ def get_forloop_menos1(forloop_number):
     retorno = int(forloop_number) - 1
 
     return retorno
+
+
+@register.filter('check_montura_select')
+def check_montura_select(tipo_montura_id, lista_select):
+    retorno = 0
+    if len(lista_select) > 0:
+        for objeto in lista_select:
+            if tipo_montura_id == objeto:
+                retorno = 1
+
+    return retorno
+
+
+@register.filter('pr_check_montura_select')
+def pr_check_montura_select(tipo_montura, productos_tipos_montura):
+    retorno = 0
+    if len(productos_tipos_montura) > 0:
+        for objeto in productos_tipos_montura:
+            if tipo_montura.tipo_montura_id == objeto.tipo_montura_id.tipo_montura_id:
+                retorno = 1
+
+    return retorno
+
+
+@register.filter('check_material_select')
+def check_material_select(material_id, lista_select):
+    #print('material: ', material)
+    #print('lista_select: ', lista_select)
+    retorno = 0
+    if len(lista_select) > 0:
+        for objeto in lista_select:
+            if material_id.material_id == objeto.material_id:
+                retorno = 1
+
+    return retorno
+
+
+@register.filter('pr_check_material_select')
+def pr_check_material_select(material, productos_materiales):
+    retorno = 0
+    if len(productos_materiales) > 0:
+        for objeto in productos_materiales:
+            if material.material_id == objeto.material_id.material_id:
+                retorno = 1
+
+    return retorno
+
+
+@register.filter('get_show_periodo')
+def get_show_periodo(periodo):
+    return show_periodo(periodo)

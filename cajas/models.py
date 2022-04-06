@@ -16,6 +16,14 @@ class CajasIngresos(models.Model):
     venta_id = models.IntegerField(blank=False, null=False, default=0)
     caja_movimiento_id = models.IntegerField(blank=False, null=False, default=0)
 
+    plan_pago_id = models.IntegerField(blank=False, null=False, default=0)
+    plan_pago_detalle_id = models.IntegerField(blank=False, null=False, default=0)
+    plan_pago_pago_id = models.IntegerField(blank=False, null=False, default=0)
+
+    pago_inicial = models.IntegerField(blank=False, null=False, default=0)
+    pago_final = models.IntegerField(blank=False, null=False, default=0)
+    pago_general = models.IntegerField(blank=False, null=False, default=0)
+
     fecha = DateTimeFieldCustome(null=True, blank=True)
     concepto = models.CharField(max_length=250, blank=False)
     monto = models.DecimalField(max_digits=12, decimal_places=2, blank=False, default=0)
@@ -39,6 +47,14 @@ class CajasEgresos(models.Model):
 
     venta_id = models.IntegerField(blank=False, null=False, default=0)
     caja_movimiento_id = models.IntegerField(blank=False, null=False, default=0)
+
+    plan_pago_id = models.IntegerField(blank=False, null=False, default=0)
+    plan_pago_detalle_id = models.IntegerField(blank=False, null=False, default=0)
+    plan_pago_pago_id = models.IntegerField(blank=False, null=False, default=0)
+
+    pago_inicial = models.IntegerField(blank=False, null=False, default=0)
+    pago_final = models.IntegerField(blank=False, null=False, default=0)
+    pago_general = models.IntegerField(blank=False, null=False, default=0)
 
     fecha = DateTimeFieldCustome(null=True, blank=True)
     concepto = models.CharField(max_length=250, blank=False)

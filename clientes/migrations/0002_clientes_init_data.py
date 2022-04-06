@@ -14,7 +14,7 @@ def load_data(apps, schema_editor):
     user_perfil = UsersPerfiles.objects.get(pk=1)
 
     cliente1 = Clientes.objects.create(nombres='', apellidos='SIN NOMBRE', razon_social='SIN NOMBRE', factura_a='SIN NOMBRE', ci_nit='0', telefonos='',
-                                       direccion='', email='', created_at='now', updated_at='now', punto_id=punto1, user_perfil_id=user_perfil, status_id=status_activo)
+                                       direccion='', email='', notificar=0, created_at='now', updated_at='now', punto_id=punto1, user_perfil_id=user_perfil, status_id=status_activo)
     cliente1.save()
 
 

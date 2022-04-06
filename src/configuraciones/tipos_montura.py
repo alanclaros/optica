@@ -9,9 +9,11 @@ from utils.permissions import get_user_permission_operation, get_permissions_use
 
 # clases
 from controllers.configuraciones.TiposMonturaController import TiposMonturaController
+from controllers.ListasController import ListasController
 
 # controlador del modulo
 tipos_montura_controller = TiposMonturaController()
+lista_controller = ListasController()
 
 mod_settings = tipos_montura_controller.modulo_id
 modelo_name = tipos_montura_controller.modelo_name
@@ -110,9 +112,11 @@ def tipos_montura_add(request):
 
     # restricciones de columna
     if existe_error:
-        db_tags = get_html_column(apps.get_model(app_name, modelo_name), 'descripcion', request, None, col_name, 'codigo', 'descripcion')
+        db_tags = get_html_column(apps.get_model(app_name, modelo_name), 'descripcion', request, None, col_name, 'codigo', 'descripcion', 'costo', 'numero_actual')
     else:
-        db_tags = get_html_column(apps.get_model(app_name, modelo_name), 'descripcion', None, None, col_name, 'codigo', 'descripcion')
+        db_tags = get_html_column(apps.get_model(app_name, modelo_name), 'descripcion', None, None, col_name, 'codigo', 'descripcion', 'costo', 'numero_actual')
+
+    proveedores_lista = lista_controller.get_lista_proveedores(request.user, str(settings.MOD_MATERIALES))
 
     context = {
         'url_main': 'url_main',
@@ -121,6 +125,7 @@ def tipos_montura_add(request):
         'control_form': tipos_montura_controller.control_form,
         'js_file': tipos_montura_controller.modulo_session,
         'autenticado': 'si',
+        'proveedores_lista': proveedores_lista,
 
         'module_x': mod_settings,
         'module_x2': '',
@@ -164,9 +169,11 @@ def tipos_montura_modify(request, tipo_montura_id):
 
     # restricciones de columna
     if existe_error:
-        db_tags = get_html_column(apps.get_model(app_name, modelo_name), 'descripcion', request, objeto, col_name, 'codigo', 'descripcion')
+        db_tags = get_html_column(apps.get_model(app_name, modelo_name), 'descripcion', request, objeto, col_name, 'codigo', 'descripcion', 'costo', 'numero_actual')
     else:
-        db_tags = get_html_column(apps.get_model(app_name, modelo_name), 'descripcion', None, objeto, col_name, 'codigo', 'descripcion')
+        db_tags = get_html_column(apps.get_model(app_name, modelo_name), 'descripcion', None, objeto, col_name, 'codigo', 'descripcion', 'costo', 'numero_actual')
+
+    proveedores_lista = lista_controller.get_lista_proveedores(request.user, str(settings.MOD_MATERIALES))
 
     context = {
         'url_main': 'url_main',
@@ -177,6 +184,7 @@ def tipos_montura_modify(request, tipo_montura_id):
         'js_file': tipos_montura_controller.modulo_session,
         'status_active': tipos_montura_controller.activo,
         'autenticado': 'si',
+        'proveedores_lista': proveedores_lista,
 
         'module_x': mod_settings,
         'module_x2': '',
@@ -226,9 +234,11 @@ def tipos_montura_delete(request, tipo_montura_id):
 
     # restricciones de columna
     if existe_error:
-        db_tags = get_html_column(apps.get_model(app_name, modelo_name), 'descripcion', request, objeto, col_name, 'codigo', 'descripcion')
+        db_tags = get_html_column(apps.get_model(app_name, modelo_name), 'descripcion', request, objeto, col_name, 'codigo', 'descripcion', 'costo', 'numero_actual')
     else:
-        db_tags = get_html_column(apps.get_model(app_name, modelo_name), 'descripcion', None, objeto, col_name, 'codigo', 'descripcion')
+        db_tags = get_html_column(apps.get_model(app_name, modelo_name), 'descripcion', None, objeto, col_name, 'codigo', 'descripcion', 'costo', 'numero_actual')
+
+    proveedores_lista = lista_controller.get_lista_proveedores(request.user, str(settings.MOD_MATERIALES))
 
     context = {
         'url_main': '',
@@ -241,6 +251,7 @@ def tipos_montura_delete(request, tipo_montura_id):
         'error_eliminar': tipos_montura_controller.error_operation,
         'status_active': tipos_montura_controller.activo,
         'autenticado': 'si',
+        'proveedores_lista': proveedores_lista,
 
         'module_x': mod_settings,
         'module_x2': '',

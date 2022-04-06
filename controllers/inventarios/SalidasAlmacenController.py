@@ -62,6 +62,7 @@ class SalidasAlmacenController(DefaultValues):
 
         # control del formulario
         self.control_form = "cbo|0|S|almacen|Almacen;"
+        self.control_form += "txt|1|S|tipo_montura|Tipo Montura;"
         self.control_form += "txt|2|S|concepto|Concepto"
 
     def index(self, request):
@@ -158,13 +159,6 @@ class SalidasAlmacenController(DefaultValues):
                 # if almacen.sucursal_id == punto_user.sucursal_id:
                 return True
 
-            if user_perfil.perfil_id.perfil_id == settings.PERFIL_ALMACEN:
-                # punto_user = apps.get_model('configuraciones', 'Puntos').objects.get(pk=user_perfil.punto_id)
-                # puntos_almacenes = apps.get_model('configuraciones', 'PuntosAlmacenes').objects.filter(punto_id=punto_user)
-                # for punto_almacen in puntos_almacenes:
-                #     if almacen == punto_almacen.almacen_id:
-                return True
-
             return False
 
         except Exception as ex:
@@ -181,10 +175,6 @@ class SalidasAlmacenController(DefaultValues):
                 # if user_perfil.punto_id.sucursal_id == registro.punto_id.sucursal_id:
                 return True
 
-            if user_perfil.perfil_id.perfil_id == settings.PERFIL_ALMACEN:
-                # if user_perfil.punto_id == registro.punto_id:
-                return True
-
             return False
 
         except Exception as ex:
@@ -198,6 +188,7 @@ class SalidasAlmacenController(DefaultValues):
             # activo
             status_registro = self.status_activo
             almacen_id = validate_number_int('almacen', request.POST['almacen'])
+            tipo_montura_id = validate_number_int('tipo montura', request.POST['tipo_montura'])
             concepto = validate_string('concepto', request.POST['concepto'], remove_specials='yes')
 
             # punto
@@ -205,10 +196,16 @@ class SalidasAlmacenController(DefaultValues):
             usuario_perfil = UsersPerfiles.objects.get(user_id=usuario)
             punto = Puntos.objects.get(pk=usuario_perfil.punto_id)
 
-            if almacen_id == '0':
+            if almacen_id == 0:
                 self.error_operation = 'Debe Seleccionar el Almacen'
                 return False
+
+            if tipo_montura_id == 0:
+                self.error_operation = 'Debe Seleccionar el Tipo de Montura'
+                return False
+
             almacen = Almacenes.objects.get(pk=almacen_id)
+            tipo_montura = apps.get_model('configuraciones', 'TiposMontura').objects.get(pk=tipo_montura_id)
 
             if not self.permission_operation(usuario_perfil, almacen):
                 self.error_operation = 'solo puede realizar salidas de su almacen'
@@ -216,6 +213,7 @@ class SalidasAlmacenController(DefaultValues):
 
             datos = {}
             datos['almacen_id'] = almacen
+            datos['tipo_montura_id'] = tipo_montura
             datos['punto_id'] = punto
             datos['status_id'] = status_registro
             datos['user_perfil_id'] = usuario_perfil
@@ -228,44 +226,25 @@ class SalidasAlmacenController(DefaultValues):
             # detalles del registro
             detalles = []
             for i in range(1, 51):
-                aux = request.POST['producto_' + str(i)].strip()
+                aux = request.POST['stock_' + str(i)].strip()
                 tb2 = request.POST['tb2_' + str(i)].strip()
 
-                if aux != '0':
-                    # vemos los ids del stock
-                    stock_ids = request.POST['stock_ids_'+aux].strip()
-                    division = stock_ids.split(',')
-                    if stock_ids != '':
-                        for s_id in division:
-                            aux_cant = 'cantidad_' + s_id
-                            aux_actual = 'actual_' + s_id
-                            aux_6 = '0'
+                if aux != '0' and tb2 != '':
+                    # registramos la salida
+                    pos1 = tb2.rfind('(')
+                    numero_montura = tb2[pos1+1:len(tb2)-1]
+                    dato_detalle = {}
+                    dato_detalle['stock_id'] = apps.get_model('inventarios', 'Stock').objects.get(pk=int(aux))
+                    dato_detalle['tipo_montura_nombre'] = tb2
+                    dato_detalle['numero_montura'] = int(numero_montura)
 
-                            cantidad = request.POST[aux_cant].strip()
-                            actual = request.POST[aux_actual].strip()
-
-                            cant_valor = 0 if cantidad == '' else Decimal(cantidad)
-                            actual_valor = 0 if actual == '' else Decimal(actual)
-
-                            if cant_valor > 0 and cant_valor <= actual_valor:
-                                # registramos la salida
-                                dato_detalle = {}
-                                dato_detalle['producto_id'] = Productos.objects.get(pk=int(aux))
-                                dato_detalle['cantidad'] = cant_valor
-                                dato_detalle['costo'] = Decimal(aux_6)
-                                dato_detalle['total'] = dato_detalle['cantidad'] * dato_detalle['costo']
-
-                                detalles.append(dato_detalle)
-                            else:
-                                if cant_valor > actual_valor:
-                                    self.error_operation = 'La cantidad no puede ser mayor a ' + str(actual_valor) + ' del producto ' + tb2
-                                    return False
+                    detalles.append(dato_detalle)
 
             # detalles
             datos['detalles'] = detalles
             # verificando que haya detalles
             if len(detalles) == 0:
-                self.error_operation = 'debe registrar al menos un producto'
+                self.error_operation = 'debe registrar al menos una montura'
                 return False
 
             if self.save_db(type, **datos):
@@ -283,18 +262,17 @@ class SalidasAlmacenController(DefaultValues):
 
         try:
             if len(datos['detalles']) == 0:
-                self.error_operation = 'debe registrar al menos un producto'
+                self.error_operation = 'debe registrar al menos una montura'
                 return False
 
             if not self.permission_operation(datos['user_perfil_id'], datos['almacen_id']):
                 self.error_operation = 'solo puede realizar salidas de su almacen'
                 return False
 
-            stock_controller = StockController()
-
             with transaction.atomic():
                 campos_add = {}
                 campos_add['almacen_id'] = datos['almacen_id']
+                campos_add['tipo_montura_id'] = datos['tipo_montura_id']
                 campos_add['punto_id'] = datos['punto_id']
                 campos_add['status_id'] = datos['status_id']
                 campos_add['user_perfil_id'] = datos['user_perfil_id']
@@ -309,27 +287,37 @@ class SalidasAlmacenController(DefaultValues):
                 registro_add.save()
 
                 # detalles
-                suma_subtotal = 0
-                suma_descuento = 0
-                suma_total = 0
                 for detalle in datos['detalles']:
-                    suma_subtotal += detalle['total']
-                    suma_total += detalle['total']
-                    detalle_add = RegistrosDetalles.objects.create(registro_id=registro_add, punto_id=datos['punto_id'], descuento=0, porcentaje_descuento=0, producto_id=detalle['producto_id'],
-                                                                   cantidad=detalle['cantidad'], costo=detalle['costo'], total=detalle['total'])
+                    detalle_add = RegistrosDetalles.objects.create(
+                        registro_id=registro_add, punto_id=datos['punto_id'], tipo_montura_id=datos['tipo_montura_id'], descuento=0, porcentaje_descuento=0,
+                        nombre_montura=detalle['tipo_montura_nombre'], numero_montura=detalle['numero_montura'], cantidad=1, costo=0, total=0)
                     detalle_add.save()
 
                     # actualizamos el stock
-                    stock_up = stock_controller.update_stock(user_perfil=datos['user_perfil_id'], almacen=datos['almacen_id'], producto=detalle['producto_id'], cantidad=(0-detalle['cantidad']))
-                    if not stock_up:
-                        self.error_operation = 'Error al actualizar stock'
+                    # verificamos el numero de montura en el stock
+                    filtros_stock = {}
+                    filtros_stock['almacen_id'] = registro_add.almacen_id
+                    filtros_stock['tipo_montura_id'] = registro_add.tipo_montura_id
+                    filtros_stock['numero_montura'] = detalle['numero_montura']
+                    filtros_stock['status_id'] = self.status_activo
+                    filtros_stock['vendida'] = 0
+                    cantidad_stock = apps.get_model('inventarios', 'Stock').objects.filter(**filtros_stock).count()
+                    if cantidad_stock == 0:
+                        self.error_operation = "no existe el stock de esta montura: " + detalle['tipo_montura_nombre']
+                        transaction.set_rollback(True)
                         return False
+                    else:
+                        stock_actual = apps.get_model('inventarios', 'Stock').objects.filter(**filtros_stock)
+                        stock1 = stock_actual.first()
+                        stock1.vendida = -1
+                        stock1.updated_at = datos['updated_at']
+                        stock1.save()
 
                 # actualizamos datos
                 registro_add.numero_registro = registro_add.registro_id
-                registro_add.subtotal = suma_subtotal
-                registro_add.descuento = suma_descuento
-                registro_add.total = suma_total
+                registro_add.subtotal = 0
+                registro_add.descuento = 0
+                registro_add.total = 0
                 registro_add.save()
 
                 self.error_operation = ''
@@ -344,6 +332,7 @@ class SalidasAlmacenController(DefaultValues):
         """verificando si se puede eliminar o no la tabla"""
         try:
             # puede anular el usuario con permiso de la sucursal
+            registro = apps.get_model('inventarios', 'Registros').objects.get(pk=id)
             permisos = get_permissions_user(usuario_perfil.user_id, settings.MOD_SALIDAS_ALMACEN)
 
             # registro
@@ -401,7 +390,6 @@ class SalidasAlmacenController(DefaultValues):
         """ anulamos en la bd """
         try:
             if self.can_anular(id, datos['user_perfil_id']):
-                stock_controller = StockController()
 
                 with transaction.atomic():
                     campos_update = {}
@@ -417,12 +405,20 @@ class SalidasAlmacenController(DefaultValues):
                     # actualizamos los detalles
                     registro = Registros.objects.get(pk=id)
                     registros_detalles = RegistrosDetalles.objects.filter(registro_id=registro)
-                    for registro_detalle in registros_detalles:
-                        stock_up = stock_controller.update_stock(user_perfil=datos['user_perfil_id'], almacen=registro.almacen_id, producto=registro_detalle.producto_id, cantidad=registro_detalle.cantidad)
+                    for detalle in registros_detalles:
+                        stock = apps.get_model('inventarios', 'Stock').objects.filter(
+                            almacen_id=registro.almacen_id, tipo_montura_id=registro.tipo_montura_id,
+                            numero_montura=detalle.numero_montura, status_id=self.status_activo)
 
-                        if not stock_up:
-                            self.error_operation = 'Error al actualizar stock'
+                        if not stock:
+                            transaction.set_rollback(True)
+                            self.error_operation = 'error al anular el stock'
                             return False
+                        else:
+                            stock_actual = stock.first()
+                            stock_actual.updated_at = datos['deleted_at']
+                            stock_actual.vendida = 0
+                            stock_actual.save()
 
                     self.error_operation = ''
                     return True

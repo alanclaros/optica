@@ -1,0 +1,75 @@
+{% load jinja_tags %}
+
+<div class="row align-items-center">
+    <div class="col-sm-2">&nbsp;</div>
+    <div class="col-sm-8">
+        <!--div contenedor-->
+        <br>
+        <!--alerts-->
+        {% include 'partials/_alerts.html' %}
+        
+        <form name="search" method="post" action="" onsubmit="return false;">
+            {% csrf_token %}
+            <table class="table3 w-100">
+                <tr>
+                    <th class="w-100 center" colspan="4">
+                        Opciones de Busqueda
+                    </th>
+                </tr>
+
+                <tr class="back1">
+                    <td class="right w-20">
+                        Nombre&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        <input type="text" name="search_nombres" id="search_nombres" class="form-control input w-80" value="{{ session.search_nombres }}" autocomplete="off">
+                    </td>
+                    <td class="right w-20">
+                        Apellidos&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        <input type="text" name="search_apellidos" id="search_apellidos" class="form-control input w-80" value="{{ session.search_apellidos }}" autocomplete="off">
+                    </td>
+                </tr>
+
+                <tr class="back2">
+                    <td colspan="4" class="center w-100">
+                        <button class="btn btn-primary btn-sm" name="search_button" onclick="sendSearchReserva();">
+                            <i class="nav-icon fas fa-search"></i>&nbsp;&nbsp;Buscar
+                        </button>
+                        <input type="hidden" name="search_button_x" value="acc">
+                        <input type="hidden" name="module_x" value="{{module_x}}">
+                        <input type="hidden" name="search_periodo" value="{{session.search_periodo}}">
+                        <input type="hidden" name="search_telefonos" value="{{session.search_telefonos}}">
+                    </td>
+                </tr>
+            </table>
+        </form>
+        
+        <div id="div_calendario">
+        {% with periodo_actual=periodo_actual periodo_ant=periodo_ant periodo_next=periodo_next calendario=calendario %}
+        {% include 'ventas/reservas_calendario.html' %}
+        {% endwith %}
+        </div>
+        
+        <form name="form_calendario" method="post" action="">
+            {% csrf_token %}
+            <input type="hidden" name="search_periodo" value="{{periodo_actual}}">
+        </form>
+        
+        <form name='form_registrar_reserva' method="POST" action="">
+            {% csrf_token %}
+            <input type="hidden" name="registrar_reserva" value="">
+            <input type="hidden" name="hora_id" value="">
+            <input type="hidden" name="dia" value="">
+            <input type="hidden" name="mensaje" value="">
+            <input type="hidden" name="nombres" value="">
+            <input type="hidden" name="apellidos" value="">
+            <input type="hidden" name="telefonos" value="">
+        </form>
+    </div>
+    <!--fin div contenedor-->
+    <div class="col-sm-2">&nbsp;</div>
+</div>
+
+<br><br><br><br><br><br><br><br>

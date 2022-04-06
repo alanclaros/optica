@@ -5,15 +5,11 @@ function mostrarImagenMaterial(id) {
 }
 
 function sendSearchMaterial() {
-    div_modulo = $("#div_block_content");
+    //div_modulo = $("#div_block_content");
     sendFormObject('search', div_modulo);
 }
 
 function sendFormMaterial(operation, message) {
-    //modal function
-    modalFunction = document.getElementById('modalFunctionSuccess');
-    modalF = $('#modalForm');
-
     switch (operation) {
         case ('add'):
             resValidation = verifyForm();
@@ -65,9 +61,6 @@ function sendFormMaterial(operation, message) {
 }
 
 function materialSaveForm() {
-    modalF = $('#modalForm');
-    div_modulo = $("#div_block_content");
-
     modalF.modal('toggle');
     document.forms['formulario'].elements['add_button'].disabled = true;
     document.forms['formulario'].elements['button_cancel'].disabled = true;
@@ -76,14 +69,10 @@ function materialSaveForm() {
 }
 
 function materialWarning() {
-    modalF = $('#modalForm');
     modalF.modal('toggle');
 }
 
 function materialDelete() {
-    modalF = $('#modalForm');
-    div_modulo = $("#div_block_content");
-
     modalF.modal('toggle');
     document.forms['formulario'].elements['add_button'].disabled = true;
     document.forms['formulario'].elements['button_cancel'].disabled = true;

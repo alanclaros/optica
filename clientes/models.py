@@ -20,6 +20,7 @@ class Clientes(models.Model):
     email = models.CharField(max_length=250, blank=False, null=False)
     razon_social = models.CharField(max_length=250, blank=False, null=False, default='')
     factura_a = models.CharField(max_length=250, blank=False, null=False, default='')
+    notificar = models.IntegerField(blank=False, null=False, default=0)
     created_at = DateTimeFieldCustome(null=True, blank=True)
     updated_at = DateTimeFieldCustome(null=True, blank=True)
     deleted_at = DateTimeFieldCustome(null=True, blank=True)

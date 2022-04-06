@@ -32,6 +32,21 @@
                     </td>
                 </tr>
                 
+                <tr class="back2">
+                    <td class="right w-20">
+                        N. Venta&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        <input type="text" autocomplete="off" class="form-control input right w-70" name="numero_actual_venta" id="numero_actual_venta" value="{{configuraciones.numero_actual_venta}}" onkeyup="validarNumero(this);txtValid(this);" onblur="txtValid(this);">
+                    </td>
+                    <td class="right w-20">
+                        &nbsp;
+                    </td>
+                    <td class="left w-30">
+                        &nbsp;
+                    </td>
+                </tr>
+                
                 <tr class="back1">
                     <td class="right w-20">
                         Aviso Entregar&nbsp;
@@ -129,7 +144,7 @@
 </div>
 
 <BR><BR>
-    <form name="form_operation" method="post" action="{{url_main}}">
+    <form name="form_operation" method="post" action="{% url 'index' %}">
         {% csrf_token %}
         <input type="hidden" name="module_x" value="{{module_x}}">
         <input type="hidden" name="module_x2" value="{{module_x2}}">

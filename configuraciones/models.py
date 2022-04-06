@@ -12,6 +12,7 @@ class Configuraciones(models.Model):
     cant_productos_home = models.IntegerField(blank=False, null=False)
     usar_fecha_servidor = models.CharField(max_length=20, blank=False, null=False, default='si')
     fecha_sistema = DateFieldCustome(null=True, blank=True)
+    numero_actual_venta = models.IntegerField(blank=False, null=False, default=0)
 
     # notificaciones laboratorio
     minutos_aviso_entregar = models.IntegerField(blank=False, null=False)
@@ -172,84 +173,6 @@ class PuntosAlmacenes(models.Model):
         db_table = 'puntos_almacenes'
 
 
-class Materiales(models.Model):
-    material_id = models.AutoField(primary_key=True, db_column='material_id')
-    material = models.CharField(max_length=150, blank=False, null=False, default='')
-    codigo = models.CharField(max_length=150, blank=False, null=False, default='')
-    descripcion = models.CharField(max_length=250, blank=False, null=False, default='')
-    imagen = models.CharField(max_length=250, unique=True, null=False, blank=False, default='')
-    imagen_thumb = models.CharField(max_length=250, unique=True, null=False, blank=False, default='')
-    status_id = models.ForeignKey(Status, to_field='status_id', on_delete=models.PROTECT, db_column='status_id')
-    created_at = DateTimeFieldCustome(null=True, blank=True)
-    updated_at = DateTimeFieldCustome(null=True, blank=True)
-    deleted_at = DateTimeFieldCustome(null=True, blank=True)
-
-    class Meta:
-        db_table = "materiales"
-
-
-class TiposMontura(models.Model):
-    tipo_montura_id = models.AutoField(primary_key=True, db_column='tipo_montura_id')
-    tipo_montura = models.CharField(max_length=150, blank=False, null=False, default='')
-    codigo = models.CharField(max_length=150, blank=False, null=False, default='')
-    descripcion = models.CharField(max_length=250, blank=False, null=False, default='')
-    imagen = models.CharField(max_length=250, unique=True, null=False, blank=False, default='')
-    imagen_thumb = models.CharField(max_length=250, unique=True, null=False, blank=False, default='')
-    status_id = models.ForeignKey(Status, to_field='status_id', on_delete=models.PROTECT, db_column='status_id')
-    created_at = DateTimeFieldCustome(null=True, blank=True)
-    updated_at = DateTimeFieldCustome(null=True, blank=True)
-    deleted_at = DateTimeFieldCustome(null=True, blank=True)
-
-    class Meta:
-        db_table = "tipos_montura"
-
-
-class DisenioLentes(models.Model):
-    disenio_lente_id = models.AutoField(primary_key=True, db_column='disenio_lente_id')
-    disenio_lente = models.CharField(max_length=150, blank=False, null=False, default='')
-    codigo = models.CharField(max_length=150, blank=False, null=False, default='')
-    descripcion = models.CharField(max_length=250, blank=False, null=False, default='')
-    imagen = models.CharField(max_length=250, unique=True, null=False, blank=False, default='')
-    imagen_thumb = models.CharField(max_length=250, unique=True, null=False, blank=False, default='')
-    status_id = models.ForeignKey(Status, to_field='status_id', on_delete=models.PROTECT, db_column='status_id')
-    created_at = DateTimeFieldCustome(null=True, blank=True)
-    updated_at = DateTimeFieldCustome(null=True, blank=True)
-    deleted_at = DateTimeFieldCustome(null=True, blank=True)
-
-    class Meta:
-        db_table = "disenio_lentes"
-
-
-class Marcas(models.Model):
-    marca_id = models.AutoField(primary_key=True, db_column='marca_id')
-    marca = models.CharField(max_length=150, blank=False, null=False, default='')
-    codigo = models.CharField(max_length=50, blank=False, null=False, default='')
-    descripcion = models.CharField(max_length=250, blank=False, null=False, default='')
-    imagen = models.CharField(max_length=250, unique=True, null=False, blank=False, default='')
-    imagen_thumb = models.CharField(max_length=250, unique=True, null=False, blank=False, default='')
-    status_id = models.ForeignKey(Status, to_field='status_id', on_delete=models.PROTECT, db_column='status_id')
-    created_at = DateTimeFieldCustome(null=True, blank=True)
-    updated_at = DateTimeFieldCustome(null=True, blank=True)
-    deleted_at = DateTimeFieldCustome(null=True, blank=True)
-
-    class Meta:
-        db_table = "marcas"
-
-
-class Colores(models.Model):
-    color_id = models.AutoField(primary_key=True, db_column='color_id')
-    color = models.CharField(max_length=150, blank=False, null=False, default='')
-    codigo = models.CharField(max_length=50, blank=False, null=False, default='')
-    color_hex = models.CharField(max_length=50, blank=False, null=False, default='')
-    status_id = models.ForeignKey(Status, to_field='status_id', on_delete=models.PROTECT, db_column='status_id')
-    created_at = DateTimeFieldCustome(null=True, blank=True)
-    updated_at = DateTimeFieldCustome(null=True, blank=True)
-    deleted_at = DateTimeFieldCustome(null=True, blank=True)
-
-    class Meta:
-        db_table = "colores"
-
-
 class Proveedores(models.Model):
     proveedor_id = models.AutoField(primary_key=True, db_column='proveedor_id')
     proveedor = models.CharField(max_length=150, blank=False, null=False, default='')
@@ -264,3 +187,104 @@ class Proveedores(models.Model):
 
     class Meta:
         db_table = "proveedores"
+
+
+class Materiales(models.Model):
+    material_id = models.AutoField(primary_key=True, db_column='material_id')
+    proveedor_id = models.ForeignKey(Proveedores, to_field='proveedor_id', on_delete=models.PROTECT, db_column='proveedor_id')
+    material = models.CharField(max_length=150, blank=False, null=False, default='')
+    codigo = models.CharField(max_length=150, blank=False, null=False, default='')
+    costo = models.DecimalField(max_digits=12, decimal_places=2, blank=False, null=False, default=0)
+    descripcion = models.CharField(max_length=250, blank=False, null=False, default='')
+    imagen = models.CharField(max_length=250, unique=True, null=False, blank=False, default='')
+    imagen_thumb = models.CharField(max_length=250, unique=True, null=False, blank=False, default='')
+    status_id = models.ForeignKey(Status, to_field='status_id', on_delete=models.PROTECT, db_column='status_id')
+    created_at = DateTimeFieldCustome(null=True, blank=True)
+    updated_at = DateTimeFieldCustome(null=True, blank=True)
+    deleted_at = DateTimeFieldCustome(null=True, blank=True)
+
+    class Meta:
+        db_table = "materiales"
+
+
+class TiposMontura(models.Model):
+    tipo_montura_id = models.AutoField(primary_key=True, db_column='tipo_montura_id')
+    proveedor_id = models.ForeignKey(Proveedores, to_field='proveedor_id', on_delete=models.PROTECT, db_column='proveedor_id')
+    tipo_montura = models.CharField(max_length=150, blank=False, null=False, default='')
+    codigo = models.CharField(max_length=150, blank=False, null=False, default='')
+    costo = models.DecimalField(max_digits=12, decimal_places=2, blank=False, null=False, default=0)
+    descripcion = models.CharField(max_length=250, blank=False, null=False, default='')
+    numero_actual = models.IntegerField(blank=False, null=False, default=0)
+    imagen = models.CharField(max_length=250, unique=True, null=False, blank=False, default='')
+    imagen_thumb = models.CharField(max_length=250, unique=True, null=False, blank=False, default='')
+    status_id = models.ForeignKey(Status, to_field='status_id', on_delete=models.PROTECT, db_column='status_id')
+    created_at = DateTimeFieldCustome(null=True, blank=True)
+    updated_at = DateTimeFieldCustome(null=True, blank=True)
+    deleted_at = DateTimeFieldCustome(null=True, blank=True)
+
+    class Meta:
+        db_table = "tipos_montura"
+
+
+class Laboratorios(models.Model):
+    laboratorio_id = models.AutoField(primary_key=True, db_column='laboratorio_id')
+    laboratorio = models.CharField(max_length=150, blank=False, null=False, default='')
+    codigo = models.CharField(max_length=50, blank=False, null=False, default='')
+    descripcion = models.CharField(max_length=250, blank=False, null=False, default='')
+    imagen = models.CharField(max_length=250, unique=True, null=False, blank=False, default='')
+    imagen_thumb = models.CharField(max_length=250, unique=True, null=False, blank=False, default='')
+    status_id = models.ForeignKey(Status, to_field='status_id', on_delete=models.PROTECT, db_column='status_id')
+    created_at = DateTimeFieldCustome(null=True, blank=True)
+    updated_at = DateTimeFieldCustome(null=True, blank=True)
+    deleted_at = DateTimeFieldCustome(null=True, blank=True)
+
+    class Meta:
+        db_table = "laboratorios"
+
+
+class Tecnicos(models.Model):
+    tecnico_id = models.AutoField(primary_key=True, db_column='tecnico_id')
+    tecnico = models.CharField(max_length=150, blank=False, null=False, default='')
+    codigo = models.CharField(max_length=50, blank=False, null=False, default='')
+    descripcion = models.CharField(max_length=250, blank=False, null=False, default='')
+    imagen = models.CharField(max_length=250, unique=True, null=False, blank=False, default='')
+    imagen_thumb = models.CharField(max_length=250, unique=True, null=False, blank=False, default='')
+    status_id = models.ForeignKey(Status, to_field='status_id', on_delete=models.PROTECT, db_column='status_id')
+    created_at = DateTimeFieldCustome(null=True, blank=True)
+    updated_at = DateTimeFieldCustome(null=True, blank=True)
+    deleted_at = DateTimeFieldCustome(null=True, blank=True)
+
+    class Meta:
+        db_table = "tecnicos"
+
+
+class Oftalmologos(models.Model):
+    oftalmologo_id = models.AutoField(primary_key=True, db_column='oftalmologo_id')
+    oftalmologo = models.CharField(max_length=150, blank=False, null=False, default='')
+    codigo = models.CharField(max_length=50, blank=False, null=False, default='')
+    descripcion = models.CharField(max_length=250, blank=False, null=False, default='')
+    imagen = models.CharField(max_length=250, unique=True, null=False, blank=False, default='')
+    imagen_thumb = models.CharField(max_length=250, unique=True, null=False, blank=False, default='')
+    status_id = models.ForeignKey(Status, to_field='status_id', on_delete=models.PROTECT, db_column='status_id')
+    created_at = DateTimeFieldCustome(null=True, blank=True)
+    updated_at = DateTimeFieldCustome(null=True, blank=True)
+    deleted_at = DateTimeFieldCustome(null=True, blank=True)
+
+    class Meta:
+        db_table = "oftalmologos"
+
+
+class Cupones(models.Model):
+    cupon_id = models.AutoField(primary_key=True, db_column='cupon_id')
+    cupon = models.CharField(max_length=150, null=False, blank=False, default='', db_column='cupon')
+    numero_usos = models.IntegerField(null=False, blank=False, default=1)
+    numero_actual_uso = models.IntegerField(null=False, blank=False, default=0)
+    porcentaje_descuento = models.DecimalField(max_digits=12, decimal_places=2, blank=False, null=False, default=0)
+    status_id = models.ForeignKey(Status, to_field='status_id', on_delete=models.PROTECT, db_column='status_id')
+
+    created_at = DateTimeFieldCustome(null=True, blank=True)
+    updated_at = DateTimeFieldCustome(null=True, blank=True)
+    deleted_at = DateTimeFieldCustome(null=True, blank=True)
+
+    class Meta:
+        db_table = 'cupones'

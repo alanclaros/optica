@@ -13,10 +13,8 @@ function arqueoCaja() {
 
 //acc, ingresos a caja
 function ingresosCaja() {
-	// ciudad = document.getElementById('ciudad').value;
-	// sucursal = document.getElementById('sucursal').value;
-	ciudad = '1';
-	sucursal = '1';
+	ciudad = document.getElementById('ciudad').value;
+	sucursal = document.getElementById('sucursal').value;
 
 	caja = document.getElementById('caja').value;
 	fecha_ini = document.getElementById('fecha_ini').value;
@@ -43,10 +41,9 @@ function ingresosCaja() {
 
 //acc, ingresos a caja excel
 function ingresosCajaExcel() {
-	// ciudad = document.getElementById('ciudad').value;
-	// sucursal = document.getElementById('sucursal').value;
-	ciudad = '1';
-	sucursal = '1';
+	ciudad = document.getElementById('ciudad').value;
+	sucursal = document.getElementById('sucursal').value;
+
 	caja = document.getElementById('caja').value;
 	fecha_ini = document.getElementById('fecha_ini').value;
 	fecha_fin = document.getElementById('fecha_fin').value;
@@ -72,10 +69,9 @@ function ingresosCajaExcel() {
 
 //egresos de caja
 function egresosCaja() {
-	// ciudad = document.getElementById('ciudad').value;
-	// sucursal = document.getElementById('sucursal').value;
-	ciudad = '1';
-	sucursal = '1';
+	ciudad = document.getElementById('ciudad').value;
+	sucursal = document.getElementById('sucursal').value;
+
 	caja = document.getElementById('caja').value;
 	fecha_ini = document.getElementById('fecha_ini').value;
 	fecha_fin = document.getElementById('fecha_fin').value;
@@ -101,10 +97,9 @@ function egresosCaja() {
 
 //egresos de caja excel
 function egresosCajaExcel() {
-	// ciudad = document.getElementById('ciudad').value;
-	// sucursal = document.getElementById('sucursal').value;
-	ciudad = '1';
-	sucursal = '1';
+	ciudad = document.getElementById('ciudad').value;
+	sucursal = document.getElementById('sucursal').value;
+
 	caja = document.getElementById('caja').value;
 	fecha_ini = document.getElementById('fecha_ini').value;
 	fecha_fin = document.getElementById('fecha_fin').value;
@@ -130,10 +125,9 @@ function egresosCajaExcel() {
 
 //movimientos de caja
 function movimientosCaja() {
-	// ciudad = document.getElementById('ciudad').value;
-	// sucursal = document.getElementById('sucursal').value;
-	ciudad = '1';
-	sucursal = '1';
+	ciudad = document.getElementById('ciudad').value;
+	sucursal = document.getElementById('sucursal').value;
+
 	caja = document.getElementById('caja').value;
 	fecha_ini = document.getElementById('fecha_ini').value;
 	fecha_fin = document.getElementById('fecha_fin').value;
@@ -159,10 +153,9 @@ function movimientosCaja() {
 
 //movimientos de caja excel
 function movimientosCajaExcel() {
-	// ciudad = document.getElementById('ciudad').value;
-	// sucursal = document.getElementById('sucursal').value;
-	ciudad = '1';
-	sucursal = '1';
+	ciudad = document.getElementById('ciudad').value;
+	sucursal = document.getElementById('sucursal').value;
+
 	caja = document.getElementById('caja').value;
 	fecha_ini = document.getElementById('fecha_ini').value;
 	fecha_fin = document.getElementById('fecha_fin').value;
@@ -278,8 +271,6 @@ function ventasReporte(operation) {
 	anulados = document.getElementById('anulados').checked ? 'si' : 'no';
 	preventa = document.getElementById('preventa').checked ? 'si' : 'no';
 	venta = document.getElementById('venta').checked ? 'si' : 'no';
-	salida = document.getElementById('salida').checked ? 'si' : 'no';
-	vuelta = document.getElementById('vuelta').checked ? 'si' : 'no';
 	finalizado = document.getElementById('finalizado').checked ? 'si' : 'no';
 
 	document.forms['form_print'].elements['operation_x2'].value = operation;
@@ -291,8 +282,6 @@ function ventasReporte(operation) {
 	document.forms['form_print'].elements['anulados'].value = anulados;
 	document.forms['form_print'].elements['preventa'].value = preventa;
 	document.forms['form_print'].elements['venta'].value = venta;
-	document.forms['form_print'].elements['salida'].value = salida;
-	document.forms['form_print'].elements['vuelta'].value = vuelta;
 	document.forms['form_print'].elements['finalizado'].value = finalizado;
 
 	document.forms['form_print'].submit();
@@ -300,14 +289,16 @@ function ventasReporte(operation) {
 
 //stock productos
 function stockProductosReporte(operation) {
-	linea = document.getElementById('linea').value;
-	fecha_ini = document.getElementById('fecha_ini').value;
-	fecha_fin = document.getElementById('fecha_fin').value;
+	tipo_montura = document.getElementById('tipo_montura').value;
+	almacen = document.getElementById('almacen').value;
+	vendidas = document.getElementById('vendidas').checked ? 'si' : 'no';
+	sin_vender = document.getElementById('sin_vender').checked ? 'si' : 'no';
 
 	document.forms['form_print'].elements['operation_x2'].value = operation;
-	document.forms['form_print'].elements['linea'].value = linea;
-	document.forms['form_print'].elements['fecha_ini'].value = fecha_ini;
-	document.forms['form_print'].elements['fecha_fin'].value = fecha_fin;
+	document.forms['form_print'].elements['tipo_montura'].value = tipo_montura;
+	document.forms['form_print'].elements['almacen'].value = almacen;
+	document.forms['form_print'].elements['vendidas'].value = vendidas;
+	document.forms['form_print'].elements['sin_vender'].value = sin_vender;
 
 	document.forms['form_print'].submit();
 }
@@ -325,7 +316,6 @@ function cargarSucursalesCiudad() {
 	else {
 		$("#" + 'div_caja').html('<select name="caja" id="caja" class="form-control input w-90 h-35"><option value="0">(TODOS)</option></select>');
 		//cargamos sucursales
-		imagen = '<img src="/static/img/pass/loading2.gif">';
 		//url_main = '/enviardinero/';
 		token = document.forms['formulario'].elements['csrfmiddlewaretoken'].value;
 		datos = {
@@ -334,7 +324,7 @@ function cargarSucursalesCiudad() {
 			'operation_x': 'buscar_sucursal',
 			'csrfmiddlewaretoken': token,
 		}
-		$("#" + 'div_sucursal').html(imagen);
+		$("#" + 'div_sucursal').html(imgLoading2);
 		$("#" + 'div_sucursal').load(url_main, datos, function () {
 			//termina de cargar la ventana
 			//resultadoBusqedaCI();
@@ -352,7 +342,6 @@ function cargarCajasSucursal() {
 	}
 	else {
 		//cargamos sucursales
-		imagen = '<img src="/static/img/pass/loading2.gif">';
 		//url_main = '/enviardinero/';
 		token = document.forms['formulario'].elements['csrfmiddlewaretoken'].value;
 		datos = {
@@ -361,7 +350,7 @@ function cargarCajasSucursal() {
 			'operation_x': 'buscar_caja',
 			'csrfmiddlewaretoken': token,
 		}
-		$("#" + 'div_caja').html(imagen);
+		$("#" + 'div_caja').html(imgLoading2);
 		$("#" + 'div_caja').load(url_main, datos, function () {
 			//termina de cargar la ventana
 			//resultadoBusqedaCI();
@@ -381,7 +370,6 @@ function cargarSucursalesAlmacen() {
 	else {
 		$("#" + 'div_almacen').html('<select name="almacen" id="almacen" class="form-control input w-90 h-35"><option value="0">(TODOS)</option></select>');
 		//cargamos sucursales
-		imagen = '<img src="/static/img/pass/loading2.gif">';
 		//url_main = '/enviardinero/';
 		token = document.forms['formulario'].elements['csrfmiddlewaretoken'].value;
 		datos = {
@@ -390,7 +378,7 @@ function cargarSucursalesAlmacen() {
 			'operation_x': 'buscar_sucursal_almacen',
 			'csrfmiddlewaretoken': token,
 		}
-		$("#" + 'div_sucursal').html(imagen);
+		$("#" + 'div_sucursal').html(imgLoading2);
 		$("#" + 'div_sucursal').load(url_main, datos, function () {
 			//termina de cargar la ventana
 			//resultadoBusqedaCI();
@@ -408,7 +396,6 @@ function cargarAlmacenesSucursal() {
 	}
 	else {
 		//cargamos sucursales
-		imagen = '<img src="/static/img/pass/loading2.gif">';
 		//url_main = '/enviardinero/';
 		token = document.forms['formulario'].elements['csrfmiddlewaretoken'].value;
 		datos = {
@@ -417,7 +404,7 @@ function cargarAlmacenesSucursal() {
 			'operation_x': 'buscar_almacen',
 			'csrfmiddlewaretoken': token,
 		}
-		$("#" + 'div_almacen').html(imagen);
+		$("#" + 'div_almacen').html(imgLoading2);
 		$("#" + 'div_almacen').load(url_main, datos, function () {
 			//termina de cargar la ventana
 			//resultadoBusqedaCI();
@@ -437,7 +424,6 @@ function cargarSucursalesCiudadPunto() {
 	else {
 		$("#" + 'div_punto').html('<select name="punto" id="punto" class="form-control input w-90 h-35"><option value="0">(TODOS)</option></select>');
 		//cargamos sucursales
-		imagen = '<img src="/static/img/pass/loading2.gif">';
 		//url_main = '/enviardinero/';
 		token = document.forms['formulario'].elements['csrfmiddlewaretoken'].value;
 		datos = {
@@ -446,7 +432,7 @@ function cargarSucursalesCiudadPunto() {
 			'operation_x': 'buscar_sucursal_punto',
 			'csrfmiddlewaretoken': token,
 		}
-		$("#" + 'div_sucursal').html(imagen);
+		$("#" + 'div_sucursal').html(imgLoading2);
 		$("#" + 'div_sucursal').load(url_main, datos, function () {
 			//termina de cargar la ventana
 			//resultadoBusqedaCI();
@@ -464,7 +450,6 @@ function cargarPuntosSucursal() {
 	}
 	else {
 		//cargamos sucursales
-		imagen = '<img src="/static/img/pass/loading2.gif">';
 		//url_main = '/enviardinero/';
 		token = document.forms['formulario'].elements['csrfmiddlewaretoken'].value;
 		datos = {
@@ -473,7 +458,7 @@ function cargarPuntosSucursal() {
 			'operation_x': 'buscar_punto',
 			'csrfmiddlewaretoken': token,
 		}
-		$("#" + 'div_punto').html(imagen);
+		$("#" + 'div_punto').html(imgLoading2);
 		$("#" + 'div_punto').load(url_main, datos, function () {
 			//termina de cargar la ventana
 			//resultadoBusqedaCI();

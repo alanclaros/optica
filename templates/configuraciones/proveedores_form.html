@@ -140,14 +140,14 @@
     {% csrf_token %}
 </form>
 
-<form name="form_img" method="post" action="" target="_blank">
+<form name="form_img" method="post" action="{% url 'index' %}" target="_blank">
     {% csrf_token %}
     <input type="hidden" name="module_x" value="{{module_x}}">
     <input type="hidden" name="id" value="{{id}}">
     <input type="hidden" name="operation_x" value="mostrar_imagen">
 </form>
 
-<form name="form_operation" method="post" action="">
+<form name="form_operation" method="post" action="{% url 'index' %}">
     {% csrf_token %}
     <input type="hidden" name="module_x" value="{{module_x}}">
     <input type="hidden" name="module_x2" value="{{module_x2}}">

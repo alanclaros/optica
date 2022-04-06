@@ -217,7 +217,7 @@ class ClientesController(DefaultValues):
         filtros['status_id__in'] = [self.activo]
 
         if telefonos.strip() != '':
-            filtros['telefonos__iexact'] = telefonos
+            filtros['telefonos__icontains'] = telefonos
         if apellidos.strip() != '':
             filtros['apellidos__icontains'] = apellidos
         if nombres.strip() != '':

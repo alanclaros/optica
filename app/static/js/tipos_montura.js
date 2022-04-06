@@ -5,15 +5,10 @@ function mostrarImagenTipoMontura(id) {
 }
 
 function sendSearchTipoMontura() {
-    div_modulo = $("#div_block_content");
     sendFormObject('search', div_modulo);
 }
 
 function sendFormTipoMontura(operation, message) {
-    //modal function
-    modalFunction = document.getElementById('modalFunctionSuccess');
-    modalF = $('#modalForm');
-
     switch (operation) {
         case ('add'):
             resValidation = verifyForm();
@@ -65,9 +60,6 @@ function sendFormTipoMontura(operation, message) {
 }
 
 function tipoMonturaSaveForm() {
-    modalF = $('#modalForm');
-    div_modulo = $("#div_block_content");
-
     modalF.modal('toggle');
     document.forms['formulario'].elements['add_button'].disabled = true;
     document.forms['formulario'].elements['button_cancel'].disabled = true;
@@ -76,14 +68,10 @@ function tipoMonturaSaveForm() {
 }
 
 function tipoMonturaWarning() {
-    modalF = $('#modalForm');
     modalF.modal('toggle');
 }
 
 function tipoMonturaDelete() {
-    modalF = $('#modalForm');
-    div_modulo = $("#div_block_content");
-
     modalF.modal('toggle');
     document.forms['formulario'].elements['add_button'].disabled = true;
     document.forms['formulario'].elements['button_cancel'].disabled = true;

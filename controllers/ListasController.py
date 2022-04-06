@@ -74,7 +74,7 @@ class ListasController(object):
         :return: (list) modulos list
         """
 
-        lista_modulos = apps.get_model('permisos', 'Modulos').objects.filter(enabled=True).order_by('position')
+        lista_modulos = apps.get_model('permisos', 'Modulos').objects.filter(enabled=True).order_by('grupo', 'position')
 
         return lista_modulos
 
@@ -180,13 +180,13 @@ class ListasController(object):
 
         return lista_tipos_montura
 
-    def get_lista_disenio_lentes(self, user, module=''):
+    def get_lista_laboratorios(self, user, module=''):
         status_activo = apps.get_model('status', 'Status').objects.get(pk=int(settings.STATUS_ACTIVO))
         filtros = {}
         filtros['status_id'] = status_activo
-        lista_disenios = apps.get_model('configuraciones', 'DisenioLentes').objects.filter(**filtros).order_by('disenio_lente')
+        lista_laboratorios = apps.get_model('configuraciones', 'Laboratorios').objects.filter(**filtros).order_by('laboratorio')
 
-        return lista_disenios
+        return lista_laboratorios
 
     def get_lista_materiales(self, user, module=''):
         status_activo = apps.get_model('status', 'Status').objects.get(pk=int(settings.STATUS_ACTIVO))
@@ -196,21 +196,21 @@ class ListasController(object):
 
         return lista_materiales
 
-    def get_lista_colores(self, user, module=''):
+    def get_lista_tecnicos(self, user, module=''):
         status_activo = apps.get_model('status', 'Status').objects.get(pk=int(settings.STATUS_ACTIVO))
         filtros = {}
         filtros['status_id'] = status_activo
-        lista_colores = apps.get_model('configuraciones', 'Colores').objects.filter(**filtros).order_by('color')
+        lista_tecnicos = apps.get_model('configuraciones', 'Tecnicos').objects.filter(**filtros).order_by('tecnico')
 
-        return lista_colores
+        return lista_tecnicos
 
-    def get_lista_marcas(self, user, module=''):
+    def get_lista_oftalmologos(self, user, module=''):
         status_activo = apps.get_model('status', 'Status').objects.get(pk=int(settings.STATUS_ACTIVO))
         filtros = {}
         filtros['status_id'] = status_activo
-        lista_marcas = apps.get_model('configuraciones', 'Marcas').objects.filter(**filtros).order_by('marca')
+        lista_oftalmologos = apps.get_model('configuraciones', 'Oftalmologos').objects.filter(**filtros).order_by('oftalmologo')
 
-        return lista_marcas
+        return lista_oftalmologos
 
     def get_lista_proveedores(self, user, module=''):
         status_activo = apps.get_model('status', 'Status').objects.get(pk=int(settings.STATUS_ACTIVO))

@@ -41,6 +41,7 @@ DATO_REGISTRO = ''
 RPT_ALMACEN = 'almacen'
 RPT_ALMACEN2 = 'almacen2'
 RPT_FECHA = 'fecha'
+RPT_TIPO_MONTURA = 'tipo montura'
 RPT_CONCEPTO = 'concepto'
 RPT_ANULADO = ''
 
@@ -81,6 +82,12 @@ def myFirstPage(canvas, doc):
     canvas.drawRightString(posX*mm, posY*mm, 'Destino: ')
     texto.setTextOrigin((posX-4)*mm, posY*mm)
     texto.textOut(RPT_ALMACEN2)
+
+    # tipo montura
+    posY = posY - altoTxt
+    canvas.drawRightString((posX-1)*mm, posY*mm, 'Montura: ')
+    texto.setTextOrigin((posX-4)*mm, posY*mm)
+    texto.textOut(RPT_TIPO_MONTURA)
 
     # fecha
     posY = posY - altoTxt
@@ -136,7 +143,7 @@ def rptMovimientoAlmacen(buffer_pdf, usuario, registro_id):
 
     # registros
     registro = Registros.objects.select_related('almacen_id').select_related('almacen_id__sucursal_id').select_related('user_perfil_id').get(pk=registro_id)
-    registros_detalles = RegistrosDetalles.objects.select_related('producto_id').filter(registro_id=registro).order_by('producto_id__producto')
+    registros_detalles = RegistrosDetalles.objects.filter(registro_id=registro).order_by('numero_montura')
 
     # verificamos si esta anulado
     dato_anulado = ''
@@ -145,10 +152,11 @@ def rptMovimientoAlmacen(buffer_pdf, usuario, registro_id):
         motivo_anula = registro.motivo_anula
         dato_anulado = usuario_perfil_anula.user_id.username + ', ' + motivo_anula
 
-    global DATO_REGISTRO, RPT_ALMACEN, RPT_FECHA, RPT_CONCEPTO, RPT_ANULADO
+    global DATO_REGISTRO, RPT_ALMACEN, RPT_FECHA, RPT_TIPO_MONTURA, RPT_CONCEPTO, RPT_ANULADO
     DATO_REGISTRO = str(registro.registro_id)
     RPT_ALMACEN = registro.almacen_id.sucursal_id.sucursal + ' - ' + registro.almacen_id.almacen
     RPT_FECHA = get_date_show(fecha=registro.fecha, formato='dd-MMM-yyyy HH:ii')
+    RPT_TIPO_MONTURA = registro.tipo_montura_id.tipo_montura
     RPT_CONCEPTO = registro.concepto
     RPT_ANULADO = dato_anulado
 
@@ -175,36 +183,36 @@ def rptMovimientoAlmacen(buffer_pdf, usuario, registro_id):
     # armamos
     Story = []
     if RPT_ANULADO == '':
-        Story.append(Spacer(100*mm, 48*mm))
-    else:
         Story.append(Spacer(100*mm, 54*mm))
+    else:
+        Story.append(Spacer(100*mm, 60*mm))
 
     # tabla
     datos_tabla = []
     data = []
 
-    data.append(['Producto', 'Cantidad', 'Costo', 'Total'])
+    data.append(['Tipo Montura', 'Cantidad', 'Costo', 'Total'])
     filas = 0
     total = 0
 
     # cargamos los registros
     for detalle in registros_detalles:
-        producto = Paragraph(detalle.producto_id.producto, style_tabla_datos)
+        tipo_montura = Paragraph(detalle.nombre_montura, style_tabla_datos)
 
         datos_tabla = []
-        datos_tabla = [producto, str(detalle.cantidad), str(detalle.costo), str(detalle.total)]
+        datos_tabla = [tipo_montura, str(detalle.cantidad), str(detalle.costo), str(detalle.total)]
 
         data.append(datos_tabla)
         filas += 1
         total += detalle.total
 
     # aniadimos la tabla
-    datos_tabla = ['', '', 'Subtotal: ', str(round(total, 2))]
-    data.append(datos_tabla)
-    datos_tabla = ['', '% ' + str(registro.porcentaje_descuento), 'Descuento: ', str(round(registro.descuento, 2))]
-    data.append(datos_tabla)
-    datos_tabla = ['', ' ', 'Total: ', str(round(registro.total, 2))]
-    data.append(datos_tabla)
+    # datos_tabla = ['', '', 'Subtotal: ', str(round(total, 2))]
+    # data.append(datos_tabla)
+    # datos_tabla = ['', '% ' + str(registro.porcentaje_descuento), 'Descuento: ', str(round(registro.descuento, 2))]
+    # data.append(datos_tabla)
+    # datos_tabla = ['', ' ', 'Total: ', str(round(registro.total, 2))]
+    # data.append(datos_tabla)
 
     tabla_datos = Table(data, colWidths=[110*mm, 20*mm, 20*mm, 25*mm], repeatRows=1)
     num_cols = 4-1

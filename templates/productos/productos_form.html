@@ -19,6 +19,7 @@
             <span class="link_blue pointer" onclick="backWindow();">Volver</span>
         </div>
         <br>
+        
         <form name="formulario" id="formulario" method="post" action="" onsubmit="return false;">
             {% csrf_token %}
             <table class="table3 w-100">
@@ -62,91 +63,46 @@
                     <td class="right w-20">
                         Linea&nbsp;:&nbsp;
                     </td>
-                    <td class="left w-30">
+                    <td colspan="3" class="left w-80">
                         <select name="linea_id" id="linea_id" class="form-control h-35 input w-90 {% if operation_x == 'delete' %}readonly=" readonly"{% endif %}">
                             {% for linea in lineas_lista %}
                             <option value="{{linea.linea_id}}" {% if producto.linea_id.linea_id == linea.linea_id %}selected{% endif %}>{{linea.linea}}</option>
                             {% endfor %}
                         </select>
                     </td>
+                </tr>
+                
+                <tr class="back2">
                     <td class="right w-20">
                         T. Montura&nbsp;:&nbsp;
                     </td>
-                    <td class="left w-30">
-                        <select name="tipo_montura_id" id="tipo_montura_id" class="form-control h-35 input w-90 {% if operation_x == 'delete' %}readonly=" readonly"{% endif %}">
+                    <td colspan="3" class="left w-80">
+                        <select class="form-control input w-99 select2" name="tipos_montura_select" multiple="multiple" data-placeholder="Tipo Montura">
                             {% for tipo_montura in tipos_montura_lista %}
-                            <option value="{{tipo_montura.tipo_montura_id}}" {% if producto.tipo_montura_id.tipo_montura_id == tipo_montura.tipo_montura_id %}selected{% endif %}>{{tipo_montura.tipo_montura}}</option>
+                            {% with is_select=tipo_montura|pr_check_montura_select:tipos_montura_select %}
+                            <option value="{{tipo_montura.tipo_montura_id}}" {% if is_select == 1 %}selected{% endif %}>{{tipo_montura.tipo_montura}}</option>
+                            {% endwith %}
                             {% endfor %}
                         </select>
                     </td>
                 </tr>
                 
                 <tr class="back1">
-                    <td class="right w-20">
-                        Dise&#241;o&nbsp;:&nbsp;
-                    </td>
-                    <td class="left w-30">
-                        <select name="disenio_lente_id" id="disenio_lente_id" class="form-control h-35 input w-90 {% if operation_x == 'delete' %}readonly=" readonly"{% endif %}">
-                            {% for disenio_lente in disenio_lentes_lista %}
-                            <option value="{{disenio_lente.disenio_lente_id}}" {% if producto.disenio_lente_id.disenio_lente_id == disenio_lente.disenio_lente_id %}selected{% endif %}>{{disenio_lente.disenio_lente}}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
                     <td class="right w-20">
                         Material&nbsp;:&nbsp;
                     </td>
-                    <td class="left w-30">
-                        <select name="material_id" id="material_id" class="form-control h-35 input w-90 {% if operation_x == 'delete' %}readonly=" readonly"{% endif %}">
+                    <td colspan="3" class="left w-80">
+                        <select class="form-control input w-99 select2" name="materiales_select" multiple="multiple" data-placeholder="Material">
                             {% for material in materiales_lista %}
-                            <option value="{{material.material_id}}" {% if producto.material_id.material_id == material.material_id %}selected{% endif %}>{{material.material}}</option>
+                            {% with is_select=material|pr_check_material_select:materiales_select %}
+                            <option value="{{material.material_id}}" {% if is_select == 1 %}selected{% endif %}>{{material.material}}</option>
+                            {% endwith %}
                             {% endfor %}
                         </select>
-                    </td>
-                </tr>
-                
-                <tr class="back1">
-                    <td class="right w-20">
-                        Color&nbsp;:&nbsp;
-                    </td>
-                    <td class="left w-30">
-                        <select name="color_id" id="color_id" class="form-control h-35 input w-90 {% if operation_x == 'delete' %}readonly=" readonly"{% endif %}">
-                            {% for color in colores_lista %}
-                            <option value="{{color.color_id}}" {% if producto.color_id.color_id == color.color_id %}selected{% endif %}>{{color.color}}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                    <td class="right w-20">
-                        Marca&nbsp;:&nbsp;
-                    </td>
-                    <td class="left w-30">
-                        <select name="marca_id" id="marca_id" class="form-control h-35 input w-90 {% if operation_x == 'delete' %}readonly=" readonly"{% endif %}">
-                            {% for marca in marcas_lista %}
-                            <option value="{{marca.marca_id}}" {% if producto.marca_id.marca_id == marca.marca_id %}selected{% endif %}>{{marca.marca}}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                </tr>
-                
-                <tr class="back1">
-                    <td class="right w-20">
-                        Proveedor&nbsp;:&nbsp;
-                    </td>
-                    <td class="left w-30">
-                        <select name="proveedor_id" id="proveedor_id" class="form-control h-35 input w-90 {% if operation_x == 'delete' %}readonly=" readonly"{% endif %}">
-                            {% for proveedor in proveedores_lista %}
-                            <option value="{{proveedor.proveedor_id}}" {% if producto.proveedor_id.proveedor_id == proveedor.proveedor_id %}selected{% endif %}>{{proveedor.proveedor}}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                    <td class="right w-20">
-                        S. Minimo&nbsp;:&nbsp;
-                    </td>
-                    <td class="left w-30">
-                        <input type="text" {% if operation_x == "delete" %}readonly="readonly" {% endif %} autocomplete="off" class="form-control input right w-60" {% autoescape off %} {{db_tags.stock_minimo}} {% endautoescape %}>
                     </td>
                 </tr>
 
-                <tr class="back1">
+                <tr class="back2">
                     <td class="right w-20">
                         Precio&nbsp;:&nbsp;
                     </td>
@@ -191,7 +147,7 @@
                     </td>
                 </tr>
                 
-                <tr class="back1">
+                <tr class="back2">
                     <td class="right w-20">
                         Oferta&nbsp;:&nbsp;
                     </td>
@@ -327,7 +283,7 @@
                     <td colspan="4" class="left w-100">&nbsp;</td>
                 </tr>
 
-                <tr class="back1">
+                <tr class="back2">
                     <td colspan="4" class="center w-100">
                         {% if operation_x == "add" %}
                         <button class="btn btn-secondary btn-sm" name="button_cancel" onclick="backWindow();">
@@ -379,10 +335,22 @@
     <div class="col-sm-2">&nbsp;</div>
 </div>
 <!--fin div contenedor-->
-<form name="form_cancel" method="post" action="{{url_main}}">
+<script>
+    $(function () {
+      //Initialize Select2 Elements
+      $('.select2').select2()
+
+      //Initialize Select2 Elements
+      $('.select2bs4').select2({
+        theme: 'bootstrap4'
+      })
+    });
+  </script>
+
+<form name="form_cancel" method="post" action="{% url 'index' %}">
     {% csrf_token %}
 </form>
-<form name="form_operation" method="post" action="{{url_main}}">
+<form name="form_operation" method="post" action="{% url 'index' %}">
     {% csrf_token %}
     <input type="hidden" name="module_x" value="{{module_x}}">
     <input type="hidden" name="module_x2" value="{{module_x2}}">

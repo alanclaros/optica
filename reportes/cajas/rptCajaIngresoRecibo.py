@@ -81,7 +81,7 @@ def rptCajaIngresoRecibo(buffer, caja_ingreso_id):
     if ci_data.venta_id != 0:
         venta = apps.get_model('ventas', 'Ventas').objects.get(pk=ci_data.venta_id)
         pdf.drawRightString(posX*mm, posY*mm, 'Venta: ')
-        pdf.drawString(posX*mm, posY*mm, '#' + venta.numero_contrato + ' ' + venta.apellidos + ' ' + venta.nombres + ' (' + str(venta.venta_id) + ')')
+        pdf.drawString(posX*mm, posY*mm, '#' + str(venta.numero_venta) + ' ' + venta.nombres + ' ' + venta.apellidos)
         posY = posY - altoTxt
         texto.setTextOrigin(posX*mm, posY*mm)
 

@@ -1,14 +1,9 @@
 
 function sendSearchAlmacen() {
-	div_modulo = $("#div_block_content");
 	sendFormObject('search', div_modulo);
 }
 
 function sendFormAlmacen(operation, message) {
-	//modal function
-	modalFunction = document.getElementById('modalFunctionSuccess');
-	modalF = $('#modalForm');
-
 	switch (operation) {
 		case ('add'):
 			resValidation = verifyForm();
@@ -60,9 +55,6 @@ function sendFormAlmacen(operation, message) {
 }
 
 function almacenSaveForm() {
-	modalF = $('#modalForm');
-	div_modulo = $("#div_block_content");
-
 	modalF.modal('toggle');
 	document.forms['formulario'].elements['add_button'].disabled = true;
 	document.forms['formulario'].elements['button_cancel'].disabled = true;
@@ -71,14 +63,10 @@ function almacenSaveForm() {
 }
 
 function almacenWarning() {
-	modalF = $('#modalForm');
 	modalF.modal('toggle');
 }
 
 function almacenDelete() {
-	modalF = $('#modalForm');
-	div_modulo = $("#div_block_content");
-
 	modalF.modal('toggle');
 	document.forms['formulario'].elements['add_button'].disabled = true;
 	document.forms['formulario'].elements['button_cancel'].disabled = true;

@@ -225,6 +225,24 @@ class CajasIngresosController(DefaultValues):
                 if 'venta_id' in datos.keys():
                     campos_add['venta_id'] = datos['venta_id']
 
+                if 'plan_pago_id' in datos.keys():
+                    campos_add['plan_pago_id'] = datos['plan_pago_id']
+
+                if 'plan_pago_detalle_id' in datos.keys():
+                    campos_add['plan_pago_detalle_id'] = datos['plan_pago_detalle_id']
+
+                if 'plan_pago_pago_id' in datos.keys():
+                    campos_add['plan_pago_pago_id'] = datos['plan_pago_pago_id']
+
+                if 'pago_inicial' in datos.keys():
+                    campos_add['pago_inicial'] = datos['pago_inicial']
+
+                if 'pago_final' in datos.keys():
+                    campos_add['pago_final'] = datos['pago_final']
+
+                if 'pago_general' in datos.keys():
+                    campos_add['pago_general'] = datos['pago_general']
+
                 # registramos
                 ci_add = CajasIngresos.objects.create(**campos_add)
                 ci_add.save()
@@ -342,7 +360,7 @@ class CajasIngresosController(DefaultValues):
         # verificamos si es operacion externa
         try:
             ci_check = CajasIngresos.objects.get(pk=id_valor)
-            if ci_check.caja_movimiento_id > 0 or ci_check.venta_id > 0:
+            if ci_check.caja_movimiento_id > 0 or ci_check.venta_id > 0 or ci_check.plan_pago_id > 0 or ci_check.plan_pago_detalle_id > 0 or ci_check.plan_pago_pago_id > 0:
                 self.error_operation = 'Debe anular esta operacion desde su origen'
                 return False
 

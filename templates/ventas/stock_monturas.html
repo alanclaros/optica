@@ -1,0 +1,21 @@
+{% load jinja_tags %}
+
+
+    {% if cantidad > 0 %}
+    <script type="text/javascript">
+        var suggest_custom_array_stock = [
+        {% for stock in stock_monturas %}
+        ['{{stock.nombre_montura}}', '{{stock.stock_id}}'],
+        {% endfor %}
+        ];
+    </script>
+    
+    <input type="hidden" name="stock_1" id="stock_1" value="{{stock.stock_id}}" />
+    <input type="text" autocomplete="off" id="tb2_1" name="tb2_1" class="form-control input search left w-99" value="{{stock.nombre_montura}}" onblur="ventaValidarStock();" />
+    <script type="text/javascript"> new autosuggest(suggest_custom_array_stock, "tb2_1", null, function (index, control) { ventaSeleccionStock('1', control.keywords[index], control.values[index]); });
+    </script>
+    {% else %}
+    <b>NO EXISTE STOCK PARA ESTA MONTURA</b>
+    <input type="hidden" name="stock_1" id="stock_1" value="0">
+    <input type="hidden" name="tb2_1" id="tb2_1" value="">
+    {% endif %}

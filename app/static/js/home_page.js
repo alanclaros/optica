@@ -51,7 +51,6 @@ function buscarCupon() {
             tiempo_fin = tiempo;
             timeDiff /= 1000;
 
-            imagen = '<img src="' + url_empresa + '/static/img/pass/loading2.gif">';
             url_main = document.forms['formulario'].elements['url_main'].value;
             token = document.forms['formulario'].elements['csrfmiddlewaretoken'].value;
             datos = {
@@ -66,7 +65,7 @@ function buscarCupon() {
 
                 //$('#tabla_cliente').fadeIn('slow');
 
-                $("#span_cupon").html(imagen);
+                $("#span_cupon").html(imgLoading2);
                 $("#span_cupon").load(url_main, datos, function () {
                     //termina de cargar la ventana
                     resultadoBusqedaCupon();
@@ -144,7 +143,6 @@ function buscarCI() {
             tiempo_fin_2 = tiempo_2;
             timeDiff_2 /= 1000;
 
-            imagen = '<img src="' + url_empresa + '/static/img/pass/loading2.gif">';
             url_main = document.forms['formulario'].elements['url_main'].value;
             token = document.forms['formulario'].elements['csrfmiddlewaretoken'].value;
             datos = {
@@ -159,7 +157,7 @@ function buscarCI() {
 
                 //$('#tabla_cliente').fadeIn('slow');
 
-                $("#span_ci").html(imagen);
+                $("#span_ci").html(imgLoading2);
                 $("#span_ci").load(url_main, datos, function () {
                     //termina de cargar la ventana
                     resultadoBusqedaCI();
@@ -201,14 +199,11 @@ function resultadoBusqedaCI() {
     }
 }
 
-
-url_empresa = document.getElementById('url_empresa').value;
-
-function cambiarLinea() {
-    linea_select = document.getElementById('linea_select').value;
-    document.form_linea.linea.value = linea_select;
-    document.form_linea.submit();
-}
+// function cambiarLinea() {
+//     linea_select = document.getElementById('linea_select').value;
+//     document.form_linea.linea.value = linea_select;
+//     document.form_linea.submit();
+// }
 
 function mostrarD(nombre_div, p_id) {
     //token
@@ -229,8 +224,7 @@ function mostrarD(nombre_div, p_id) {
     div_load.className = 'overlay';
     div_load.innerHTML = '<i class="fas fa-2x fa-sync-alt fa-spin"></i>';
 
-    imagen = '<img src="' + url_empresa + '/static/img/pass/loading.gif">';
-    $("#div_img_carousel").html(imagen);
+    $("#div_img_carousel").html(imgLoading);
     $("#div_img_carousel").load(url_main, datos_img, function () {
         //termina de cargar ajax
         mostrarModal(nombre_div);
@@ -304,8 +298,7 @@ function formularioContacto() {
     div_fila = $("#fila_resultado");
     div_fila.fadeIn('slow');
 
-    imagen = '<img src="' + url_empresa + '/static/img/pass/loading.gif">';
-    $("#div_resultado").html(imagen);
+    $("#div_resultado").html(imgLoading);
     $("#div_resultado").load(url_main, datos_contacto, function () {
         //termina de cargar ajax
         limpiar_form_contacto();
@@ -415,10 +408,8 @@ function agregarSeguir() {
     }
 
     //div notificaciones
-    imagen = '<img src="' + url_empresa + '/static/img/pass/loading2.gif">';
-
-    $("#div_notifications").html(imagen);
-    $("#div_notifications").load(url_main, datos_cart, function () {
+    $("#div_notifications").html(imgLoading2);
+    $("#div_notifications").load('', datos_cart, function () {
         //termina de cargar ajax
         $("#modalCompra").modal('hide');
     });
@@ -430,7 +421,7 @@ function agregarSeguir() {
 function comprarAhora() {
     if (agregarSeguir()) {
         sleep(2000);
-        window.open(url_empresa + '/carrito/', '_self');
+        window.open(urlEmpresa + '/carrito/', '_self');
     }
 }
 
@@ -639,8 +630,7 @@ function confirmarPedido() {
         div_fila = $("#fila_resultado");
         div_fila.fadeIn('slow');
 
-        imagen = '<img src="' + url_empresa + '/static/img/pass/loading.gif">';
-        $("#div_resultado").html(imagen);
+        $("#div_resultado").html(imgLoading);
         $("#div_resultado").load(url_main, datos_pedido, function () {
             //termina de cargar ajax
             finalizarCarrito();
@@ -661,9 +651,9 @@ function confirmarPedido() {
                     'id': id,
                     'csrfmiddlewaretoken': token,
                 }
-                console.log('datos push: ', datos_push);
+                //console.log('datos push: ', datos_push);
 
-                $("#div_push_result").html(imagen);
+                $("#div_push_result").html(imgLoading);
                 $("#div_push_result").load(url_push, datos_push, function () {
                     //termina de cargar ajax
                     //finalizarCarrito();
@@ -735,6 +725,10 @@ function paginaInicio() {
     document.form_inicio.submit();
 }
 
+function openReservas() {
+    window.location.href = urlEmpresa + "/reserva";
+}
+
 //acc, total por producto
 function totalPedidoVenta(numero_registro) {
     total_pedido = 0;
@@ -761,275 +755,65 @@ function anteriorPedido() {
     tab_datos.click();
 }
 
-//seleccion tipo de montura
-function seleccionaTipoMontura(tipo_montura_id) {
-    color_borde_resaltado = document.getElementById('color_borde_resaltado').value;
-
-    e_color = document.getElementById('tipo_montura_' + tipo_montura_id);
-    aux_color = getRGB(e_color.style.borderColor);
-
-    if (aux_color['red'] == '255' && aux_color['green'] == '255' && aux_color['blue'] == '255') {
-        e_color.style.borderColor = color_borde_resaltado;
-    }
-    else {
-        e_color.style.borderColor = '#FFFFFF';
-    }
-
-    //asignamos los filtros
-    lista_objeto = Trim(document.getElementById('lista_tipos_montura').value);
-    div_objeto = lista_objeto.split(',');
-    //console.log('lista objeto: ', lista_objeto);
-    //console.log('div objeto: ', div_objeto);
-    objeto_select = '';
-    for (ico = 0; ico < div_objeto.length; ico++) {
-        ax_element = document.getElementById('tipo_montura_' + div_objeto[ico]);
-        ax_color = getRGB(ax_element.style.borderColor);
-        if (ax_color['red'] == '255' && ax_color['green'] == '255' && ax_color['blue'] == '255') {
-            //no seleccionado
-        }
-        else {
-            objeto_select += div_objeto[ico] + ',';
-        }
-    }
-    if (objeto_select.length > 0) {
-        objeto_select = objeto_select.substring(0, objeto_select.length - 1);
-    }
-    //console.log('tipos montura: ', objeto_select);
-    //asigamos a los formularios de busqueda
-    document.forms['form_producto'].elements['tipos_montura_select'].value = objeto_select;
-    document.forms['form_linea'].elements['tipos_montura_select'].value = objeto_select;
-}
-
-//seleccion disenio lente
-function seleccionaDisenioLente(disenio_lente_id) {
-    color_borde_resaltado = document.getElementById('color_borde_resaltado').value;
-
-    e_color = document.getElementById('disenio_lente_' + disenio_lente_id);
-    aux_color = getRGB(e_color.style.borderColor);
-
-    if (aux_color['red'] == '255' && aux_color['green'] == '255' && aux_color['blue'] == '255') {
-        e_color.style.borderColor = color_borde_resaltado;
-    }
-    else {
-        e_color.style.borderColor = '#FFFFFF';
-    }
-
-    //asignamos los filtros
-    lista_objeto = Trim(document.getElementById('lista_disenio_lentes').value);
-    div_objeto = lista_objeto.split(',');
-    objeto_select = '';
-    for (ico = 0; ico < div_objeto.length; ico++) {
-        ax_element = document.getElementById('disenio_lente_' + div_objeto[ico]);
-        ax_color = getRGB(ax_element.style.borderColor);
-        if (ax_color['red'] == '255' && ax_color['green'] == '255' && ax_color['blue'] == '255') {
-            //no seleccionado
-        }
-        else {
-            objeto_select += div_objeto[ico] + ',';
-        }
-    }
-    if (objeto_select.length > 0) {
-        objeto_select = objeto_select.substring(0, objeto_select.length - 1);
-    }
-
-    //asigamos a los formularios de busqueda
-    document.forms['form_producto'].elements['disenio_lentes_select'].value = objeto_select;
-    document.forms['form_linea'].elements['disenio_lentes_select'].value = objeto_select;
-}
-
-//seleccion material
-function seleccionaMaterial(material_id) {
-    color_borde_resaltado = document.getElementById('color_borde_resaltado').value;
-
-    e_color = document.getElementById('material_' + material_id);
-    aux_color = getRGB(e_color.style.borderColor);
-
-    if (aux_color['red'] == '255' && aux_color['green'] == '255' && aux_color['blue'] == '255') {
-        e_color.style.borderColor = color_borde_resaltado;
-    }
-    else {
-        e_color.style.borderColor = '#FFFFFF';
-    }
-
-    //asignamos los filtros
-    lista_objeto = Trim(document.getElementById('lista_materiales').value);
-    div_objeto = lista_objeto.split(',');
-    objeto_select = '';
-    for (ico = 0; ico < div_objeto.length; ico++) {
-        ax_element = document.getElementById('material_' + div_objeto[ico]);
-        ax_color = getRGB(ax_element.style.borderColor);
-        if (ax_color['red'] == '255' && ax_color['green'] == '255' && ax_color['blue'] == '255') {
-            //no seleccionado
-        }
-        else {
-            objeto_select += div_objeto[ico] + ',';
-        }
-    }
-    if (objeto_select.length > 0) {
-        objeto_select = objeto_select.substring(0, objeto_select.length - 1);
-    }
-
-    //asigamos a los formularios de busqueda
-    document.forms['form_producto'].elements['materiales_select'].value = objeto_select;
-    document.forms['form_linea'].elements['materiales_select'].value = objeto_select;
-}
-
-//seleccion de color
-function seleccionaColor(color_id) {
-    color_borde_resaltado = document.getElementById('color_borde_resaltado').value;
-    e_color = document.getElementById('color_' + color_id);
-
-    aux_color = getRGB(e_color.style.borderColor);
-
-    if (aux_color['red'] == '255' && aux_color['green'] == '255' && aux_color['blue'] == '255') {
-        e_color.style.borderColor = color_borde_resaltado;
-    }
-    else {
-        e_color.style.borderColor = '#FFFFFF';
-    }
-
-    //asignamos los filtros
-    lista_colores = Trim(document.getElementById('lista_colores').value);
-    div_co = lista_colores.split(',');
-    colores_select = '';
-    for (ico = 0; ico < div_co.length; ico++) {
-        ax_element = document.getElementById('color_' + div_co[ico]);
-        ax_color = getRGB(ax_element.style.borderColor);
-        if (ax_color['red'] == '255' && ax_color['green'] == '255' && ax_color['blue'] == '255') {
-            //no seleccionado
-        }
-        else {
-            colores_select += div_co[ico] + ',';
-        }
-    }
-    if (colores_select.length > 0) {
-        colores_select = colores_select.substring(0, colores_select.length - 1);
-    }
-
-    //asigamos a los formularios de busqueda
-    document.forms['form_producto'].elements['colores_select'].value = colores_select;
-    document.forms['form_linea'].elements['colores_select'].value = colores_select;
-}
-
-//seleccion marca
-function seleccionaMarca(marca_id) {
-    color_borde_resaltado = document.getElementById('color_borde_resaltado').value;
-
-    e_color = document.getElementById('marca_' + marca_id);
-    aux_color = getRGB(e_color.style.borderColor);
-
-    if (aux_color['red'] == '255' && aux_color['green'] == '255' && aux_color['blue'] == '255') {
-        e_color.style.borderColor = color_borde_resaltado;
-    }
-    else {
-        e_color.style.borderColor = '#FFFFFF';
-    }
-
-    //asignamos los filtros
-    lista_objeto = Trim(document.getElementById('lista_marcas').value);
-    div_objeto = lista_objeto.split(',');
-    objeto_select = '';
-    for (ico = 0; ico < div_objeto.length; ico++) {
-        ax_element = document.getElementById('marca_' + div_objeto[ico]);
-        ax_color = getRGB(ax_element.style.borderColor);
-        if (ax_color['red'] == '255' && ax_color['green'] == '255' && ax_color['blue'] == '255') {
-            //no seleccionado
-        }
-        else {
-            objeto_select += div_objeto[ico] + ',';
-        }
-    }
-    if (objeto_select.length > 0) {
-        objeto_select = objeto_select.substring(0, objeto_select.length - 1);
-    }
-
-    //asigamos a los formularios de busqueda
-    document.forms['form_producto'].elements['marcas_select'].value = objeto_select;
-    document.forms['form_linea'].elements['marcas_select'].value = objeto_select;
-}
-
-function getRGB(str) {
-    var match = str.match(/rgba?\((\d{1,3}), ?(\d{1,3}), ?(\d{1,3})\)?(?:, ?(\d(?:\.\d?))\))?/);
-    return match ? {
-        red: match[1],
-        green: match[2],
-        blue: match[3]
-    } : {};
-}
-
-//marcar oferta
-function marcarOferta() {
-    aux_oferta = document.getElementById('aux_oferta');
-    p_oferta = document.getElementById('oferta');
-    if (aux_oferta.checked) {
-        p_oferta.value = '1';
-        document.forms['form_producto'].elements['oferta'].value = '1';
-        document.forms['form_linea'].elements['oferta'].value = '1';
-    }
-    else {
-        p_oferta.value = '0';
-        document.forms['form_producto'].elements['oferta'].value = '0';
-        document.forms['form_linea'].elements['oferta'].value = '0';
-    }
-}
-
-//marcar mas vendido
-function marcarMasVendido() {
-    aux_mas_vendido = document.getElementById('aux_mas_vendido');
-    p_mas_vendido = document.getElementById('mas_vendido');
-    if (aux_mas_vendido.checked) {
-        p_mas_vendido.value = '1';
-        document.forms['form_producto'].elements['mas_vendido'].value = '1';
-        document.forms['form_linea'].elements['mas_vendido'].value = '1';
-    }
-    else {
-        p_mas_vendido.value = '0';
-        document.forms['form_producto'].elements['mas_vendido'].value = '0';
-        document.forms['form_linea'].elements['mas_vendido'].value = '0';
-    }
-}
-
-//marcar novedad
-function marcarNovedad() {
-    aux_novedad = document.getElementById('aux_novedad');
-    p_novedad = document.getElementById('novedad');
-    if (aux_novedad.checked) {
-        p_novedad.value = '1';
-        document.forms['form_producto'].elements['novedad'].value = '1';
-        document.forms['form_linea'].elements['novedad'].value = '1';
-    }
-    else {
-        p_novedad.value = '0';
-        document.forms['form_producto'].elements['novedad'].value = '0';
-        document.forms['form_linea'].elements['novedad'].value = '0';
-    }
-}
-
 async function buscarProducto() {
-    producto_dato = document.getElementById('producto_search');
-    producto_val = Trim(producto_dato.value);
+    const producto_dato = document.getElementById('producto_search');
+    const producto_val = Trim(producto_dato.value);
     if (producto_val == '') {
         alert('Debe escribir un criterio de busqueda');
         producto_dato.focus();
         return false;
     }
 
+    document.form_linea.linea.value = 0;
     url_main = document.forms['form_operation'].elements['url_main'].value;
-    document.form_producto.producto.value = producto_val;
-
-    //loading
-    div_loading_sup = document.getElementById('loading_search');
-    div_loading_sup.className = 'overlay';
-    div_loading_sup.innerHTML = '<i class="fas fa-2x fa-sync-alt fa-spin"></i>';
 
     div_loading_listado = document.getElementById('loading_listado');
     div_loading_listado.className = 'overlay';
     div_loading_listado.innerHTML = '<i class="fas fa-2x fa-sync-alt fa-spin"></i>';
 
-    var fd = new FormData(document.forms['form_producto']);
+    //recuperamos datos
+    var tm_values = $('#tm_select').val();
+    //console.log('tm values: ', tm_values);
+    let i = 0;
+    let tm_datos = "";
+    for (i = 0; i < tm_values.length; i++) {
+        tm_datos += tm_values[i] + ',';
+    }
+    if (tm_datos.length > 0) {
+        tm_datos = tm_datos.substring(0, tm_datos.length - 1);
+    }
+
+    var mat_values = $('#mat_select').val();
+    //console.log('tm values: ', tm_values);
+    let mat_datos = "";
+    for (i = 0; i < mat_values.length; i++) {
+        mat_datos += mat_values[i] + ',';
+    }
+    if (mat_datos.length > 0) {
+        mat_datos = mat_datos.substring(0, mat_datos.length - 1);
+    }
+
+    const oferta = document.getElementById('aux_oferta').checked ? 1 : 0;
+    const mas_vendido = document.getElementById('aux_mas_vendido').checked ? 1 : 0;
+    const novedad = document.getElementById('aux_novedad').checked ? 1 : 0;
+    //console.log(oferta, mas_vendido, novedad, tm_datos, mat_datos);
+
+    var fd = new FormData(document.forms['form_linea']);
+    //console.log('fd antes..', fd);
+    fd.set('linea', '0');
+    fd.set('producto', producto_val);
+    fd.set('tipos_montura_select', tm_datos);
+    fd.set('materiales_select', mat_datos);
+    fd.set('oferta', oferta);
+    fd.set('novedad', novedad);
+    fd.set('mas_vendido', mas_vendido);
+    fd.append('parte_form', 'listado');
+    //console.log('fd: ', fd);
+
+    const btnFiltrar = document.getElementById('btnFiltrar');
+    btnFiltrar.disabled = true;
 
     let result22;
-
     try {
         result22 = await $.ajax({
             url: url_main,
@@ -1042,20 +826,15 @@ async function buscarProducto() {
             success: function (response) {
                 if (response != 0) {
                     $("#div_listado").html(response);
+                    recargarParteSuperior('si');
                 } else {
                     alert('error al realizar la operacion, intentelo de nuevo');
                 }
-                div_loading_sup.className = '';
-                div_loading_sup.innerHTML = '';
-
                 div_loading_listado.className = '';
                 div_loading_listado.innerHTML = '';
             },
             error: function (qXHR, textStatus, errorThrown) {
                 console.log(errorThrown); console.log(qXHR); console.log(textStatus);
-                div_loading_sup.className = '';
-                div_loading_sup.innerHTML = '';
-
                 div_loading_listado.className = '';
                 div_loading_listado.innerHTML = '';
             },
@@ -1064,65 +843,66 @@ async function buscarProducto() {
     }
     catch (e) {
         console.error(e);
-        div_loading_sup.className = '';
-        div_loading_sup.innerHTML = '';
-
         div_loading_listado.className = '';
         div_loading_listado.innerHTML = '';
+        btnFiltrar.disabled = false;
     }
+    btnFiltrar.disabled = false;
 
     return true;
 }
 
-async function escogerLinea(linea) {
+async function escogerLinea(linea, montura_material) {
     document.form_linea.linea.value = linea;
+    document.getElementById('producto_search').value = '';
     url_main = document.forms['form_operation'].elements['url_main'].value;
 
-    div_loading_sup = document.getElementById('loading_search');
-    div_loading_sup.className = 'overlay';
-    div_loading_sup.innerHTML = '<i class="fas fa-2x fa-sync-alt fa-spin"></i>';
-
-    var fd_superior = new FormData(document.forms['form_linea']);
-    fd_superior.append('parte_form', 'superior');
-    let result33;
-    try {
-        result33 = await $.ajax({
-            url: url_main,
-            method: 'POST',
-            type: 'POST',
-            cache: false,
-            data: fd_superior,
-            contentType: false,
-            processData: false,
-            success: function (response) {
-                if (response != 0) {
-                    $("#div_superior").html(response);
-                } else {
-                    alert('error al realizar la operacion, intentelo de nuevo');
-                }
-                div_loading_sup.className = '';
-                div_loading_sup.innerHTML = '';
-            },
-            error: function (qXHR, textStatus, errorThrown) {
-                console.log(errorThrown); console.log(qXHR); console.log(textStatus);
-                div_loading_sup.className = '';
-                div_loading_sup.innerHTML = '';
-            },
-        });
-    }
-    catch (e) {
-        console.error(e);
-        div_loading_sup.className = '';
-        div_loading_sup.innerHTML = '';
-    }
-
-    //$("#div_listado").html(imagen);
     div_loading_listado = document.getElementById('loading_listado');
     div_loading_listado.className = 'overlay';
     div_loading_listado.innerHTML = '<i class="fas fa-2x fa-sync-alt fa-spin"></i>';
 
+    //recuperamos datos
+    var tm_values = $('#tm_select').val();
+    //console.log('tm values: ', tm_values);
+    let i = 0;
+    let tm_datos = "";
+    for (i = 0; i < tm_values.length; i++) {
+        tm_datos += tm_values[i] + ',';
+    }
+    if (tm_datos.length > 0) {
+        tm_datos = tm_datos.substring(0, tm_datos.length - 1);
+    }
+
+    var mat_values = $('#mat_select').val();
+    //console.log('tm values: ', tm_values);
+    let mat_datos = "";
+    for (i = 0; i < mat_values.length; i++) {
+        mat_datos += mat_values[i] + ',';
+    }
+    if (mat_datos.length > 0) {
+        mat_datos = mat_datos.substring(0, mat_datos.length - 1);
+    }
+
+    const oferta = document.getElementById('aux_oferta').checked ? 1 : 0;
+    const mas_vendido = document.getElementById('aux_mas_vendido').checked ? 1 : 0;
+    const novedad = document.getElementById('aux_novedad').checked ? 1 : 0;
+    //console.log(oferta, mas_vendido, novedad, tm_datos, mat_datos);
+
     var fd = new FormData(document.forms['form_linea']);
+    //console.log('fd antes..', fd);
+    fd.set('linea', linea);
+    fd.set('producto', '');
+    fd.set('tipos_montura_select', tm_datos);
+    fd.set('materiales_select', mat_datos);
+    fd.set('oferta', oferta);
+    fd.set('novedad', novedad);
+    fd.set('mas_vendido', mas_vendido);
     fd.append('parte_form', 'listado');
+    //console.log('fd: ', fd);
+
+    const btnFiltrar = document.getElementById('btnFiltrar');
+    btnFiltrar.disabled = true;
+
     let result22;
     try {
         result22 = await $.ajax({
@@ -1136,6 +916,7 @@ async function escogerLinea(linea) {
             success: function (response) {
                 if (response != 0) {
                     $("#div_listado").html(response);
+                    recargarParteSuperior(montura_material);
                 } else {
                     alert('error al realizar la operacion, intentelo de nuevo');
                 }
@@ -1154,7 +935,9 @@ async function escogerLinea(linea) {
         console.error(e);
         div_loading_listado.className = '';
         div_loading_listado.innerHTML = '';
+        btnFiltrar.disabled = false;
     }
+    btnFiltrar.disabled = false;
 
     return true;
 }
@@ -1165,9 +948,248 @@ function filtrarBusqueda() {
     if (p_search == '') {
         //busqueda por linea
         linea_actual = document.forms['form_linea'].elements['linea'].value;
-        escogerLinea(linea_actual);
+        escogerLinea(linea_actual, 'no');
     }
     else {
         buscarProducto();
     }
+}
+
+function marcarLinea(linea_id) {
+    const lista_lineas_ids = document.forms['form_operation'].elements['lista_lineas_ids'].value;
+    const div_ids = lista_lineas_ids.split(',');
+    for (let i = 0; i < div_ids.length; i++) {
+        try {
+            const span_linea = document.getElementById('span_linea_' + div_ids[i]);
+            span_linea.className = "link_productos pointer";
+        }
+        catch (e) {
+
+        }
+    }
+    const linea_actual = document.getElementById('span_linea_' + linea_id);
+    linea_actual.className = "link_productos_down pointer";
+}
+
+function recargarParteSuperior(montura_material) {
+    const span_txt_producto = document.getElementById('span_producto');
+    const new_txt = document.getElementById('load_txt_producto');
+
+    span_txt_producto.innerHTML = new_txt.value;
+    if (montura_material === 'si') {
+        const load_lista_tipos_montura_id = document.getElementById('load_lista_tipos_montura_id').value;
+        const load_lista_tipos_montura = document.getElementById('load_lista_tipos_montura').value;
+        const load_tipos_montura_select = document.getElementById('load_tipos_montura_select').value;
+
+        const load_lista_materiales_id = document.getElementById('load_lista_materiales_id').value;
+        const load_lista_materiales = document.getElementById('load_lista_materiales').value;
+        const load_materiales_select = document.getElementById('load_materiales_select').value;
+
+        // console.log(load_lista_tipos_montura_id);
+        // console.log(load_lista_tipos_montura);
+        // console.log(load_tipos_montura_select);
+        const div_tm_ids = load_lista_tipos_montura_id.split(',');
+        const div_tm = load_lista_tipos_montura.split(',');
+        const div_tm_select = load_tipos_montura_select.split(',');
+
+        const div_mat_ids = load_lista_materiales_id.split(',');
+        const div_mat = load_lista_materiales.split(',');
+        const div_mat_select = load_materiales_select.split(',');
+
+        //monturas
+        const tm_select = $("#tm_select");
+        //console.log('tm select: ', tm_select);
+        //limpiamos
+        tm_select.find('option').remove();
+        let is_select = '';
+        for (let i = 0; i < div_tm_ids.length; i++) {
+            if (div_tm_ids[i].trim() !== '') {
+                is_select = '';
+                for (let j = 0; j < div_tm_select.length; j++) {
+                    if (div_tm_ids[i] === div_tm_select[j]) {
+                        is_select = 'selected';
+                    }
+                }
+                tm_select.find('option').end().append('<option value="' + div_tm_ids[i] + '" ' + is_select + '>' + div_tm[i] + '</option>');
+            }
+        }
+        //materiales
+        const mat_select = $("#mat_select");
+        //limpiamos
+        mat_select.find('option').remove();
+        is_select = '';
+        for (let i = 0; i < div_mat_ids.length; i++) {
+            if (div_mat_ids[i].trim() !== '') {
+                is_select = '';
+                for (let j = 0; j < div_mat_select.length; j++) {
+                    if (div_mat_ids[i] === div_mat_select[j]) {
+                        is_select = 'selected';
+                    }
+                }
+                mat_select.find('option').end().append('<option value="' + div_mat_ids[i] + '" ' + is_select + '>' + div_mat[i] + '</option>');
+            }
+        }
+    }
+}
+
+function calendarioSearchPeriodo(periodo) {
+    const periodo_form = document.forms['form_calendario'].elements['search_periodo'];
+    periodo_form.value = periodo;
+    sendSearchCalendario();
+}
+
+function sendSearchCalendario() {
+    const div_calen = $("#div_calendario");
+    sendFormHome('form_calendario', div_calen);
+}
+
+async function sendFormHome(formName, divLoad) {
+    const img = ''
+    var fd = new FormData(document.forms[formName]);
+
+    divLoad.html(imagen_modulo);
+
+    let result;
+    try {
+        result = await $.ajax({
+            url: '',
+            method: 'POST',
+            type: 'POST',
+            cache: false,
+            data: fd,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+                if (response != 0) {
+                    divLoad.html(response);
+                } else {
+                    alert('error al realizar la operacion, intentelo de nuevo');
+                }
+            },
+            error: function (qXHR, textStatus, errorThrown) {
+                console.log(errorThrown); console.log(qXHR); console.log(textStatus);
+            },
+        });
+        //alert(result);
+    }
+    catch (e) {
+        console.error(e);
+    }
+}
+
+function calendarioShowDia(dia) {
+    //registramos el dia en los otros forms
+    //const form_dia = document.forms['form_registrar_reserva'].elements['dia'];
+    //form_dia.value = dia;
+
+    // //span de nueva actividad y listado de actividades
+    // const span_periodo_actual = document.getElementById('span_periodo_actual').innerHTML;
+    // const span_nuevo = document.getElementById('span_nueva_actividad_periodo');
+    // span_nuevo.innerHTML = dia + '-' + span_periodo_actual;
+
+    //quitando mensajes
+    const res_act = $('#div_resultado_listado_' + dia);
+    res_act.html('&nbsp;');
+
+    const modalA = $('#modalListado_' + dia);
+    modalA.modal();
+}
+
+function setClassInvalid(objeto) {
+    let claseObj = objeto.className.toLowerCase();
+    const pos = claseObj.indexOf('is-invalid');
+    if (pos === -1) {
+        claseObj += " is-invalid";
+    }
+    objeto.className = claseObj;
+}
+
+function homeSolicitarReserva(dia) {
+    const nombres = document.getElementById('nombres_' + dia);
+    const apellidos = document.getElementById('apellidos_' + dia);
+    const telefonos = document.getElementById('telefonos_' + dia);
+    const mensaje = document.getElementById('mensaje_' + dia);
+    const hora = document.getElementById('hora_' + dia);
+    const dia_semana = document.getElementById('dia_semana_' + dia);
+    const resultado = $('#div_resultado_listado_' + dia);
+    const btn_reserva = document.getElementById('btn_reserva_' + dia);
+
+    if (nombres.value.trim() === '') {
+        setClassInvalid(nombres);
+        resultado.html('Debe llenar su Nombre');
+        return false;
+    }
+    if (apellidos.value.trim() === '') {
+        setClassInvalid(apellidos);
+        resultado.html('Debe llenar su Apellido');
+        return false;
+    }
+    if (telefonos.value.trim() === '') {
+        setClassInvalid(telefonos);
+        resultado.html('Debe llenar su Telefono');
+        return false;
+    }
+
+    const token = document.forms['formulario'].elements['csrfmiddlewaretoken'].value;
+    const datos = {
+        'nombres': nombres.value.trim(),
+        'apellidos': apellidos.value.trim(),
+        'telefonos': telefonos.value.trim(),
+        'mensaje': mensaje.value.trim(),
+        'dia': dia,
+        'dia_semana': dia_semana.value,
+        'hora': hora.value,
+        'periodo': document.getElementById('periodo_actual').value,
+        'csrfmiddlewaretoken': token,
+        'add_reserva': ''
+    }
+    //console.log('datos: ', datos, ' dia: ', dia);
+    // $('#div_resultado_listado_' + dia).html(imgLoading);
+    // $('#div_resultado_listado_' + dia).load('', datos, function () {
+    //     //termina de cargar ajax
+    //     //boton_imagen.disabled = false;
+    // });
+    btn_reserva.disabled = true;
+    resultado.load('', datos, function (response) {
+        if (response == 0) {
+            resultado.html('Error al registrar, intentelo nuevamente');
+            btn_reserva.disabled = false;
+        }
+        else {
+            const error_resp = document.getElementById('error_' + dia).value;
+            if (error_resp !== '1') {
+                //webpush
+                const head = 'reserva';
+                const body = 'Cliente: ' + nombres.value + ' ' + apellidos.value + '\nFonos: ' + telefonos.value + "\nMensaje: " + mensaje.value;
+                const id = document.forms['form_calendario'].elements['lista_notificacion'].value;
+
+                //btn_push= document.getElementById('btn_webpush');
+                const url_push = document.forms['form_calendario'].elements['url_push'].value;
+
+                const datos_push = {
+                    'head': head,
+                    'body': body,
+                    'id': id,
+                    'csrfmiddlewaretoken': token,
+                }
+                console.log('datos push: ', datos_push, ' url push: ', url_push);
+
+                $("#div_push_result").html(imgLoading);
+                $("#div_push_result").load(url_push, datos_push, function () {
+                    //termina de cargar ajax
+                    //finalizarCarrito();
+                    console.log('push enviado');
+                });
+
+
+                //reset
+                nombres.value = "";
+                apellidos.value = "";
+                telefonos.value = "";
+                mensaje.value = "";
+            }
+            btn_reserva.disabled = false;
+        }
+    });
+
 }

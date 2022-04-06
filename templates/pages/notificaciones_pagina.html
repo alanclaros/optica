@@ -11,11 +11,11 @@
     <div class="dropdown-divider"></div>
     <div class="w-100 left content_aviso_{{notif.tipo_notificacion}} h-30 v-middle pointer" onclick="notificacionAbrir('{{notif.tipo}}');">
         &nbsp;
-        {% if notif.tipo == 'E' or notif.tipo == 'R' or notif.tipo == 'F' %}
-        <i class="fas fa-calendar-day"></i>
+        {% if notif.tipo == 'reserva' %}
+        <i class="fas fa-calendar-day black"></i>
         {% endif %}
-        {% if notif.tipo == 'calendario' %}
-        <i class="fas fa-money-check mr-2 red"></i>
+        {% if notif.tipo == 'pedido' %}
+        <i class="fas fa-money-check mr-2 white"></i>
         {% endif %}
         &nbsp;
         <span>{% autoescape off %}{{notif.descripcion}}{% endautoescape %}</span>

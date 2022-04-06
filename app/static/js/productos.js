@@ -1,15 +1,10 @@
 
 //control especifico del modulo
 function sendSearchProducto() {
-	div_modulo = $("#div_block_content");
 	sendFormObject('search', div_modulo);
 }
 
 function sendFormProducto(operation, message) {
-	//modal function
-	modalFunction = document.getElementById('modalFunctionSuccess');
-	modalF = $('#modalForm');
-
 	switch (operation) {
 		case ('add'):
 			resValidation = verifyForm();
@@ -61,9 +56,6 @@ function sendFormProducto(operation, message) {
 }
 
 function productoSaveForm() {
-	modalF = $('#modalForm');
-	div_modulo = $("#div_block_content");
-
 	modalF.modal('toggle');
 	document.forms['formulario'].elements['add_button'].disabled = true;
 	document.forms['formulario'].elements['button_cancel'].disabled = true;
@@ -72,14 +64,10 @@ function productoSaveForm() {
 }
 
 function productoWarning() {
-	modalF = $('#modalForm');
 	modalF.modal('toggle');
 }
 
 function productoDelete() {
-	modalF = $('#modalForm');
-	div_modulo = $("#div_block_content");
-
 	modalF.modal('toggle');
 	document.forms['formulario'].elements['add_button'].disabled = true;
 	document.forms['formulario'].elements['button_cancel'].disabled = true;
@@ -96,7 +84,6 @@ function buscarProductosRelacionados() {
 
 	//token
 	token = document.forms['formulario'].elements['csrfmiddlewaretoken'].value;
-	url_main = document.getElementById('url_main').value;
 
 	operation_mandar = document.forms['form_operation'].elements['operation_x'].value;
 	pid = document.forms['form_operation'].elements['id'].value;
@@ -112,9 +99,8 @@ function buscarProductosRelacionados() {
 		'csrfmiddlewaretoken': token,
 	}
 
-	imagen = '<img src="' + url_empresa + '/static/img/pass/loading.gif">';
-	$("#div_busqueda_relacionados").html(imagen);
-	$("#div_busqueda_relacionados").load(url_main, datos_busqueda, function () {
+	$("#div_busqueda_relacionados").html(imgLoading);
+	$("#div_busqueda_relacionados").load(hostURL, datos_busqueda, function () {
 		//termina de cargar ajax
 	});
 }
@@ -130,7 +116,6 @@ function seleccionarProductoRelacionado(producto_id) {
 
 	//token
 	token = document.forms['formulario'].elements['csrfmiddlewaretoken'].value;
-	url_main = document.getElementById('url_main').value;
 
 	datos_producto = {
 		'module_x': document.forms['form_operation'].elements['module_x'].value,
@@ -140,9 +125,8 @@ function seleccionarProductoRelacionado(producto_id) {
 		'csrfmiddlewaretoken': token,
 	}
 
-	imagen = '<img src="' + url_empresa + '/static/img/pass/loading.gif">';
-	$("#lista_productos_relacionados").html(imagen);
-	$("#lista_productos_relacionados").load(url_main, datos_producto, function () {
+	$("#lista_productos_relacionados").html(imgLoading);
+	$("#lista_productos_relacionados").load(hostURL, datos_producto, function () {
 		//termina de cargar ajax
 	});
 }
@@ -151,7 +135,6 @@ function seleccionarProductoRelacionado(producto_id) {
 function quitarProductoRelacionado(producto_relacionado_id) {
 	//token
 	token = document.forms['formulario'].elements['csrfmiddlewaretoken'].value;
-	url_main = document.getElementById('url_main').value;
 
 	datos_quitar = {
 		'module_x': document.forms['form_operation'].elements['module_x'].value,
@@ -160,9 +143,8 @@ function quitarProductoRelacionado(producto_relacionado_id) {
 		'csrfmiddlewaretoken': token,
 	}
 
-	imagen = '<img src="' + url_empresa + '/static/img/pass/loading.gif">';
-	$("#lista_productos_relacionados").html(imagen);
-	$("#lista_productos_relacionados").load(url_main, datos_quitar, function () {
+	$("#lista_productos_relacionados").html(imgLoading);
+	$("#lista_productos_relacionados").load(hostURL, datos_quitar, function () {
 		//termina de cargar ajax
 	});
 }
@@ -171,9 +153,6 @@ function quitarProductoRelacionado(producto_relacionado_id) {
 function cargarImagen() {
 	posicion = document.getElementById('posn_1');
 	posicion_valor = Trim(posicion.value);
-
-	modalFunction = document.getElementById('modalFunctionSuccess');
-	modalF = $('#modalForm');
 
 	valor_imagen = Trim(document.getElementById('imagen1').value);
 	if (valor_imagen == '') {
@@ -197,8 +176,6 @@ function cargarImagen() {
 	boton_imagen = document.getElementById('btn_imagen');
 	boton_imagen.disabled = true;
 
-	imagen = '<img src="' + url_empresa + '/static/img/pass/loading.gif">';
-	url_main = document.getElementById('url_main').value;
 	pid = document.getElementById('pid').value;
 	//token
 	token = document.forms['formulario'].elements['csrfmiddlewaretoken'].value;
@@ -217,7 +194,7 @@ function cargarImagen() {
 	fd.append('posicion', posicion_valor);
 
 	$.ajax({
-		url: url_main,
+		url: hostURL,
 		type: 'post',
 		data: fd,
 		contentType: false,
@@ -232,8 +209,8 @@ function cargarImagen() {
 					'csrfmiddlewaretoken': token,
 				}
 
-				$("#div_lista_imagenes").html(imagen);
-				$("#div_lista_imagenes").load(url_main, datos_imagen, function () {
+				$("#div_lista_imagenes").html(imgLoading);
+				$("#div_lista_imagenes").load(hostURL, datos_imagen, function () {
 					//termina de cargar ajax
 					boton_imagen.disabled = false;
 				});
@@ -255,9 +232,6 @@ function mostrarImagen(pid) {
 
 //eliminar imagen
 function eliminarImagen(pid) {
-	imagen = '<img src="' + url_empresa + '/static/img/pass/loading.gif">';
-	url_main = document.getElementById('url_main').value;
-
 	//token
 	token = document.forms['formulario'].elements['csrfmiddlewaretoken'].value;
 	module_x = document.forms['form_operation'].elements['module_x'].value;
@@ -269,8 +243,8 @@ function eliminarImagen(pid) {
 		'csrfmiddlewaretoken': token,
 	}
 
-	$("#div_lista_imagenes").html(imagen);
-	$("#div_lista_imagenes").load(url_main, datos_imagen, function () {
+	$("#div_lista_imagenes").html(imgLoading);
+	$("#div_lista_imagenes").load(hostURL, datos_imagen, function () {
 		//termina de cargar ajax
 		//boton_imagen.disabled = false;
 	});
@@ -291,16 +265,11 @@ async function formularioImagenProducto(operation, operation2, formulario, add_b
 
 	div_modulo.html(imagen_modulo);
 
-	let para_cargar = url_empresa;
-	if (para_cargar != '') {
-		para_cargar = url_empresa + '/';
-	}
-
 	let result;
 
 	try {
 		result = await $.ajax({
-			url: para_cargar,
+			url: hostURL,
 			method: 'POST',
 			type: 'POST',
 			cache: false,

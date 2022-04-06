@@ -1,0 +1,321 @@
+{% load jinja_tags %}
+<br>
+<table class="w-100 center">
+    <tr>
+        <td class="w-94 h-40 v-middle">
+            Mes: <span id="span_periodo_actual">{{periodo_actual|get_show_periodo}}</span>
+            <input type="hidden" id="periodo_actual" value="{{periodo_actual}}">
+        </td>
+        <td class="w-2 center h-40 v-middle">
+            <button class="btn btn-primary btn-sm h-30" name="btn_refresh" onclick="sendSearchReserva();">
+                <i class="nav-icon fas fa-sync">&nbsp;</i>
+            </button>
+        </td>
+        <td class="w-2 center h-40 v-middle">
+            <button class="btn btn-primary btn-sm h-30" name="btn_ant" onclick="reservasSearchPeriodo('{{periodo_ant}}');">
+                <i class="nav-icon fas fa-angle-left">&nbsp;</i>
+            </button>
+        </td>
+        <td class="w-2 center h-40 v-middle">
+            <button class="btn btn-primary btn-sm h-30" name="btn_next" onclick="reservasSearchPeriodo('{{periodo_next}}');">
+                <i class="nav-icon fas fa-angle-right">&nbsp;</i>
+            </button>
+        </td>
+    </tr>
+</table>
+<form name="formulario" method="POST" action="" onsubmit="return false;">
+    {% csrf_token %}
+    <table class="table_calendario w-100">
+        <tr>
+            <th class="w-14 center">
+                Lun
+            </th>
+            <th class="w-14 center">
+                Mar
+            </th>
+            <th class="w-14 center">
+                Mie
+            </th>
+            <th class="w-14 center">
+                Jue
+            </th>
+            <th class="w-14 center">
+                Vie
+            </th>
+            <th class="w-15 center">
+                Sab
+            </th>
+            <th class="w-15 center">
+                Dom
+            </th>
+        </tr>
+
+        {% for semana in calendario %}
+        <tr class="back{{forloop.counter|back_class}}">
+            {% for dia_semana in semana %}
+            <td class="center w-{% if forloop.counter <= 5 %}14{% else %}15{% endif %} v-top pointer">
+                {% if dia_semana.existe == 1 %}
+                <table class="table_calendario_interno w-100">
+                    <tr>
+                        <td class="calendario_dia right w-100 v-top backcalendario pointer" {% if permisos.adicionar %}onclick="reservasShowDia('{{dia_semana.dia}}');"{% endif %}>
+                        <i>{{dia_semana.dia}}</i>
+                        <input type="hidden" id="horas_ids_{{dia_semana.dia}}" value="{% for hora in dia_semana.horas %}{{hora.reserva_hora_id}},{% endfor %}">
+                        <input type="hidden" id="horas_{{dia_semana.dia}}" value="{% for hora in dia_semana.horas %}{{hora.hora}},{% endfor %}">
+                        <input type="hidden" id="dia_semana_{{dia_semana.dia}}" value="{{dia_semana.posicion}}">
+                        </td>
+                    </tr>
+                    {% for actividad in dia_semana.lista_actividades %}
+                    {% if actividad.status_id == status_preventa %}
+                    <tr class="backpreventa pointer" onclick="reservasConfirmarReserva('{{actividad.reserva_id}}', '{{dia_semana.dia}}');">
+                        <td nowrap class="calendario_dia center w-100">
+                        <span class="font14 frontpreventa">{{actividad.nombres_min}}{{actividad.apellidos_min}} {{actividad.hora_ini}}</span>
+                        <input type="hidden" id="nombres_r_{{actividad.reserva_id}}" value="{{actividad.nombres}}">
+                        <input type="hidden" id="apellidos_r_{{actividad.reserva_id}}" value="{{actividad.apellidos}}">
+                        <input type="hidden" id="telefonos_r_{{actividad.reserva_id}}" value="{{actividad.telefonos}}">
+                        <input type="hidden" id="mensaje_r_{{actividad.reserva_id}}" value="{{actividad.mensaje}}">
+                        <input type="hidden" id="hora_ini_r_{{actividad.reserva_id}}" value="{{actividad.hora_ini}}">
+                        </td>
+                    </tr>
+                    {% endif %}
+                    
+                    {% if actividad.status_id == status_venta %}
+                    <tr class="pointer" onclick="reservasShowReservas('{{dia_semana.dia}}');">
+                        <td nowrap class="calendario_dia center w-100 backventa">
+                        <span class="font14 frontventa">{{actividad.nombres_min}}{{actividad.apellidos_min}} {{actividad.hora_ini}}</span>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </table>
+                <!--modal listado de actividades-->
+                <div class="modal fade" id="modalListado_{{dia_semana.dia}}" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document" id="modalListadoPosition_{{dia_semana.dia}}">
+                        <div class="modal-content">
+                            <div class="modal-header modal_bg_primary h-45 v-top font14" id="modalHeader_{{dia_semana.dia}}">
+                                <b>Reservas {{dia_semana.dia}}-{{periodo_actual|get_show_periodo}}</b>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span></button>
+                            </div>
+                            
+                        <table class="table_calendario w-100">
+                            <tr>
+                                <td class="w-100 left">
+                                    <div style="overflow-y: scroll; max-height:300px; min-height:100px;">
+                                    <table class="table_calendario w-100">
+                                        {% for actividad in dia_semana.lista_actividades %}
+                                            {% if actividad.status_id == status_venta %}
+                                            <tr class="backventa">
+                                                <td class="font14 w-90 left">
+                                                    &nbsp;<span class="font14 frontventa">
+                                                        {{actividad.hora_ini}}, {{actividad.nombres}} {{actividad.apellidos}}</span>
+                                                </td>
+                                                <td class="w-10 center">
+                                                    {% if permisos.eliminar == 1 %}
+                                                    <i class="nav-icon ico_modify_delete pointer fas fa-trash-alt" onclick="reservasListadoEliminar('{{dia_semana.dia}}', '{{actividad.reserva_id}}');"></i>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <tr class="back2" style="display: none;" id="tr_listado_eliminar_{{dia_semana.dia}}">
+                                            <td colspan="2" class="w-100 h-40 center font14">
+                                                <br><br>
+                                                <button class="btn btn-danger btn-sm" id="btn_tr_listado_eliminar_{{dia_semana.dia}}" onclick="reservasEliminarReserva('{{dia_semana.dia}}');">
+                                                    <i class="nav-icon far fa-times-circle"></i>&nbsp;&nbsp;Eliminar
+                                                </button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                <button class="btn btn-secondary btn-sm" id="btn_tr_listado_eliminar_cancelar_{{dia_semana.dia}}" onclick="reservasListadoCancelar('{{dia_semana.dia}}');">
+                                                    <i class="nav-icon fas fa-arrow-left"></i>&nbsp;Cancelar
+                                                </button>
+                                                <input type="hidden" id="reserva_id_eliminar" value="0">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <tr class="back1">
+                                <td colspan="2" class="w-100 h-40 center font14">
+                                    <div id="div_resultado_listado_{{dia_semana.dia}}">&nbsp;</div>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td class="w-100 right">
+                                    <button class="btn btn-secondary btn-sm" id="btn_volver_listado_{{dia_semana.dia}}" data-dismiss="modal">
+                                        <i class="nav-icon fas fa-arrow-left"></i>&nbsp;&nbsp;Volver
+                                    </button>
+                                </td>
+                            </tr>
+                        </table>
+                        </div>
+                    </div>
+                </div>
+                
+                {% endif %}
+            </td>
+            {% endfor %}{# for de semana #}
+            
+        </tr>
+        {% endfor %}{# for de calendario #}
+    </table>
+</form>
+
+<!--modal crear nueva actividad-->
+<div class="modal fade" id="modalActividad" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document" id="modalActividadPosition">
+        <div class="modal-content">
+            <div class="modal-header modal_bg_primary h-45 v-top" id="modalHeader">
+                <b>Nueva Reserva, <span id="span_nueva_actividad_periodo">01-Ene</span></b>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span></button>
+            </div>
+            
+        <table class="table_calendario w-100">
+            <tr class="back">
+                <td class="w-100 left">
+                    <table class="table_calendario w-100">
+                        <tr class="back2 h-40">
+                            <td class="w-50 center">
+                                <input type="text" id="nombres_nuevo" class="form-control input w-98 left" autocomplete="off" placeholder="Nombres" onchange="txtValid(this);" onblur="txtValid(this);">
+                            </td>
+                            <td class="w-50 center">
+                                <input type="text" id="apellidos_nuevo" class="form-control input w-98 left" autocomplete="off" placeholder="Apellidos" onchange="txtValid(this);" onblur="txtValid(this);">
+                            </td>
+                        </tr>
+                        <tr class="back1 h-40">
+                            <td class="w-50 center">
+                                <input type="text" id="telefonos_nuevo" class="form-control input w-98 left" autocomplete="off" placeholder="Telefonos" onchange="txtValid(this);" onblur="txtValid(this);">
+                            </td>
+                            <td class="w-50 left">
+                                <span class="font14">&nbsp;Horas :</span> <select id="hora_nuevo" class="form-control w-50 input h-35">
+                                    <option value="0">--</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr class="back2 h-45">
+                            <td colspan="2" class="w-100 h-40 center font14">
+                                <button class="btn btn-primary btn-sm" id="btn_solicitar_reserva" onclick="reservasRegistrarReserva();">
+                                    <i class="nav-icon fas fa-save"></i>&nbsp;&nbsp;Registrar
+                                </button>
+                            </td>
+                        </tr>
+                        
+                        <tr class="back1">
+                            <td colspan="2" class="w-100 h-40 center font14">
+                                <div id="div_resultado_solicitar_reserva">&nbsp;</div>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            
+            <tr>
+                <td class="w-100 right">
+                    <button class="btn btn-secondary btn-sm" name="button_volver" id="button_volver" data-dismiss="modal">
+                        <i class="nav-icon fas fa-arrow-left"></i>&nbsp;&nbsp;Volver
+                    </button>
+                </td>
+            </tr>
+        </table>
+        </div>
+    </div>
+    </div>
+    
+    <!--modal confirmar actividad-->
+    <div class="modal fade" id="modalConfirmar" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document" id="modalConfirmarPosition">
+            <div class="modal-content">
+                <div class="modal-header modal_bg_primary h-45 v-top" id="modalHeaderConfirmar">
+                    <b>Reserva, <span id="span_confirmar_periodo">01-Ene</span></b>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span></button>
+                </div>
+                
+            <table class="table_calendario w-100">
+                <tr class="back">
+                    <td class="w-100 left">
+                        <table class="table_calendario w-100">
+                            <tr class="back2 h-40">
+                                <td class="w-50 left font14">
+                                    &nbsp;<span id="span_confirmar_nombres">nombres</span>
+                                </td>
+                                <td class="w-50 left font14">
+                                    &nbsp;<span id="span_confirmar_apellidos">apellidos</span>
+                                </td>
+                            </tr>
+                            <tr class="back1 h-40">
+                                <td class="w-50 left font14">
+                                    &nbsp;<span id="span_confirmar_hora">hora</span>
+                                </td>
+                                <td class="w-50 left font14">
+                                    &nbsp;<span id="span_confirmar_telefonos">hora</span>
+                                </td>
+                            </tr>
+                            <tr class="back2 h-40">
+                                <td colspan="2" class="w-100 left font14">
+                                    &nbsp;<span id="span_confirmar_mensaje">mensaje</span>
+                                </td>
+                            </tr>
+                            
+                            <tr class="back1">
+                                <td colspan="2" class="w-100 h-40 center font14">
+                                    {% if permisos.adicionar %}
+                                    <button class="btn btn-primary btn-sm" id="btn_confirmar_confirmar" onclick="reservasMostrarConfirmar('confirmar');">
+                                        <i class="nav-icon fas fa-save"></i>&nbsp;&nbsp;Confirmar
+                                    </button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    {% endif %}
+                                    
+                                    {% if permisos.eliminar %}
+                                    <button class="btn btn-danger btn-sm" id="btn_confirmar_eliminar" onclick="reservasMostrarConfirmar('eliminar');">
+                                        <i class="nav-icon far fa-times-circle"></i>&nbsp;&nbsp;Eliminar
+                                    </button>
+                                    {% endif %}
+                                    <input type="hidden" id="reserva_id_conf_del" value="">
+                                </td>
+                            </tr>
+                            
+                            <tr class="back2" style="display: none;" id="tr_confirmar">
+                                <td colspan="2" class="w-100 h-40 center font14">
+                                    <br><br>
+                                    <button class="btn btn-primary btn-sm" id="btn_tr_confirmar" onclick="reservasConfirmarActividad('confirmar');">
+                                        <i class="nav-icon fas fa-save"></i>&nbsp;&nbsp;Confirmar
+                                    </button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <button class="btn btn-secondary btn-sm" id="btn_tr_confirmar_cancelar" onclick="reservasCancelarMostrar();">
+                                        <i class="nav-icon fas fa-arrow-left"></i>&nbsp;Cancelar
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <tr class="back2" style="display: none;" id="tr_eliminar">
+                                <td colspan="2" class="w-100 h-40 center font14">
+                                    <br><br>
+                                    <button class="btn btn-danger btn-sm" id="btn_tr_eliminar" onclick="reservasConfirmarActividad('eliminar');">
+                                        <i class="nav-icon far fa-times-circle"></i>&nbsp;&nbsp;Eliminar
+                                    </button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <button class="btn btn-secondary btn-sm" id="btn_tr_eliminar_cancelar" onclick="reservasCancelarMostrar();">
+                                        <i class="nav-icon fas fa-arrow-left"></i>&nbsp;Cancelar
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <tr class="back1">
+                                <td colspan="2" class="w-100 h-40 center font14">
+                                    <div id="div_resultado_confirmar">&nbsp;</div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td class="w-100 right">
+                        <button class="btn btn-secondary btn-sm" data-dismiss="modal">
+                            <i class="nav-icon fas fa-arrow-left"></i>&nbsp;&nbsp;Volver
+                        </button>
+                    </td>
+                </tr>
+            </table>
+            </div>
+        </div>
+        </div>

@@ -1,15 +1,9 @@
 
-//modal function
-modalFunction = document.getElementById('modalFunctionSuccess');
-modalF = $('#modalForm');
-div_modulo = $("#div_block_content");
-
-modalPrintFunctionB1 = document.getElementById('modalPrintFunctionB1');
-modalPrintFunctionB2 = document.getElementById('modalPrintFunctionB2');
-modalFPrint = $('#modalPrint');
+function sendSearchVenta() {
+    sendFormObject('search', div_modulo);
+}
 
 function ventaWarning() {
-    modalF = $('#modalForm');
     modalF.modal('toggle');
 }
 
@@ -46,16 +40,24 @@ function sendFormVenta(operation, message) {
         case ('anular'):
             modalFunction.value = 'ventaSaveForm();';
             //set data modal
-            modalSetParameters('danger', 'center', 'Ventas!', 'Esta seguro de querer anular ' + message + '?', 'Cancelar', 'Anular');
+            modalSetParameters('danger', 'center', 'PreVentas!', 'Esta seguro de querer anular ' + message + '?', 'Cancelar', 'Anular');
             modalF.modal();
 
             break;
 
         case ('pasar_venta'):
-            modalFunction.value = 'ventaSaveForm();';
-            //set data modal
-            modalSetParameters('success', 'center', 'Ventas!', 'Esta seguro de querer confirmar esta venta?', 'Cancelar', 'Confirmar');
-            modalF.modal();
+            resValidation = verifyPasarVenta();
+            if (resValidation === true) {
+                modalFunction.value = 'ventaSaveForm();';
+                //set data modal
+                modalSetParameters('success', 'center', 'Ventas!', 'Esta seguro de querer confirmar esta venta?', 'Cancelar', 'Confirmar');
+                modalF.modal();
+            }
+            else {
+                modalSetParameters('warning', 'center', 'Ventas!', resValidation, 'Cancelar', 'Volver');
+                modalFunction.value = 'ventaWarning();';
+                modalF.modal();
+            }
 
             break;
 
@@ -64,70 +66,6 @@ function sendFormVenta(operation, message) {
             if (resValidation === true) {
                 modalFunction.value = 'ventaSaveForm();';
                 modalSetParameters('danger', 'center', 'Ventas!', 'Esta seguro de querer anular esta Venta?', 'Cancelar', 'Anular');
-                modalF.modal();
-            }
-            else {
-                modalSetParameters('warning', 'center', 'Ventas!', resValidation, 'Cancelar', 'Volver');
-                modalFunction.value = 'ventaWarning();';
-                modalF.modal();
-            }
-            break;
-
-        case ('aumento_pedido'):
-            resValidation = validarAumentoVenta();
-            if (resValidation === true) {
-                modalFunction.value = 'ventaSaveForm();';
-                modalSetParameters('success', 'center', 'Ventas!', 'Esta seguro de adicionar este aumento?', 'Cancelar', 'Adicionar');
-                modalF.modal();
-            }
-            else {
-                modalSetParameters('warning', 'center', 'Ventas!', resValidation, 'Cancelar', 'Volver');
-                modalFunction.value = 'ventaWarning();';
-                modalF.modal();
-            }
-            break;
-
-        case ('pasar_salida'):
-            modalFunction.value = 'ventaSaveForm();';
-            //set data modal
-            modalSetParameters('success', 'center', 'Ventas!', 'Esta seguro de querer confirmar esta salida de almacen?', 'Cancelar', 'Confirmar');
-            modalF.modal();
-
-            break;
-
-        case ('pasar_salida_anular'):
-            resValidation = verifyForm();
-            if (resValidation === true) {
-                modalFunction.value = 'ventaSaveForm();';
-                modalSetParameters('danger', 'center', 'Ventas!', 'Esta seguro de querer anular esta salida de almacen?', 'Cancelar', 'Anular');
-                modalF.modal();
-            }
-            else {
-                modalSetParameters('warning', 'center', 'Ventas!', resValidation, 'Cancelar', 'Volver');
-                modalFunction.value = 'ventaWarning();';
-                modalF.modal();
-            }
-            break;
-
-        case ('pasar_vuelta'):
-            resValidation = verifyPasarVueltaVenta();
-            if (resValidation === true) {
-                modalFunction.value = 'ventaSaveForm();';
-                modalSetParameters('success', 'center', 'Ventas!', 'Esta seguro de querer devolver los productos a Almacen?', 'Cancelar', 'Confirmar');
-                modalF.modal();
-            }
-            else {
-                modalSetParameters('warning', 'center', 'Ventas!', resValidation, 'Cancelar', 'Volver');
-                modalFunction.value = 'ventaWarning();';
-                modalF.modal();
-            }
-            break;
-
-        case ('pasar_vuelta_anular'):
-            resValidation = verifyForm();
-            if (resValidation === true) {
-                modalFunction.value = 'ventaSaveForm();';
-                modalSetParameters('danger', 'center', 'Ventas!', 'Esta seguro de querer anular esta vuelta a almacen?', 'Cancelar', 'Anular');
                 modalF.modal();
             }
             else {
@@ -191,33 +129,12 @@ function sendFormVenta(operation, message) {
     }
 }
 
-function validarAumentoVenta() {
-    const t_final = Trim(document.getElementById('total_final').value);
-    if (t_final == '') {
-        return 'Debe registrar al menos 1 producto';
-    }
-    else {
-        const t_valor = parseFloat(t_final);
-        if (t_valor <= 0) {
-            return 'Debe llenar la cantidad y costo de los productos';
-        }
-        else {
-            return true;
-        }
-    }
-}
-
 function ventaSaveForm() {
     modalF.modal('toggle');
     document.forms['formulario'].elements['add_button'].disabled = true;
     document.forms['formulario'].elements['button_cancel'].disabled = true;
 
     sendFormObject('formulario', div_modulo);
-}
-
-function sendSearchVenta() {
-    div_modulo = $("#div_block_content");
-    sendFormObject('search', div_modulo);
 }
 
 //confirmar anular venta
@@ -259,20 +176,18 @@ function anularVentaSend() {
 
 //acc, buscar cliente
 function buscarClienteVenta() {
-    obj_ci_nit = Trim(document.getElementById('buscar_ci_nit').value);
+    obj_telefonos = Trim(document.getElementById('buscar_telefonos').value);
     obj_apellidos = Trim(document.getElementById('buscar_apellidos').value);
     obj_nombres = Trim(document.getElementById('buscar_nombres').value);
 
     token = document.forms['formulario'].elements['csrfmiddlewaretoken'].value;
 
-    url_main = document.getElementById('url_main').value;
-    ruta_imagen = url_empresa + '/static/img/pass/loading.gif';
-    imagen = '<td colspan="4" class="left w100"><img src="' + ruta_imagen + '"></td>';
+    const imagen = '<td colspan="4" class="left w100">' + imgLoading + '</td>';
 
     datos = {
         'module_x': document.forms['form_operation'].elements['module_x'].value,
         'operation_x': 'buscar_cliente',
-        'ci_nit': obj_ci_nit,
+        'telefonos': obj_telefonos,
         'apellidos': obj_apellidos,
         'nombres': obj_nombres,
         'csrfmiddlewaretoken': token,
@@ -280,7 +195,7 @@ function buscarClienteVenta() {
 
     $("#div_clientes").fadeIn('slow');
     $("#div_clientes").html(imagen);
-    $("#div_clientes").load(url_main, datos, function () {
+    $("#div_clientes").load(hostURL, datos, function () {
         //termina de cargar la ventana
     });
 }
@@ -292,13 +207,15 @@ function seleccionarClienteVenta(cliente_id) {
     obj_nombres = document.getElementById('nombres_' + cliente_id).value;
     obj_telefonos = document.getElementById('telefonos_' + cliente_id).value;
     obj_direccion = document.getElementById('direccion_' + cliente_id).value;
+    obj_factura_a = document.getElementById('factura_a_' + cliente_id).value;
 
     p_ci_nit = document.getElementById('ci_nit');
     p_apellidos = document.getElementById('apellidos');
     p_nombres = document.getElementById('nombres');
     p_telefonos = document.getElementById('telefonos');
-    p_direccion = document.getElementById('direccion_evento');
+    p_direccion = document.getElementById('direccion');
     p_cliente_id = document.getElementById('cliente_id');
+    p_factura_a = document.getElementById('factura_a');
 
     p_ci_nit.value = obj_ci_nit;
     p_apellidos.value = obj_apellidos;
@@ -306,8 +223,153 @@ function seleccionarClienteVenta(cliente_id) {
     p_telefonos.value = obj_telefonos;
     p_direccion.value = obj_direccion;
     p_cliente_id.value = cliente_id;
+    p_factura_a.value = obj_factura_a;
+
+    //nombre del cliente en el tab de imagenes
+    const cliente_img = $('#span_cliente_imagenes');
+    cliente_img.html(obj_nombres + ' ' + obj_apellidos);
+
+    //historias
+    token = document.forms['formulario'].elements['csrfmiddlewaretoken'].value;
+
+    datos = {
+        'module_x': document.forms['form_operation'].elements['module_x'].value,
+        'operation_x': 'get_historias',
+        'cliente_id': cliente_id,
+        'nombres': obj_nombres,
+        'apellidos': obj_apellidos,
+        'csrfmiddlewaretoken': token
+    }
+    $('#div_ventas_historias').html(imgLoading);
+    $('#div_ventas_historias').load(hostURL, datos, function () {
+        //termina de cargar la ventana
+    });
 
     $("#div_clientes").fadeOut('slow');
+}
+
+function ventaSeleccionMontura(tipo_montura, nombre_montura, montura_id) {
+    const tp = document.getElementById(tipo_montura);
+    tp.value = montura_id;
+
+    const precio = lista_monturas_precios[montura_id];
+    const objPrecio = document.getElementById('tipo_montura_precio');
+    objPrecio.value = precio;
+
+    //acc, calculo de precio al seleccionar montura
+    // ventaCalcularPrecio();
+    ventaSeleccionAlmacenMontura();
+}
+
+function ventaSeleccionAlmacenMontura() {
+    const almacen = document.getElementById('almacen_id').value;
+    const tipo_montura = document.getElementById('tipo_montura').value;
+
+    const montura_stock = $('#div_montura_stock');
+
+    token = document.forms['formulario'].elements['csrfmiddlewaretoken'].value;
+
+    datos = {
+        'module_x': document.forms['form_operation'].elements['module_x'].value,
+        'operation_x': 'stock_monturas',
+        'tipo_montura_id': tipo_montura,
+        'almacen_id': almacen,
+        'csrfmiddlewaretoken': token
+    }
+
+    montura_stock.html(imgLoading);
+    montura_stock.load(hostURL, datos, function () {
+        //termina de cargar la ventana
+    });
+}
+
+function ventaSeleccionStock(numero_registro, montura, id) {
+    //asignamos el id del stock
+    obj_aux = document.getElementById("stock_" + numero_registro);
+    obj_aux.value = id;
+}
+
+function ventaCheckMaterialPrecio() {
+    const valores = $('#materiales_select').val();
+    let precio = 0;
+
+    if (valores.length > 0) {
+        for (let i = 0; i < valores.length; i++) {
+            precio = precio + parseFloat(lista_materiales_precios[valores[i]]);
+        }
+
+    }
+    const objPrecio = document.getElementById('material_precio');
+    objPrecio.value = redondeo(precio, 2);
+
+    //acc, calculo del precio
+    //ventaCalcularPrecio();
+}
+
+function ventaCalcularPrecio() {
+    const monturaPrecio = Trim(document.getElementById('tipo_montura_precio').value);
+    const montPrecio = monturaPrecio === '' ? 0 : parseFloat(monturaPrecio);
+
+    const materialPrecio = Trim(document.getElementById('material_precio').value);
+    const matPrecio = materialPrecio === '' ? 0 : parseFloat(materialPrecio);
+
+    const totalPedido = document.getElementById('total_pedido');
+    totalPedido.value = redondeo(montPrecio + matPrecio, 2);
+
+    totalPedidoPreVenta('');
+}
+
+//acc, descuento en venta
+function calcularPorcentajeDescuentoVenta() {
+    porcentaje_descuento = Trim(document.getElementById('porcentaje_descuento').value);
+    total_pedido2 = Trim(document.getElementById('total_pedido').value);
+
+    descuento_obj = document.getElementById('descuento');
+
+    if (total_pedido2 != '' && porcentaje_descuento != '') {
+        resta_descuento = (parseFloat(porcentaje_descuento) / 100) * parseFloat(total_pedido2);
+        descuento_obj.value = redondeo(resta_descuento, 2);
+    }
+    else {
+        if (total_pedido2 === '') {
+            descuento_obj.value = '';
+        }
+    }
+}
+
+//acc, total por producto
+function totalPedidoPreVenta(origen) {
+
+    obj_total_pedido = document.getElementById('total_pedido');
+    total_pedido = 0;
+    if (Trim(obj_total_pedido.value) != '') {
+        total_pedido = parseFloat(Trim(obj_total_pedido.value));
+    }
+
+    if (origen !== 'descuento') {
+        calcularPorcentajeDescuentoVenta();
+    }
+
+    //descuento
+    t_final = total_pedido;
+    descuento = Trim(document.getElementById('descuento').value);
+    total_venta = document.getElementById('total_venta');
+    if (descuento != '') {
+        val_descuento = parseFloat(descuento);
+        t_final = t_final - val_descuento;
+        total_venta.value = redondeo((total_pedido - val_descuento), 2);
+    }
+    else {
+        total_venta.value = redondeo(total_pedido, 2);
+    }
+
+    //a cuenta
+    a_cuenta = Trim(document.getElementById('a_cuenta').value);
+    if (a_cuenta == '') {
+        a_cuenta = '0';
+    }
+    saldo = document.getElementById('saldo');
+    saldo.value = redondeo((t_final - parseFloat(a_cuenta)), 2);
 }
 
 //mostramos la lista de productos
@@ -331,9 +393,7 @@ function mostrarProductosVenta() {
     }
     else {
         $("#div_listap").fadeIn('slow');
-        url_main = document.getElementById('url_main').value;
         token = document.forms['formulario'].elements['csrfmiddlewaretoken'].value;
-        ruta_imagen = url_empresa + '/static/img/pass/loading.gif';
 
         datos = {
             'module_x': document.forms['form_operation'].elements['module_x'].value,
@@ -350,11 +410,10 @@ function mostrarProductosVenta() {
         const btn_s = document.getElementById('btn_stock');
         btn_s.disabled = true;
 
-        imagen = '<img src="' + ruta_imagen + '">';
         listado = $("#div_cargar_stock");
         listado.fadeIn('slow');
-        listado.html(imagen);
-        listado.load(url_main, datos, function () {
+        listado.html(imgLoading);
+        listado.load(hostURL, datos, function () {
             //termina de cargar la ventana
             terminaStockVenta();
         });
@@ -464,222 +523,6 @@ function seleccionPPreVenta(numero_registro, producto, id) {
     }
 }
 
-//acc
-function validarFilaPreVenta(fila) {
-    tb2 = document.getElementById("tb2_" + fila.toString());
-    producto = document.getElementById("producto_" + fila.toString());
-
-    tb2_val = Trim(tb2.value);
-    pro_val = Trim(producto.value);
-
-    //no selecciono ningun producto
-    if (tb2_val == '') {
-        producto.value = '0';
-    }
-    else {
-        //escribio un producto, verificamos si selecciono
-        if (pro_val == '0') {
-            /*alert('Debe Seleccionar un Producto');
-            tb2.value = '';
-            tb2.focus();*/
-        }
-    }
-}
-
-//acc, total por producto
-function totalPedidoPreVenta(origen) {
-    total_pedido = 0;
-    for (i = 1; i <= 50; i++) {
-        try {
-            p_id = document.getElementById('producto_' + i).value;
-            if (p_id != '0') {
-                cantidad = Trim(document.getElementById('cantidad_' + i).value);
-                costo = Trim(document.getElementById('costo_' + i).value);
-                if (cantidad != '' && costo != '') {
-                    cantidad_valor = parseFloat(cantidad);
-                    costo_valor = parseFloat(costo);
-                    total = cantidad_valor * costo_valor;
-                    total_pedido += total;
-                    obj_total = document.getElementById('total_' + i);
-                    obj_total.value = redondeo(total, 2);
-                }
-            }
-        }
-        catch (e) {
-            console.log('sin filas');
-        }
-    }
-    //console.log('antes error');
-    obj_total_pedido = document.getElementById('total_pedido');
-    //console.log('error');
-    obj_total_pedido.value = redondeo(total_pedido, 2);
-
-    if (origen !== 'descuento') {
-        calcularPorcentajeDescuentoVenta();
-    }
-
-    //descuento
-    t_final = total_pedido;
-    descuento = Trim(document.getElementById('descuento').value);
-    total_venta = document.getElementById('total_venta');
-    if (descuento != '') {
-        val_descuento = parseFloat(descuento);
-        t_final = t_final - val_descuento;
-        total_venta.value = redondeo((total_pedido - val_descuento), 2);
-    }
-    else {
-        total_venta.value = redondeo(total_pedido, 2);
-    }
-
-    //costo transporte
-    costo_transporte = Trim(document.getElementById('costo_transporte').value);
-    if (costo_transporte == '') {
-        costo_transporte = '0';
-    }
-    total_final = document.getElementById('total_final');
-    total_final.value = redondeo((t_final + parseFloat(costo_transporte)), 2);
-}
-
-//acc, descuento en venta
-function calcularPorcentajeDescuentoVenta() {
-    porcentaje_descuento = Trim(document.getElementById('porcentaje_descuento').value);
-    total_pedido2 = Trim(document.getElementById('total_pedido').value);
-
-    descuento_obj = document.getElementById('descuento');
-
-    if (total_pedido2 != '' && porcentaje_descuento != '') {
-        resta_descuento = (parseFloat(porcentaje_descuento) / 100) * parseFloat(total_pedido2);
-        descuento_obj.value = redondeo(resta_descuento, 2);
-    }
-    else {
-        descuento_obj.value = '';
-    }
-}
-
-function anularAumentoVenta(vaid) {
-    const div_a = $('#div_motivo_anula_' + vaid);
-    div_a.fadeIn('slow');
-}
-
-function anularAumentoVentaCancelar(vaid) {
-    const div_a = $('#div_motivo_anula_' + vaid);
-    div_a.fadeOut('slow');
-}
-
-function anularAumentoVentaConfirmar(vaid) {
-    const motivo_anula = Trim(document.getElementById('motivo_anula_' + vaid).value);
-    if (motivo_anula == '') {
-        modalSetParameters('warning', 'center', 'Ventas!', 'debe llenar el motivo', 'Cancelar', 'Volver');
-        modalFunction.value = 'ventaWarning();';
-        modalF.modal();
-    }
-    else {
-
-
-        document.forms['form_operation'].elements['motivo_anula'].value = motivo_anula;
-        document.forms['form_operation'].elements['vaid'].value = vaid;
-        document.forms['form_operation'].elements['operation_x2'].value = 'aumento_pedido_anular_x';
-        modalSetParameters('danger', 'center', 'Ventas Aumentos!', 'esta seguro de anular este aumento?', 'Cancelar', 'Anular');
-        modalFunction.value = 'anularAumentoVentaSend();';
-        modalF.modal();
-    }
-}
-
-function anularAumentoVentaSend() {
-    modalF.modal('toggle');
-
-    sendFormObject('form_operation', div_modulo);
-}
-
-function totalPedidoVueltaVenta() {
-    const cantProductos = document.getElementById('cant_productos').value;
-    let totalVuelta = 0;
-    const totalFinal = document.getElementById('total_final');
-
-    for (let i = 1; i <= cantProductos; i++) {
-        const inpSalida = Trim(document.getElementById('salida_' + i).value);
-        const inpVuelta = Trim(document.getElementById('vuelta_' + i).value);
-        const inpRotura = Trim(document.getElementById('rotura_' + i).value);
-        const inpRefaccion = Trim(document.getElementById('refaccion_' + i).value);
-        const inpTotal = document.getElementById('total_' + i);
-        //console.log('salida: ', inpSalida, ', vuelta: ', inpVuelta, ', rotura: ', inpRotura);
-        if (inpVuelta != '' && inpRotura != '') {
-            const resta = parseInt(inpSalida) - parseInt(inpVuelta);
-            if (resta < 0) {
-                document.getElementById('vuelta_' + i).value = '';
-                modalSetParameters('warning', 'center', 'Ventas!', 'la cantidad de vuelta no puede ser mayor a la cantidad de salida', 'Cancelar', 'Volver');
-                modalFunction.value = 'ventaWarning();';
-                modalF.modal();
-                return false;
-            }
-            let total = resta * parseFloat(inpRotura);
-            if (inpRefaccion != '') {
-                total = total + parseFloat(inpRefaccion);
-            }
-            totalVuelta += total;
-            inpTotal.value = redondeo(total, 2);
-        }
-    }
-    totalFinal.value = redondeo(totalVuelta, 2);
-}
-
-function verifyPasarVueltaVenta() {
-    const cantProductos = document.getElementById('cant_productos').value;
-
-    for (let i = 1; i <= cantProductos; i++) {
-        const inpSalida = Trim(document.getElementById('salida_' + i).value);
-        const inpVuelta = Trim(document.getElementById('vuelta_' + i).value);
-        const inpRotura = Trim(document.getElementById('rotura_' + i).value);
-        const inpRefaccion = Trim(document.getElementById('refaccion_' + i).value);
-        const inpTotal = document.getElementById('total_' + i);
-
-        if (inpVuelta != '' && inpRotura != '') {
-            const resta = parseInt(inpSalida) - parseInt(inpVuelta);
-            if (resta < 0) {
-                return 'la cantidad de vuelta no puede ser mayor a la cantidad de salida';
-            }
-        }
-        else {
-            return 'Debe registrar cantidad de vuelta de todos los productos';
-        }
-    }
-    return true;
-}
-
-//gastos
-function anularGastoVenta(ce_id) {
-    const div_a = $('#div_motivo_anula_' + ce_id);
-    div_a.fadeIn('slow');
-}
-
-function anularGastoVentaCancelar(ce_id) {
-    const div_a = $('#div_motivo_anula_' + ce_id);
-    div_a.fadeOut('slow');
-}
-
-function anularGastoVentaConfirmar(ce_id) {
-    const motivo_anula = Trim(document.getElementById('motivo_anula_' + ce_id).value);
-    if (motivo_anula == '') {
-        modalSetParameters('warning', 'center', 'Ventas!', 'debe llenar el motivo', 'Cancelar', 'Volver');
-        modalFunction.value = 'ventaWarning();';
-        modalF.modal();
-    }
-    else {
-        document.forms['form_operation'].elements['motivo_anula'].value = motivo_anula;
-        document.forms['form_operation'].elements['ce_id'].value = ce_id;
-        document.forms['form_operation'].elements['operation_x2'].value = 'gastos_anular_x';
-        modalSetParameters('danger', 'center', 'Gastos!', 'esta seguro de anular este gasto?', 'Cancelar', 'Anular');
-        modalFunction.value = 'anularGastoVentaSend();';
-        modalF.modal();
-    }
-}
-
-function anularGastoVentaSend() {
-    modalF.modal('toggle');
-
-    sendFormObject('form_operation', div_modulo);
-}
-
 //cobros
 function anularCobroVenta(ci_id) {
     const div_a = $('#div_motivo_anula_' + ci_id);
@@ -716,23 +559,23 @@ function anularCobroVentaSend() {
 
 //impresion de venta
 function imprimirVenta(venta_id) {
-    modalPrintFunctionB1.value = "imprimirVentaConCostos('" + venta_id + "');";
-    modalPrintFunctionB2.value = "imprimirVentaSinCostos('" + venta_id + "');";
-    modalPrintSetParameters('success', 'center', 'Ventas!', 'Imprimir Costos?', 'SI', 'NO');
+    modalPrintFunctionB1.value = "imprimirVentaPreImpreso('" + venta_id + "');";
+    modalPrintFunctionB2.value = "imprimirVentaDisenio('" + venta_id + "');";
+    modalPrintSetParameters('success', 'center', 'Ventas!', 'Imprimir PreImpreso?', 'SI', 'NO');
     modalFPrint.modal();
 }
 
-function imprimirVentaConCostos(venta_id) {
+function imprimirVentaPreImpreso(venta_id) {
     modalFPrint.modal('toggle');
     document.forms['form_print'].elements['id'].value = venta_id;
-    document.forms['form_print'].elements['operation_x'].value = 'imprimir_con_costos';
+    document.forms['form_print'].elements['operation_x'].value = 'imprimir_preimpreso';
     document.forms['form_print'].submit();
 }
 
-function imprimirVentaSinCostos(venta_id) {
+function imprimirVentaDisenio(venta_id) {
     modalFPrint.modal('toggle');
     document.forms['form_print'].elements['id'].value = venta_id;
-    document.forms['form_print'].elements['operation_x'].value = 'imprimir_sin_costos';
+    document.forms['form_print'].elements['operation_x'].value = 'imprimir_disenio';
     document.forms['form_print'].submit();
 }
 
@@ -760,4 +603,183 @@ function imprimirResumenFinalizar(venta_id) {
     document.forms['form_print'].elements['id'].value = venta_id;
     document.forms['form_print'].elements['operation_x'].value = 'print_resumen';
     document.forms['form_print'].submit();
+}
+
+function ventaSelectTipoVenta() {
+    //segun el tipo de venta
+    const tipo_venta = document.getElementById('tipo_venta').value;
+    const div_pp_1 = $('#div_planpagos_1');
+    const div_pp_2 = $('#div_planpagos_2');
+    if (tipo_venta === 'contado') {
+        div_pp_1.fadeOut('slow');
+        div_pp_2.fadeOut('slow');
+    }
+    else {
+        div_pp_1.fadeIn('slow');
+        div_pp_2.fadeIn('slow');
+    }
+}
+
+function verifyPasarVenta() {
+    //verificamos tipo de montura y montura
+    const tipo_montura = Trim(document.getElementById('tipo_montura').value);
+    if (tipo_montura === '0' || tipo_montura === '') {
+        return 'Debe Seleccionar el tipo de montura';
+    }
+
+    //stock
+    const stock1 = Trim(document.getElementById('stock_1').value);
+    if (stock1 === '0' || stock1 === '') {
+        return 'Debe Seleccionar la montura de stock';
+    }
+
+    //materiales
+    const valores = $('#materiales_select').val();
+    if (valores.length === 0) {
+        return 'Debe seleccionar al menos 1 material'
+    }
+
+    //laboratorio
+    const laboratorio = Trim(document.getElementById('laboratorio_id').value);
+    if (laboratorio === '0') {
+        return 'Debe Seleccionar un laboratorio';
+    }
+
+    //tecnico
+    const tecnico = Trim(document.getElementById('tecnico_id').value);
+    if (tecnico === '0') {
+        return 'Debe Seleccionar un tecnico';
+    }
+
+    //oftalmologo
+    const oftalmologo = Trim(document.getElementById('oftalmologo_id').value);
+    if (oftalmologo === '0') {
+        return 'Debe Seleccionar un oftalmologo';
+    }
+
+    //total
+    const total_venta = Trim(document.getElementById('total_venta').value);
+    if (total_venta === '') {
+        return 'El total de la venta debe ser mayor a cero';
+    }
+    if (parseFloat(total_venta) <= 0) {
+        return 'El total de la venta debe ser mayor a cero';
+    }
+
+    //tipo de venta
+    const tipo_venta = Trim(document.getElementById('tipo_venta').value);
+    if (tipo_venta === 'planpagos') {
+        const cuotas = Trim(document.getElementById('cuotas_planpagos').value);
+        if (cuotas === '') {
+            return 'Debe llenar la cantidad de cuotas';
+        }
+        const dias = Trim(document.getElementById('dias_planpagos').value);
+        if (dias === '') {
+            return 'Debe llenar la cantidad de dias';
+        }
+        const a_cuenta = Trim(document.getElementById('a_cuenta').value);
+        if (a_cuenta !== '') {
+            if (parseFloat(a_cuenta) > 0) {
+                return 'En ventas con plan de pagos, no debe existir un monto a cuenta';
+            }
+        }
+    }
+
+    return true;
+}
+
+function ventaValidarStock() {
+    const stock = document.getElementById('stock_1');
+    const tb2 = document.getElementById('tb2_1');
+    if (tb2) {
+        if (Trim(tb2.value) === '') {
+            stock.value = '0';
+        }
+    }
+}
+
+function ventasCambiaPrecio() {
+    totalPedidoPreVenta('');
+}
+
+async function ventasCargarImagen() {
+    const nuevaImagen = Trim(document.getElementById('imagen1').value);
+    if (nuevaImagen === '') {
+        modalSetParameters('warning', 'center', 'Ventas!', 'Debe seleccionar la imagen', 'Cancelar', 'Volver');
+        modalFunction.value = 'ventaWarning();';
+        modalF.modal();
+        return false;
+    }
+
+    const btn_imagen = document.getElementById('btn_imagen');
+    btn_imagen.disabled = true;
+    const fd = new FormData(document.forms['form_imagenes']);
+
+    $('#div_lista_imagenes').html(imgLoading);
+
+    let result;
+
+    try {
+        result = await $.ajax({
+            url: hostURL,
+            method: 'POST',
+            type: 'POST',
+            cache: false,
+            data: fd,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+                if (response != 0) {
+                    $('#div_lista_imagenes').html(response);
+                } else {
+                    alert('error al realizar la operacion, intentelo de nuevo');
+                }
+                btn_imagen.disabled = false;
+            },
+            error: function (qXHR, textStatus, errorThrown) {
+                console.log(errorThrown);
+                console.log(qXHR);
+                console.log(textStatus);
+            },
+        });
+        //alert(result);
+        btn_imagen.disabled = false;
+    }
+    catch (e) {
+        console.error(e);
+        btn_imagen.disabled = false;
+    }
+}
+
+//mostramos la imagen
+function ventasMostrarImagen(pid) {
+    document.form_img.id.value = pid;
+    document.form_img.submit();
+}
+
+//eliminar imagen
+function ventasEliminarImagen(pid) {
+
+    //token
+    token = document.forms['form_imagenes'].elements['csrfmiddlewaretoken'].value;
+    module_x = document.forms['form_operation'].elements['module_x'].value;
+
+    datos_imagen = {
+        'module_x': module_x,
+        'operation_x': 'eliminar_imagen',
+        'id': pid,
+        'csrfmiddlewaretoken': token,
+    }
+
+    $("#div_lista_imagenes").html(imgLoading);
+    $("#div_lista_imagenes").load(hostURL, datos_imagen, function () {
+        //termina de ejecutar
+    });
+}
+
+//imagen de venta
+function ventasMostrarVentaImagen(ventaImagenId) {
+    document.form_img.operation_x.value = 'mostrar_imagen_venta';
+    document.form_img.id.value = ventaImagenId;
+    document.form_img.submit();
 }

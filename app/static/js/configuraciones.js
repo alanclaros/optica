@@ -1,9 +1,6 @@
 
 //guardamos
 function mandarFormularioConfiguracion() {
-	//modal function
-	modalFunction = document.getElementById('modalFunctionSuccess');
-	modalF = $('#modalForm');
 	resValidation = verifyForm();
 
 	if (resValidation === true) {
@@ -23,9 +20,6 @@ function mandarFormularioConfiguracion() {
 }
 
 function configuracionesSaveForm() {
-	modalF = $('#modalForm');
-	modalF.modal('toggle');
-
 	modalF.modal('toggle');
 	document.forms['formulario'].elements['add_button'].disabled = true;
 
@@ -33,6 +27,5 @@ function configuracionesSaveForm() {
 }
 
 function configuracionesWarning(modalF) {
-	modalF = $('#modalForm');
 	modalF.modal('toggle');
 }

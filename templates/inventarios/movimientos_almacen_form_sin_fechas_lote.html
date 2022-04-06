@@ -7,8 +7,8 @@
 <!-- Autosuggest data: -->
 <script type="text/javascript">
     var suggest_custom_array_2 = [
-        {% for producto in lista_productos %}
-    ['{{producto.linea}} - {{producto.producto}}', '{{producto.producto_id}}'],
+    {% for tipo_montura in tipos_montura_lista %}
+    ['{{tipo_montura.proveedor_id.proveedor}} - {{tipo_montura.tipo_montura}}', '{{tipo_montura.tipo_montura_id}}'],
         {% endfor %}
     ];
 </script>
@@ -46,7 +46,7 @@
                         Almacen&nbsp;:&nbsp;
                     </td>
                     <td colspan="3" class="left w-80">
-                        <select name="almacen" id="almacen" onchange="seleccionAlmacenMA();" class="form-control input w-90" {% if operation_x == 'anular' %}readonly='readonly' {% endif %}>
+                        <select name="almacen" id="almacen" onchange="maSeleccionAlmacenMontura();" class="form-control input w-90" {% if operation_x == 'anular' %}readonly='readonly' {% endif %}>
                             <option value="0">---</option>
                             {% for almacen in lista_almacenes %}
                             <option value="{{almacen.almacen_id}}" {% if registro.almacen_id.almacen_id == almacen.almacen_id %}selected{% endif %}>{{almacen.sucursal_id.sucursal}}-{{almacen.almacen}}</option>
@@ -60,7 +60,7 @@
                         Destino&nbsp;:&nbsp;
                     </td>
                     <td colspan="3" class="left w-80">
-                        <select name="almacen2" id="almacen2" onchange="seleccionAlmacenMA();" class="form-control input w-90" {% if operation_x == 'anular' %}readonly='readonly' {% endif %}>
+                        <select name="almacen2" id="almacen2" onchange="maSeleccionAlmacenMontura();" class="form-control input w-90" {% if operation_x == 'anular' %}readonly='readonly' {% endif %}>
                             <option value="0">---</option>
                             {% for almacen in lista_almacenes_destino %}
                             <option value="{{almacen.almacen_id}}" {% if registro.almacen2_id == almacen.almacen_id %}selected{% endif %}>{{almacen.sucursal_id.sucursal}}-{{almacen.almacen}}</option>
@@ -68,8 +68,20 @@
                         </select>
                     </td>
                 </tr>
-
+                
                 <tr class="back1">
+                    <td class="right w-20">
+                        T. Montura&nbsp;:&nbsp;
+                    </td>
+                    <td colspan="3" class="left w-80">
+                        <input type="hidden" name="tipo_montura" id="tipo_montura" value="0" />
+                        <input type="text" autocomplete="off" id="tb2_tipo_montura" class="form-control input search left w-99" value="{{registro.tipo_montura_id.tipo_montura}}" />
+                        <script type="text/javascript"> new autosuggest(suggest_custom_array_2, "tb2_tipo_montura", null, function (index, control) { seleccionPMA('tipo_montura', control.keywords[index], control.values[index]); });
+                        </script>
+                    </td>
+                </tr>
+
+                <tr class="back2">
                     <td class="right w-20">
                         Concepto&nbsp;:&nbsp;
                     </td>
@@ -80,98 +92,53 @@
                 </tr>
             </table>
 
-            <div id="div_listap" style="display: {% if operation_x == 'add' %}none{% endif %};">
+            {% if operation_x == 'add' %}
+                <div id="div_listado_stock">
                 <table class="table3 w-100">
                     <tr>
-                        <th colspan="2" class="w-100 center">Lista de Productos</th>
+                        <th colspan="2" class="w-100 center">Monturas</th>
                     </tr>
                     <tr class="back1">
-                        <td class="w-40 left" id="columna1">
+                        <td colspan="2" class="w-100 left">
                             &nbsp;
                         </td>
-                        <td class="w-60 center" id="columna2">
-                            <table class="table3 w-100">
-                                <tr class="back1">
-                                    <td class="w-20 right" id="columna6">
-                                        <i>Act.</i>
-                                    </td>
-                                    <td class="w-25 right" id="columna7">
-                                        <i>Cant</i>
-                                    </td>
-                                    <td class="w-25 right" id="columna8">
-                                        <i>Costo</i>
-                                    </td>
-                                    <td class="w-30 right" id="columna9">
-                                        <i>Total</i>
-                                    </td>
-                                </tr>
-                            </table>
+                    </tr>
+                    
+                    <tr class="back2">
+                        <td colspan="2" class="w-100 left">
+                            <input type="hidden" name="stock_1" id="stock_1" value="0" />
+                            <input type="text" autocomplete="off" id="tb2_1" name="tb2_1" class="form-control input search left w-99" value="" />
                         </td>
                     </tr>
+                </table>
+                </div>
+            {% endif %}
 
-                    {% if operation_x == 'add' %}
-                    {% for fila in filas %}
-                    <tr class="back{{forloop.counter|back_class}}" id="fila_{{fila}}" style="display: {% if forloop.counter == 1 %}display{% else %}none{% endif %};">
-                        <td class="w-40 left">
-                            <input type="hidden" name="producto_{{fila}}" id="producto_{{fila}}" value="0" />
-                            <input type="text" autocomplete="off" id="tb2_{{fila}}" name="tb2_{{fila}}" class="form-control input search left w-99" value="" onblur="validarFilaMA('{{fila}}');" />
-                            <script type="text/javascript"> new autosuggest("tb2_{{fila}}", null, function (index, control) { seleccionPMA('{{fila}}', control.keywords[index], control.values[index]); }); 
-                            </script>
-                        </td>
-                        <td class="w-60 left">
-                            <div id="div_fila_{{fila}}">&nbsp;</div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    <tr class="back1">
-                        <td colspan="2" class="w-100 right">
-                            
-                            SubTotal : <input type="text" class="form-control input right w-20" name="total_pedido" id="total_pedido" readonly="readonly"> Bs.<br>
-                            
-                            &#37; Desc. <input type="text" autocomplete="off" class="form-control input right w-20" name="porcentaje_descuento" id="porcentaje_descuento" onkeyup="validarNumeroPunto(this); calcularPorcentajeDescuentoMA(); totalProductosMA();">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
-                            Desc. <input type="text" autocomplete="off" class="form-control input right w-20" name="descuento" id="descuento" onkeyup="validarNumeroPunto(this); totalProductosMA();"> Bs.<br>
-                            
-                            Total : <input type="text" class="form-control input right w-20" name="total_venta" id="total_venta" readonly="readonly"> Bs.
-                        </td>
-                    </tr>
-                    {% endif %}
-
-                    {% if operation_x == 'anular' %}
+            {% if operation_x == 'anular' %}
+                <table class="table3 w-100">
                     {% for detalle in detalles %}
                     <tr class="back{{forloop.counter|back_class}}">
-                        <td class="w-40 left">
-                            {{detalle.producto_id.producto}}
+                        <td class="right w-20">
+                            T. Montura :
                         </td>
-                        <td class="w-60 left">
-                            <table class="table3 w-100">
-                                <tr>
-                                    <td class="w-20 right">
-                                        &nbsp;
-                                    </td>
-                                    <td class="w-25 right">
-                                        {{detalle.cantidad}}
-                                    </td>
-                                    <td class="w-25 right">
-                                        {{detalle.costo}}
-                                    </td>
-                                    <td class="w-30 right">
-                                        {{detalle.total}}
-                                    </td>
-                                </tr>
-                            </table>
+                        <td class="w-100 left">
+                            {{detalle.nombre_montura}}
                         </td>
                     </tr>
                     {% endfor %}
                     <tr class="back1">
-                        <td class="right w-40">
+                        <td class="right w-20">
                             Motivo&nbsp;:&nbsp;
                         </td>
-                        <td class="left w-60">
+                        <td class="left w-80">
                             <input type="text" class="form-control input w-98" onkeyup="txtValid(this);" onblur="txtValid(this);" autocomplete="off" value="" maxlength="250" name="motivo_anula" id="motivo_anula">
                         </td>
                     </tr>
-                    {% endif %}
+                </table>
+            {% endif %}
 
+            <div id="div_listap" style="display: {% if operation_x == 'add' %}none{% endif %};">
+                <table class="table3 w-100">
                     <tr class="back2">
                         <td colspan="2" class="center w-100">&nbsp;</td>
                     </tr>

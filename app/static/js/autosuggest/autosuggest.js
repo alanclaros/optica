@@ -30,9 +30,17 @@
 var autosuggest_url = ""; // Global link to the server-side script, that gives you the suggestion list.
 // Used for controls that do not define their own server script urls.
 
-function autosuggest(id, url, onSelect) {
+function autosuggest(arrayName, id, url, onSelect) {
 
-	var array = suggest_custom_array_2;
+	//var array = suggest_custom_array_2;
+	//alert(id);
+	//alert(url);
+	// console.log('id..: ', id);
+	// console.log('url..: ', url);
+	// console.log('array name: ', arrayName);
+	//var array = suggest_custom_array_2;
+	var array = arrayName;
+
 	var field = document.getElementById(id);
 	var exists = field.autosuggest;
 

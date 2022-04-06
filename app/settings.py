@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-sv^$)4l5qi-p%n4_k(!umbmgyzonxgi@xibt7iifar#gwseu&1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '192.168.0.11']
+ALLOWED_HOSTS = ['127.0.0.1', '192.168.0.10']
 CURRENT_HOST = '127.0.0.1'
 HOST_FULL_PATH = '127.0.0.1:8000'
 #SUB_URL_EMPRESA = 'optica'
@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'inventarios.apps.InventariosConfig',
     'ventas.apps.VentasConfig',
     'pedidos.apps.PedidosConfig',
+    'reservas.apps.ReservasConfig',
     'webpush',
 ]
 
@@ -197,6 +198,7 @@ else:
 # thumb imagen productos
 PRODUCTOS_THUMB_WIDTH = 250
 PRODUCTOS_THUMB_HEIGHT = 250
+PRODUCTOS_NO_IMAGE = 'no_image_350x250.jpg'
 
 # modulos
 # GRUPO 1
@@ -231,10 +233,16 @@ MOD_REPORTES = 22
 # optica
 MOD_MATERIALES = 23
 MOD_TIPOS_MONTURA = 24
-MOD_DISENIO_LENTES = 25
-MOD_COLORES = 26
-MOD_MARCAS = 27
+MOD_LABORATORIOS = 25
+MOD_TECNICOS = 26
+MOD_OFTALMOLOGOS = 27
 MOD_PROVEEDORES = 28
+
+# reservas
+MOD_RESERVAS = 29
+
+# pedidos
+MOD_PEDIDOS = 30
 
 # STATUS
 STATUS_ACTIVO = 1
@@ -262,6 +270,7 @@ PERFIL_ADMIN = 1
 PERFIL_SUPERVISOR = 2
 PERFIL_VENDEDOR = 3
 PERFIL_CAJERO = 3
+PERFIL_ALMACEN = 2
 
 # nombre del sistema para reportes
 NOMBRE_SISTEMA = 'Optica'

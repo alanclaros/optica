@@ -1,0 +1,200 @@
+{% load jinja_tags %}
+{% load static %}
+
+<form name="form_historias" method="post" action="" onsubmit="return false;">
+    {% csrf_token %}
+    <table class="table3 w-100">
+        <tr>
+            <th colspan="4" class="center w-100">
+                Hitorias Cliente : {{nombres}} {{apellidos}}
+            </th>
+        </tr>
+        {% for historia in historias %}
+        <tr class="back{{forloop.counter|back_class}}">
+            <td class="w-20 left v-top">
+                {{historia.fecha_preventa|fecha_mostrar:'dd-MMM-yyyy HH:ii'}}
+            </td>
+            <td colspan="3" class="w-80 left">
+                Montura : {{historia.tipo_montura}}<br>
+                Material : 
+                {% for material in historia.materiales %}
+                    {{material.material}},&nbsp;
+                {% endfor %}<br>
+                Laboratorio : {{historia.laboratorio}}<br>
+                T&eacute;cnico : {{historia.tecnico}}<br>
+                Oftalm&oacute;logo : {{historia.oftalmologo}}<br>
+                Nota : {{historia.nota}}
+            </td>
+        </tr>
+        <tr class="back{{forloop.counter|back_class}}">
+            <td class="w-20 left v-top">
+                {{historia.total}} Bs.
+            </td>
+            <td colspan="3" class="w-80 left">
+                <div class="row w-100">
+                    <div class="col-sm-6 center">
+                     <table class="tablec w-100">
+                         <tr>
+                             <th colspan="5" class="w-100 center">
+                                 MEDIDAS LEJOS
+                             </th>
+                         </tr>
+                         <tr>
+                             <th rowspan="2" class="w-20 right">
+                                 O.<br>
+                                 D.
+                             </th>
+                             <td class="w-20 center">
+                                 <b>Esf</b>
+                             </td>
+                             <td class="w-20 center">
+                                 <b>Cli</b>
+                             </td>
+                             <td class="w-20 center">
+                                 <b>Eje</b>
+                             </td>
+                             <td rowspan="4" class="w-20 center">
+                                 <b>D.I.</b><br>
+                                 {{historia.lejos_di}}
+                             </td>
+                         </tr>
+                         <tr>
+                             <td class="w-20 center">
+                                 {{historia.lejos_od_esf}}
+                             </td>
+                             <td class="w-20 center">
+                                 {{historia.lejos_od_cli}}
+                             </td>
+                             <td class="w-20 center">
+                                 {{historia.lejos_od_eje}}
+                             </td> 
+                         </tr>
+                         <tr>
+                             <th rowspan="2" class="w-20 right">
+                                 O.<br>
+                                 I.
+                             </th>
+                             <td class="w-20 center">
+                                 <b>Esf</b>
+                             </td>
+                             <td class="w-20 center">
+                                 <b>Cli</b>
+                             </td>
+                             <td class="w-20 center">
+                                 <b>Eje</b>
+                             </td>
+                         </tr>
+                         <tr>
+                             <td class="w-20 center">
+                                 {{historia.lejos_oi_esf}}
+                             </td>
+                             <td class="w-20 center">
+                                 {{historia.lejos_oi_cli}}
+                             </td>
+                             <td class="w-20 center">
+                                 {{historia.lejos_oi_eje}}
+                             </td>
+                         </tr>
+                     </table>
+                    </div>
+                    <div class="col-sm-6 center">
+                     <table class="tablec w-100">
+                         <tr>
+                             <th colspan="5" class="w-100 center">
+                                 MEDIDAS CERCA
+                             </th>
+                         </tr>
+                         <tr>
+                             <th rowspan="2" class="w-20 right">
+                                 O.<br>
+                                 D.
+                             </th>
+                             <td class="w-20 center">
+                                 <b>Esf</b>
+                             </td>
+                             <td class="w-20 center">
+                                 <b>Cli</b>
+                             </td>
+                             <td class="w-20 center">
+                                 <b>Eje</b>
+                             </td>
+                             <td rowspan="4" class="w-20 center">
+                                 <b>D.I.</b><br>
+                                 {{historia.cerca_di}}
+                             </td>
+                         </tr>
+                         <tr>
+                             <td class="w-20 center">
+                                 {{historia.cerca_od_esf}}
+                             </td>
+                             <td class="w-20 center">
+                                 {{historia.cerca_od_cli}}
+                             </td>
+                             <td class="w-20 center">
+                                 {{historia.cerca_od_eje}}
+                             </td>
+                             
+                         </tr>
+                         <tr>
+                             <th rowspan="2" class="w-20 right">
+                                 O.<br>
+                                 I.
+                             </th>
+                             <td class="w-20 center">
+                                 <b>Esf</b>
+                             </td>
+                             <td class="w-20 center">
+                                 <b>Cli</b>
+                             </td>
+                             <td class="w-20 center">
+                                 <b>Eje</b>
+                             </td>
+                         </tr>
+                         <tr>
+                             <td class="w-20 center">
+                                 {{historia.cerca_oi_esf}}
+                             </td>
+                             <td class="w-20 center">
+                                 {{historia.cerca_oi_cli}}
+                             </td>
+                             <td class="w-20 center">
+                                 {{historia.cerca_oi_eje}}
+                             </td>
+                         </tr>
+                     </table>
+                     </div>
+                </div>
+            </td>
+        </tr>
+        
+        <!--imagenes-->
+        {% for imagen in historia.lista_imagenes %}
+        <tr class="back{{forloop.counter|back_class}}">
+            <td class="w-20 left v-top">
+                Imagen : 
+            </td>
+            <td colspan="3" class="w-80 left">
+                
+                <div class="row w-100">
+                    <div class="col-sm-6 center">
+                        <img src="{% static '/media/ventas/' %}{{imagen.col1.imagen_thumb}}" class="pointer" onclick="nd(); ventasMostrarVentaImagen('{{imagen.col1.imagen_id}}');"
+                        onMouseOver=" overlib('mostrar imagen',CAPTION,'Imagen',WIDTH,'120',RIGHT); return true" onMouseOut=" nd(); return true">
+                    </div>
+                    <div class="col-sm-6 center">
+                        {% if imagen.col2.imagen_id != 0 %}
+                        <img src="{% static '/media/ventas/' %}{{imagen.col2.imagen_thumb}}" class="pointer" onclick="nd(); ventasMostrarVentaImagen('{{imagen.col2.imagen_id}}');"
+                        onMouseOver=" overlib('mostrar imagen',CAPTION,'Imagen',WIDTH,'120',RIGHT); return true" onMouseOut=" nd(); return true">
+                        {% endif %}
+                    </div>
+                </div>
+                
+            </td>
+        </tr>
+        {% endfor %}
+        <tr class="back2">
+            <td colspan="4" class="center w-100">&nbsp;</td>
+        </tr>
+        {% endfor %}
+        
+    </table>
+</form>

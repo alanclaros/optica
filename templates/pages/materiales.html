@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% load humanize %}
+{% load static %}
+
+{% block title %} | Materiales {% endblock %}
+
+{% block content %}
+
+<div class="row align-items-center">
+    <div class="col-sm-1">&nbsp;</div>
+    <div class="col-sm-10">
+        <!--div contenedor-->
+        <br><br>
+        <p class="index_titulo">Materiales</p>
+        
+        <div class="row w-100">
+            <div class="col-sm-4 center">
+                <div class="card">
+                    <div class="card-body maxwidth_315">
+                        <p>
+                            <span class="index_title">Monofocal</span>
+                        </p>
+                        <img class="img-fluid" src="{% static 'img/materiales/monofocal.jpg' %}">
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4 center">
+                <div class="card">
+                    <div class="card-body">
+                        <p>
+                            <span class="index_title">Lentes Asf&eacute;ricas</span>
+                        </p>
+                        <img class="img-fluid" src="{% static 'img/materiales/lentes_asfericas.jpg' %}">
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4 center">
+                <div class="card">
+                    <div class="card-body">
+                        <p>
+                            <span class="index_title">Org&aacute;nica CR-39</span>
+                        </p>
+                        <img class="img-fluid" src="{% static 'img/materiales/organica_cr39.jpg' %}">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row w-100">
+            <div class="col-sm-4 center">
+                <div class="card">
+                    <div class="card-body maxwidth_315">
+                        <p>
+                            <span class="index_title">Policarbonato</span>
+                        </p>
+                        <img class="img-fluid" src="{% static 'img/materiales/policarbonato.jpg' %}">
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4 center">
+                <div class="card">
+                    <div class="card-body">
+                        <p>
+                            <span class="index_title">High Light</span>
+                        </p>
+                        <img class="img-fluid" src="{% static 'img/materiales/high_light.jpg' %}">
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4 center">
+                <div class="card">
+                    <div class="card-body">
+                        <p>
+                            <span class="index_title">Bluebloker</span>
+                        </p>
+                        <img class="img-fluid" src="{% static 'img/materiales/blue_bloker.jpg' %}">
+                    </div>
+                </div>
+            </div>
+        </div>
+            
+    </div>
+    <!--fin div contenedor-->
+    <div class="col-sm-1">&nbsp;</div>
+</div>
+
+<br><br><br><br><br><br><br><br><br><br>
+<!--pie de pagina-->
+{% include 'pages/pie_pagina.html' %}
+
+{% endblock %}

@@ -99,6 +99,21 @@ def get_system_settings():
     return retorno
 
 
+def get_almacen_user(user):
+    try:
+        user_perfil = apps.get_model('permisos', 'UsersPerfiles').objects.get(user_id=user)
+        punto = apps.get_model('configuraciones', 'Puntos').objects.get(pk=user_perfil.punto_id)
+        puntos_almacenes = apps.get_model('configuraciones', 'PuntosAlmacenes').objects.filter(punto_id=punto)
+        if puntos_almacenes:
+            punto_almacen = puntos_almacenes.first()
+            return punto_almacen.almacen_id
+        else:
+            return None
+
+    except Exception as ex:
+        return None
+
+
 def current_date():
     datos_settings = get_system_settings()
     anio = '20' + str(datetime.now().year) if len(str(datetime.now().year)) == 2 else str(datetime.now().year)

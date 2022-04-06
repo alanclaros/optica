@@ -66,13 +66,13 @@ def load_data(apps, schema_editor):
     modulo_insert.save()
     modulo_insert = Modulos.objects.create(modulo_id=16, modulo='lineas', modulo_txt='Lineas', enabled=True, position=16, grupo=4)
     modulo_insert.save()
-    modulo_insert = Modulos.objects.create(modulo_id=17, modulo='almacenes', modulo_txt='Almacenes', enabled=True, position=17, grupo=4)
+    modulo_insert = Modulos.objects.create(modulo_id=17, modulo='almacenes', modulo_txt='Almacenes', enabled=False, position=17, grupo=4)
     modulo_insert.save()
-    modulo_insert = Modulos.objects.create(modulo_id=18, modulo='configuraciones_sistema', modulo_txt='Configuraciones Sistema', enabled=True, position=18, grupo=4)
+    modulo_insert = Modulos.objects.create(modulo_id=18, modulo='configuraciones_sistema', modulo_txt='Configuraciones Sistema', enabled=True, position=25, grupo=4)
     modulo_insert.save()
-    modulo_insert = Modulos.objects.create(modulo_id=19, modulo='sucursales', modulo_txt='Sucursales', enabled=True, position=19, grupo=4)
+    modulo_insert = Modulos.objects.create(modulo_id=19, modulo='sucursales', modulo_txt='Sucursales', enabled=True, position=23, grupo=4)
     modulo_insert.save()
-    modulo_insert = Modulos.objects.create(modulo_id=20, modulo='puntos', modulo_txt='Puntos', enabled=True, position=20, grupo=4)
+    modulo_insert = Modulos.objects.create(modulo_id=20, modulo='puntos', modulo_txt='Puntos', enabled=True, position=24, grupo=4)
     modulo_insert.save()
 
     # grupo, herramientas
@@ -84,17 +84,21 @@ def load_data(apps, schema_editor):
     modulo_insert.save()
 
     # OPTICA
-    modulo_insert = Modulos.objects.create(modulo_id=23, modulo='materiales', modulo_txt='Materiales', enabled=True, position=23, grupo=4)
+    modulo_insert = Modulos.objects.create(modulo_id=23, modulo='materiales', modulo_txt='Materiales', enabled=True, position=17, grupo=4)
     modulo_insert.save()
-    modulo_insert = Modulos.objects.create(modulo_id=24, modulo='tipos_montura', modulo_txt='Tipos Montura', enabled=True, position=24, grupo=4)
+    modulo_insert = Modulos.objects.create(modulo_id=24, modulo='tipos_montura', modulo_txt='Tipos Montura', enabled=True, position=18, grupo=4)
     modulo_insert.save()
-    modulo_insert = Modulos.objects.create(modulo_id=25, modulo='disenio_lentes', modulo_txt='Disenio Lentes', enabled=True, position=25, grupo=4)
+    modulo_insert = Modulos.objects.create(modulo_id=25, modulo='laboratorios', modulo_txt='Laboratorios', enabled=True, position=19, grupo=4)
     modulo_insert.save()
-    modulo_insert = Modulos.objects.create(modulo_id=26, modulo='colores', modulo_txt='Colores', enabled=True, position=26, grupo=4)
+    modulo_insert = Modulos.objects.create(modulo_id=26, modulo='tecnicos', modulo_txt='Tecnicos', enabled=True, position=20, grupo=4)
     modulo_insert.save()
-    modulo_insert = Modulos.objects.create(modulo_id=27, modulo='marcas', modulo_txt='Marcas', enabled=True, position=27, grupo=4)
+    modulo_insert = Modulos.objects.create(modulo_id=27, modulo='oftalmologos', modulo_txt='Oftalmologos', enabled=True, position=21, grupo=4)
     modulo_insert.save()
-    modulo_insert = Modulos.objects.create(modulo_id=28, modulo='proveedores', modulo_txt='Proveedores', enabled=True, position=28, grupo=4)
+    modulo_insert = Modulos.objects.create(modulo_id=28, modulo='proveedores', modulo_txt='Proveedores', enabled=True, position=22, grupo=4)
+    modulo_insert.save()
+    modulo_insert = Modulos.objects.create(modulo_id=29, modulo='reservas', modulo_txt='Reservas', enabled=True, position=5, grupo=1)
+    modulo_insert.save()
+    modulo_insert = Modulos.objects.create(modulo_id=30, modulo='pedidos', modulo_txt='Pedidos', enabled=True, position=5, grupo=1)
     modulo_insert.save()
 
     # para el usuarios por defecto
@@ -126,7 +130,8 @@ def load_data(apps, schema_editor):
     modulo26 = Modulos.objects.get(pk=26)
     modulo27 = Modulos.objects.get(pk=27)
     modulo28 = Modulos.objects.get(pk=28)
-    # modulo29 = Modulos.objects.get(pk=29)
+    modulo29 = Modulos.objects.get(pk=29)
+    modulo30 = Modulos.objects.get(pk=30)
 
     user_modulo = UsersModulos.objects.create(user_perfil_id=user_perfil, modulo_id=modulo1, enabled=True, adicionar=True, modificar=True, eliminar=True, anular=True, imprimir=True, permiso=True)
     user_modulo.save()
@@ -185,8 +190,10 @@ def load_data(apps, schema_editor):
     user_modulo.save()
     user_modulo = UsersModulos.objects.create(user_perfil_id=user_perfil, modulo_id=modulo28, enabled=True, adicionar=True, modificar=True, eliminar=True, anular=True, imprimir=True, permiso=True)
     user_modulo.save()
-    # user_modulo = UsersModulos.objects.create(user_perfil_id=user_perfil, modulo_id=modulo29, enabled=True, adicionar=True, modificar=True, eliminar=True, anular=True, imprimir=True, permiso=True)
-    # user_modulo.save()
+    user_modulo = UsersModulos.objects.create(user_perfil_id=user_perfil, modulo_id=modulo29, enabled=True, adicionar=True, modificar=True, eliminar=True, anular=True, imprimir=True, permiso=True)
+    user_modulo.save()
+    user_modulo = UsersModulos.objects.create(user_perfil_id=user_perfil, modulo_id=modulo30, enabled=True, adicionar=True, modificar=True, eliminar=True, anular=True, imprimir=True, permiso=True)
+    user_modulo.save()
 
 
 def delete_data(apps, schema_editor):

@@ -1,13 +1,8 @@
 function sendSearchCajaMovimiento() {
-	div_modulo = $("#div_block_content");
 	sendFormObject('search', div_modulo);
 }
 
 function sendFormCajaMovimiento(operation, message) {
-	//modal function
-	modalFunction = document.getElementById('modalFunctionSuccess');
-	modalF = $('#modalForm');
-
 	switch (operation) {
 		case ('add'):
 			resValidation = verifyForm();
@@ -52,9 +47,6 @@ function sendFormCajaMovimiento(operation, message) {
 }
 
 function cajaMovimientoSaveForm() {
-	modalF = $('#modalForm');
-	div_modulo = $("#div_block_content");
-
 	modalF.modal('toggle');
 	document.forms['formulario'].elements['add_button'].disabled = true;
 	document.forms['formulario'].elements['button_cancel'].disabled = true;
@@ -63,14 +55,10 @@ function cajaMovimientoSaveForm() {
 }
 
 function cajaMovimientoWarning() {
-	modalF = $('#modalForm');
 	modalF.modal('toggle');
 }
 
 function cajaMovimientoAnular() {
-	modalF = $('#modalForm');
-	div_modulo = $("#div_block_content");
-
 	modalF.modal('toggle');
 	document.forms['formulario'].elements['add_button'].disabled = true;
 	document.forms['formulario'].elements['button_cancel'].disabled = true;
@@ -125,10 +113,6 @@ function cambiarSaldo() {
 
 //caja movimiento recibe
 function sendFormCajaMovimientoRecibe(operation, message) {
-	//modal function
-	modalFunction = document.getElementById('modalFunctionSuccess');
-	modalF = $('#modalForm');
-
 	switch (operation) {
 		case ('add'):
 			modalFunction.value = 'cajaMovimientoRecibeSaveForm();';
@@ -161,14 +145,10 @@ function sendFormCajaMovimientoRecibe(operation, message) {
 }
 
 function cajaMovimientoRecibeWarning() {
-	modalF = $('#modalForm');
 	modalF.modal('toggle');
 }
 
 function cajaMovimientoRecibeSaveForm() {
-	modalF = $('#modalForm');
-	div_modulo = $("#div_block_content");
-
 	modalF.modal('toggle');
 	document.forms['formulario'].elements['add_button'].disabled = true;
 	document.forms['formulario'].elements['button_cancel'].disabled = true;
@@ -177,9 +157,6 @@ function cajaMovimientoRecibeSaveForm() {
 }
 
 function cajaMovimientoRecibeAnular() {
-	modalF = $('#modalForm');
-	div_modulo = $("#div_block_content");
-
 	modalF.modal('toggle');
 	document.forms['formulario'].elements['add_button'].disabled = true;
 	document.forms['formulario'].elements['button_cancel'].disabled = true;

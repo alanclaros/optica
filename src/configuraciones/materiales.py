@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.apps import apps
 from django.conf import settings
 from django.contrib import messages
+from controllers.ListasController import ListasController
 
 # utils
 from utils.permissions import get_user_permission_operation, get_permissions_user, get_html_column
@@ -15,10 +16,12 @@ from configuraciones.models import Materiales
 
 # controlador del modulo
 material_controller = MaterialesController()
-
+lista_controller = ListasController()
 
 # materiales
 # materiales
+
+
 @user_passes_test(lambda user: get_user_permission_operation(user, settings.MOD_MATERIALES, 'lista'), 'without_permission')
 def materiales_index(request):
     permisos = get_permissions_user(request.user, settings.MOD_MATERIALES)
@@ -104,9 +107,11 @@ def materiales_add(request):
 
     # restricciones de columna
     if existe_error:
-        db_tags = get_html_column(apps.get_model('configuraciones', 'Materiales'), 'descripcion', request, None, 'material', 'codigo', 'descripcion')
+        db_tags = get_html_column(apps.get_model('configuraciones', 'Materiales'), 'descripcion', request, None, 'material', 'codigo', 'descripcion', 'costo')
     else:
-        db_tags = get_html_column(apps.get_model('configuraciones', 'Materiales'), 'descripcion', None, None, 'material', 'codigo', 'descripcion')
+        db_tags = get_html_column(apps.get_model('configuraciones', 'Materiales'), 'descripcion', None, None, 'material', 'codigo', 'descripcion', 'costo')
+
+    proveedores_lista = lista_controller.get_lista_proveedores(request.user, str(settings.MOD_MATERIALES))
 
     context = {
         'url_main': 'url_main',
@@ -115,6 +120,7 @@ def materiales_add(request):
         'control_form': material_controller.control_form,
         'js_file': material_controller.modulo_session,
         'autenticado': 'si',
+        'proveedores_lista': proveedores_lista,
 
         'module_x': settings.MOD_MATERIALES,
         'module_x2': '',
@@ -158,9 +164,11 @@ def materiales_modify(request, material_id):
 
     # restricciones de columna
     if existe_error:
-        db_tags = get_html_column(apps.get_model('configuraciones', 'Materiales'), 'descripcion', request, material, 'material', 'codigo', 'descripcion')
+        db_tags = get_html_column(apps.get_model('configuraciones', 'Materiales'), 'descripcion', request, material, 'material', 'codigo', 'descripcion', 'costo')
     else:
-        db_tags = get_html_column(apps.get_model('configuraciones', 'Materiales'), 'descripcion', None, material, 'material', 'codigo', 'descripcion')
+        db_tags = get_html_column(apps.get_model('configuraciones', 'Materiales'), 'descripcion', None, material, 'material', 'codigo', 'descripcion', 'costo')
+
+    proveedores_lista = lista_controller.get_lista_proveedores(request.user, str(settings.MOD_MATERIALES))
 
     context = {
         'url_main': 'url_main',
@@ -171,6 +179,7 @@ def materiales_modify(request, material_id):
         'js_file': material_controller.modulo_session,
         'status_active': material_controller.activo,
         'autenticado': 'si',
+        'proveedores_lista': proveedores_lista,
 
         'module_x': settings.MOD_MATERIALES,
         'module_x2': '',
@@ -220,9 +229,11 @@ def materiales_delete(request, material_id):
 
     # restricciones de columna
     if existe_error:
-        db_tags = get_html_column(apps.get_model('configuraciones', 'Materiales'), 'descripcion', request, material, 'material', 'codigo', 'descripcion')
+        db_tags = get_html_column(apps.get_model('configuraciones', 'Materiales'), 'descripcion', request, material, 'material', 'codigo', 'descripcion', 'costo')
     else:
-        db_tags = get_html_column(apps.get_model('configuraciones', 'Materiales'), 'descripcion', None, material, 'material', 'codigo', 'descripcion')
+        db_tags = get_html_column(apps.get_model('configuraciones', 'Materiales'), 'descripcion', None, material, 'material', 'codigo', 'descripcion', 'costo')
+
+    proveedores_lista = lista_controller.get_lista_proveedores(request.user, str(settings.MOD_MATERIALES))
 
     context = {
         'url_main': '',
@@ -235,6 +246,7 @@ def materiales_delete(request, material_id):
         'error_eliminar': material_controller.error_operation,
         'status_active': material_controller.activo,
         'autenticado': 'si',
+        'proveedores_lista': proveedores_lista,
 
         'module_x': settings.MOD_MATERIALES,
         'module_x2': '',

@@ -1,0 +1,78 @@
+{% load jinja_tags %}
+{% load static %}
+
+<form name="form_imagenes" method="post" action="" enctype="multipart/form-data" onsubmit="return false;">
+    {% csrf_token %}
+    <table class="table3 w-100">
+        <tr>
+            <th colspan="4" class="center w-100">
+                Imagenes de la Venta
+            </th>
+        </tr>
+
+        <tr class="back2">
+            <td class="right w-20">
+                Cliente&nbsp;:&nbsp;
+            </td>
+            <td colspan="3" class="left w-80">
+                <span id="span_cliente_imagenes">{{nombres}} {{apellidos}}</span>
+            </td>
+        </tr>
+
+        <tr class="back1">
+            <td colspan="4" class="left w-100">
+                <div id="div_lista_imagenes">
+                    {% with imagenes=imagenes %}
+                    {% include 'ventas/ventas_imagenes_lista.html' %}
+                    {% endwith %}
+                </div>
+            </td>
+        </tr>
+
+        <tr class="back2">
+            <td colspan="4" class="center w-100">&nbsp;</td>
+        </tr>
+        <tr class="back1">
+            <td colspan="4" class="center w-100">
+                <!-- <button class="btn btn-primary btn-sm" name="img_add_button" onclick="ventasGuardarImagenes();">
+                    <i class="nav-icon fas fa-save"></i>&nbsp;&nbsp;Guardar
+                </button> -->
+                <input type="hidden" id="img_cliente_id" name="img_cliente_id" value="{{cliente_id}}">
+                <input type="hidden" name="img_venta_id" value="{{id}}">
+                <input type="hidden" name="operation_x" value="add_imagen">
+                <input type="hidden" name="module_x" value="{{module_x}}">
+            </td>
+        </tr>
+
+        <tr class="back2">
+            <td colspan="4" class="center w-100">&nbsp;</td>
+        </tr>
+
+        <tr>
+            <th colspan="4" class="center">
+                Cargar Nueva Imagen
+            </th>
+        </tr>
+        <tr class="back1">
+            <td class="right w-20">
+                Img :&nbsp;
+            </td>
+            <td colspan="2" class="left w-50">
+                <input type="file" class="form-control input w-90" name="imagen1" id="imagen1">
+            </td>
+            <!-- <td class="right w-20">
+                Posici&oacute;n&nbsp;:&nbsp;
+            </td> -->
+            <td class="left w-30">
+                <!-- <input type="text" autocomplete="off" class="form-control input w-40 right" name="posn_1" id="posn_1" onkeyup="validarNumero(this);">
+                &nbsp;&nbsp;&nbsp; -->
+                <input type="hidden" name="posn_1" id="posn_1" value="1">
+                <input type="button" id="btn_imagen" class="btn btn-primary btn-xs btn_search" value="Cargar" onclick="ventasCargarImagen();">
+            </td>
+        </tr>
+        <tr class="back2">
+            <td colspan="4" class="center w-100">&nbsp;</td>
+        </tr>
+
+    </table>
+</form>

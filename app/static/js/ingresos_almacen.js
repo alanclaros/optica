@@ -1,14 +1,9 @@
 
 function sendSearchIA() {
-	div_modulo = $("#div_block_content");
 	sendFormObject('search', div_modulo);
 }
 
 function sendFormIA(operation, message) {
-	//modal function
-	modalFunction = document.getElementById('modalFunctionSuccess');
-	modalF = $('#modalForm');
-
 	switch (operation) {
 		case ('add'):
 			resValidation = verifyForm();
@@ -52,9 +47,6 @@ function sendFormIA(operation, message) {
 }
 
 function IASaveForm() {
-	modalF = $('#modalForm');
-	div_modulo = $("#div_block_content");
-
 	modalF.modal('toggle');
 	document.forms['formulario'].elements['add_button'].disabled = true;
 	document.forms['formulario'].elements['button_cancel'].disabled = true;
@@ -63,14 +55,10 @@ function IASaveForm() {
 }
 
 function IAWarning() {
-	modalF = $('#modalForm');
 	modalF.modal('toggle');
 }
 
 function IAAnular() {
-	modalF = $('#modalForm');
-	div_modulo = $("#div_block_content");
-
 	modalF.modal('toggle');
 	document.forms['formulario'].elements['add_button'].disabled = true;
 	document.forms['formulario'].elements['button_cancel'].disabled = true;
@@ -78,52 +66,138 @@ function IAAnular() {
 	sendFormObject('formulario', div_modulo);
 }
 
-function seleccionAlmacenIA() {
-	//almacen
-	almacen = document.getElementById('almacen');
-	div_datos = $('#div_listap');
-	if (almacen.value == '0') {
-		div_datos.fadeOut('slow');
+function seleccionPIA(tipo_montura, nombre_montura, montura_id) {
+	//console.log('nombre montura: ', nombre_montura);
+	//console.log('montura id: ', montura_id);
+	const tp = document.getElementById(tipo_montura);
+	tp.value = montura_id;
+	iaSeleccionAlmacenMontura();
+}
+
+function iaGetNombreMontura(nombre) {
+	if (Trim(nombre) != '') {
+		const pos = nombre.lastIndexOf('(');
+		if (pos < 0) {
+			return '';
+		}
+		const retorno = nombre.substring(0, pos);
+		return retorno;
 	}
 	else {
-		div_datos.fadeIn('slow');
+		return '';
 	}
 }
 
-function seleccionPIA(numero_registro, producto, id) {
-	modalFunction = document.getElementById('modalFunctionSuccess');
-	modalF = $('#modalForm');
+function iaGetNumeroMontura(nombre) {
+	if (Trim(nombre) != '') {
+		const pos = nombre.lastIndexOf('(');
+		if (pos < 0) {
+			return 0;
+		}
+		const retorno = parseInt(nombre.substring(pos + 1, nombre.length - 1));
+		return retorno;
+	}
+	else {
+		return 0;
+	}
+}
 
-	//verificamos que no repita productos
-	for (i = 1; i <= 50; i++) {
-		aux_p = document.getElementById('producto_' + i);
-		if (parseInt(numero_registro) != i && aux_p.value == id) {
-			//alert('ya selecciono este producto');
-			tb2 = document.getElementById('tb2_' + numero_registro);
-			tb2.focus();
-			tb2.value = '';
-			modalSetParameters('warning', 'center', 'Ingresos Almacen!', 'ya selecciono este producto', 'Cancelar', 'Volver');
-			modalFunction.value = 'IAWarning();';
-			modalF.modal();
-			return false;
+function iaSeleccionAlmacenMontura() {
+	const almacen = document.getElementById('almacen').value;
+	const tipo_montura = document.getElementById('tipo_montura').value;
+
+	const listado = $('#div_listap');
+
+	if (almacen != '0' && tipo_montura != '0') {
+		listado.fadeIn('slow');
+	}
+	else {
+		listado.fadeOut('slow');
+	}
+
+	for (let i = 1; i <= 50; i++) {
+		const obj_aux = document.getElementById("fila_" + i);
+		const objMontura = document.getElementById("tipo_montura_nombre_" + i);
+		const objCantidad = document.getElementById("cantidad_" + i);
+		const objCosto = document.getElementById("costo_" + i);
+		const objTotal = document.getElementById("total_" + i);
+		if (i == 1) {
+			obj_aux.style.display = '';
+			objMontura.value = "";
+		}
+		else {
+			obj_aux.style.display = 'none';
+		}
+		objMontura.value = '';
+		objCantidad.value = '';
+		objCosto.value = '';
+		objTotal.value = '';
+	}
+}
+
+function iaGenerar() {
+	const almacen = document.getElementById('almacen');
+	const tipo_montura = document.getElementById('tipo_montura');
+	const cantidad = Trim(document.getElementById('cantidad_montura').value);
+	const tipo_montura_nombre = document.getElementById('tb2_tipo_montura').value;
+
+	const nombre = iaGetNombreMontura(tipo_montura_nombre);
+	const actual = iaGetNumeroMontura(tipo_montura_nombre);
+
+	let cantidad_int = 0;
+	if (cantidad.length > 0) {
+		cantidad_int = parseInt(cantidad);
+	}
+
+	if (almacen.value == '0') {
+		modalSetParameters('warning', 'center', 'Ingresos Almacen!', 'Debe seleccionar un almacen', 'Cancelar', 'Volver');
+		modalFunction.value = 'IAWarning();';
+		modalF.modal();
+		return false;
+	}
+
+	if (tipo_montura.value == '0') {
+		modalSetParameters('warning', 'center', 'Ingresos Almacen!', 'Debe seleccionar un tipo de montura', 'Cancelar', 'Volver');
+		modalFunction.value = 'IAWarning();';
+		modalF.modal();
+		return false;
+	}
+
+	if (cantidad_int <= 0 || cantidad_int > 50) {
+		modalSetParameters('warning', 'center', 'Ingresos Almacen!', 'Debe ingresar una cantidad entre 1 y 50', 'Cancelar', 'Volver');
+		modalFunction.value = 'IAWarning();';
+		modalF.modal();
+		return false;
+	}
+
+	const listado = $('#div_listap');
+	listado.fadeIn('slow');
+	let cont = 1;
+
+	for (let i = 1; i <= 50; i++) {
+		const obj_aux = document.getElementById("fila_" + i);
+		const objMontura = document.getElementById("tipo_montura_nombre_" + i);
+		const objCantidad = document.getElementById("cantidad_" + i);
+		const objCosto = document.getElementById("costo_" + i);
+		const objTotal = document.getElementById("total_" + i);
+
+		if (i <= cantidad_int) {
+			obj_aux.style.display = '';
+			objMontura.value = nombre + ' (' + (actual + cont).toString() + ')';
+			objCantidad.value = '1';
+			objCosto.value = '1';
+			objTotal.value = '1';
+			cont = cont + 1;
+		}
+		else {
+			obj_aux.style.display = 'none';
+			objMontura.value = '';
+			objCantidad.value = '';
+			objCosto.value = '';
+			objTotal.value = '';
 		}
 	}
-
-	//asignamos
-	obj_aux = document.getElementById("producto_" + numero_registro);
-	obj_aux.value = id;
-
-	//alert(numero);alert(id);
-	numero = parseInt(numero_registro);
-	numero_int = numero + 1;
-	if (numero_int <= 50) {
-		numero_str = numero_int.toString();
-		nombre_actual = "fila_" + numero_str;
-		//alert(nombre_actual);
-		objeto_actual = document.getElementById(nombre_actual);
-		objeto_actual.style.display = "block";
-		objeto_actual.style.display = "";
-	}
+	calcularTotalesIA();
 }
 
 //calculamos el total
@@ -153,33 +227,3 @@ function calcularTotalesIA() {
 	obj_total.value = redondeo(total_todo, 2);
 }
 
-
-function validarFilaIA(fila) {
-	cantidad = document.getElementById("cantidad_" + fila.toString());
-	costo = document.getElementById("costo_" + fila.toString());
-	total = document.getElementById("total_" + fila.toString());
-	tb2 = document.getElementById("tb2_" + fila.toString());
-	producto = document.getElementById("producto_" + fila.toString());
-
-	cant_val = Trim(cantidad.value);
-	costo_val = Trim(costo.value);
-	tb2_val = Trim(tb2.value);
-	pro_val = Trim(producto.value);
-
-	//no selecciono ningun producto
-	if (tb2_val == '') {
-		cantidad.value = '';
-		costo.value = '';
-		total.value = '';
-		producto.value = '0';
-	}
-	else {
-		//escribio un producto, verificamos si selecciono
-		if (pro_val == '0') {
-			//alert('Debe Seleccionar un Producto');
-			cantidad.value = '';
-			costo.value = '';
-			total.value = '';
-		}
-	}
-}

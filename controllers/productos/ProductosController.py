@@ -47,19 +47,13 @@ class ProductosController(DefaultValues):
         self.variable_order_type = "search_order_type"
 
         # tablas donde se debe verificar para eliminar
-        self.modelos_eliminar = {'ventas': 'VentasDetalles'}
+        #self.modelos_eliminar = {'ventas': 'VentasDetalles'}
 
         # control del formulario
         self.control_form = "txt|2|S|producto|Producto;"
         self.control_form += "txt|2|S|codigo|Codigo;"
         self.control_form += "txt|1|S|precio|Precio;"
-        self.control_form += "cbo|0|S|linea_id|Linea;"
-        self.control_form += "cbo|0|S|tipo_montura_id|Tipo Montura;"
-        self.control_form += "cbo|0|S|disenio_lente_id|Disenio Lentes;"
-        self.control_form += "cbo|0|S|material_id|Material;"
-        self.control_form += "cbo|0|S|marca_id|Marca;"
-        self.control_form += "cbo|0|S|color_id|Color;"
-        self.control_form += "cbo|0|S|proveedor_id|Proveedor"
+        self.control_form += "cbo|0|S|linea_id|Linea"
 
     def index(self, request):
         DefaultValues.index(self, request)
@@ -143,18 +137,24 @@ class ProductosController(DefaultValues):
     def save(self, request, type='add'):
         """aniadimos un nuevo producto"""
         try:
+            #valores = request.POST.getlist('tipos_montura_select')
+
             linea_id = validate_number_int('linea', request.POST['linea_id'])
             producto_txt = validate_string('producto', request.POST['producto'], remove_specials='yes')
             codigo = validate_string('codigo', request.POST['codigo'], remove_specials='yes')
             precio = validate_number_decimal('precio', request.POST['precio'])
             precio_oferta = validate_number_decimal('precio_oferta', request.POST['precio_oferta'], len_zero='yes')
-            tipo_montura_id = validate_number_int('tipo montura', request.POST['tipo_montura_id'])
-            disenio_lente_id = validate_number_int('disenio lentes', request.POST['disenio_lente_id'])
-            material_id = validate_number_int('material', request.POST['material_id'])
-            marca_id = validate_number_int('marca', request.POST['marca_id'])
-            color_id = validate_number_int('color', request.POST['color_id'])
-            proveedor_id = validate_number_int('proveedor', request.POST['proveedor_id'])
-            stock_minimo = validate_number_int('stock minimo', request.POST['stock_minimo'])
+            tipos_montura_select = request.POST.getlist('tipos_montura_select')
+            materiales_select = request.POST.getlist('materiales_select')
+
+            # tipo_montura_id = validate_number_int('tipo montura', request.POST['tipo_montura_id'])
+            # disenio_lente_id = validate_number_int('disenio lentes', request.POST['disenio_lente_id'])
+            # material_id = validate_number_int('material', request.POST['material_id'])
+            # marca_id = validate_number_int('marca', request.POST['marca_id'])
+            # color_id = validate_number_int('color', request.POST['color_id'])
+            #proveedor_id = validate_number_int('proveedor', request.POST['proveedor_id'])
+            #stock_minimo = validate_number_int('stock minimo', request.POST['stock_minimo'])
+            stock_minimo = 0
             activo = 1 if 'activo' in request.POST.keys() else 0
             novedad = 1 if 'novedad' in request.POST.keys() else 0
             mas_vendido = 1 if 'mas_vendido' in request.POST.keys() else 0
@@ -186,12 +186,6 @@ class ProductosController(DefaultValues):
                 usuario = request.user
                 user_perfil = UsersPerfiles.objects.get(user_id=usuario)
                 linea = Lineas.objects.get(pk=linea_id)
-                tipo_montura = apps.get_model('configuraciones', 'TiposMontura').objects.get(pk=tipo_montura_id)
-                disenio_lentes = apps.get_model('configuraciones', 'DisenioLentes').objects.get(pk=disenio_lente_id)
-                material = apps.get_model('configuraciones', 'Materiales').objects.get(pk=material_id)
-                color = apps.get_model('configuraciones', 'Colores').objects.get(pk=color_id)
-                marca = apps.get_model('configuraciones', 'Marcas').objects.get(pk=marca_id)
-                proveedor = apps.get_model('configuraciones', 'Proveedores').objects.get(pk=proveedor_id)
 
                 datos = {}
                 datos['id'] = id
@@ -201,12 +195,8 @@ class ProductosController(DefaultValues):
                 datos['precio_oferta'] = precio_oferta
                 datos['linea_id'] = linea
                 datos['stock_minimo'] = stock_minimo
-                datos['tipo_montura_id'] = tipo_montura
-                datos['disenio_lente_id'] = disenio_lentes
-                datos['material_id'] = material
-                datos['marca_id'] = marca
-                datos['color_id'] = color
-                datos['proveedor_id'] = proveedor
+                datos['tipos_montura_select'] = tipos_montura_select
+                datos['materiales_select'] = materiales_select
 
                 datos['novedad'] = novedad
                 datos['oferta'] = oferta
@@ -274,13 +264,6 @@ class ProductosController(DefaultValues):
                         campos_add['linea_id'] = datos['linea_id']
                         campos_add['stock_minimo'] = datos['stock_minimo']
 
-                        campos_add['tipo_montura_id'] = datos['tipo_montura_id']
-                        campos_add['disenio_lente_id'] = datos['disenio_lente_id']
-                        campos_add['material_id'] = datos['material_id']
-                        campos_add['color_id'] = datos['color_id']
-                        campos_add['marca_id'] = datos['marca_id']
-                        campos_add['proveedor_id'] = datos['proveedor_id']
-
                         campos_add['novedad'] = datos['novedad']
                         campos_add['mas_vendido'] = datos['mas_vendido']
                         campos_add['oferta'] = datos['oferta']
@@ -302,6 +285,40 @@ class ProductosController(DefaultValues):
                         campos_add['status_id'] = datos['status_id']
 
                         producto_add = Productos.objects.create(**campos_add)
+                        producto_add.save()
+
+                        # tipos de montura
+                        tipos_montura = apps.get_model('productos', 'ProductosTiposMontura').objects.filter(producto_id=producto_add)
+                        tipos_montura.delete()
+                        lista_tipo_montura = ""
+                        for montura in datos['tipos_montura_select']:
+                            lista_tipo_montura += '|' + montura + '|,'
+                            tipo_montura = apps.get_model('configuraciones', 'TiposMontura').objects.get(pk=int(montura))
+
+                            producto_tipo_montura = apps.get_model('productos', 'ProductosTiposMontura').objects.create(
+                                producto_id=producto_add, tipo_montura_id=tipo_montura
+                            )
+                            producto_tipo_montura.save()
+                        if len(lista_tipo_montura) > 0:
+                            lista_tipo_montura = lista_tipo_montura[0:len(lista_tipo_montura)-1]
+
+                        # materiales
+                        materiales = apps.get_model('productos', 'ProductosMateriales').objects.filter(producto_id=producto_add)
+                        materiales.delete()
+                        lista_material = ""
+                        for material in datos['materiales_select']:
+                            lista_material += '|' + material + '|,'
+                            material = apps.get_model('configuraciones', 'Materiales').objects.get(pk=int(material))
+
+                            producto_material = apps.get_model('productos', 'ProductosMateriales').objects.create(
+                                producto_id=producto_add, material_id=material
+                            )
+                            producto_material.save()
+                        if len(lista_material) > 0:
+                            lista_material = lista_material[0:len(lista_material)-1]
+
+                        producto_add.tipo_montura_id = lista_tipo_montura
+                        producto_add.material_id = lista_material
                         producto_add.save()
 
                         # borramos antes de insertar productos relacionados
@@ -327,13 +344,6 @@ class ProductosController(DefaultValues):
                         campos_update['linea_id'] = datos['linea_id']
                         campos_update['stock_minimo'] = datos['stock_minimo']
 
-                        campos_update['tipo_montura_id'] = datos['tipo_montura_id']
-                        campos_update['disenio_lente_id'] = datos['disenio_lente_id']
-                        campos_update['material_id'] = datos['material_id']
-                        campos_update['color_id'] = datos['color_id']
-                        campos_update['marca_id'] = datos['marca_id']
-                        campos_update['proveedor_id'] = datos['proveedor_id']
-
                         campos_update['novedad'] = datos['novedad']
                         campos_update['mas_vendido'] = datos['mas_vendido']
                         campos_update['oferta'] = datos['oferta']
@@ -356,6 +366,40 @@ class ProductosController(DefaultValues):
                         producto_update.update(**campos_update)
 
                         producto_actual = Productos.objects.get(pk=datos['id'])
+
+                        # tipos de montura
+                        tipos_montura = apps.get_model('productos', 'ProductosTiposMontura').objects.filter(producto_id=producto_actual)
+                        tipos_montura.delete()
+                        lista_tipo_montura = ""
+                        for montura in datos['tipos_montura_select']:
+                            lista_tipo_montura += '|' + montura + '|,'
+                            tipo_montura = apps.get_model('configuraciones', 'TiposMontura').objects.get(pk=int(montura))
+
+                            producto_tipo_montura = apps.get_model('productos', 'ProductosTiposMontura').objects.create(
+                                producto_id=producto_actual, tipo_montura_id=tipo_montura
+                            )
+                            producto_tipo_montura.save()
+                        if len(lista_tipo_montura) > 0:
+                            lista_tipo_montura = lista_tipo_montura[0:len(lista_tipo_montura)-1]
+
+                        # materiales
+                        materiales = apps.get_model('productos', 'ProductosMateriales').objects.filter(producto_id=producto_actual)
+                        materiales.delete()
+                        lista_material = ""
+                        for material in datos['materiales_select']:
+                            lista_material += '|' + material + '|,'
+                            material = apps.get_model('configuraciones', 'Materiales').objects.get(pk=int(material))
+
+                            producto_material = apps.get_model('productos', 'ProductosMateriales').objects.create(
+                                producto_id=producto_actual, material_id=material
+                            )
+                            producto_material.save()
+                        if len(lista_material) > 0:
+                            lista_material = lista_material[0:len(lista_material)-1]
+
+                        producto_actual.tipo_montura_id = lista_tipo_montura
+                        producto_actual.material_id = lista_material
+                        producto_actual.save()
 
                         # borramos antes de insertar productos relacionados
                         productos_relacionados_lista = ProductosRelacionados.objects.filter(producto_id=producto_actual)

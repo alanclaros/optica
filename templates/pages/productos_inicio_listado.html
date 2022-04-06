@@ -1,5 +1,18 @@
 {% load static %}
 {% load jinja_tags %}
+<input type="hidden" id="load_txt_producto" value="{{txt_producto}}">
+
+<input type="hidden" id="load_lista_tipos_montura_id" 
+value="{% for tipo_montura in lista_tipos_montura %}{{tipo_montura.tipo_montura_id}},{% endfor %}">
+<input type="hidden" id="load_lista_tipos_montura" 
+value="{% for tipo_montura in lista_tipos_montura %}{{tipo_montura.tipo_montura}},{% endfor %}">
+<input type="hidden" id="load_tipos_montura_select" value="{{tipos_montura_select}}">
+
+<input type="hidden" id="load_lista_materiales_id" 
+value="{% for material in lista_materiales %}{{material.material_id}},{% endfor %}">
+<input type="hidden" id="load_lista_materiales" 
+value="{% for material in lista_materiales %}{{material.material}},{% endfor %}">
+<input type="hidden" id="load_materiales_select" value="{{materiales_select}}">
 
 <div class="row w-100">
     <div class="col-12 w-100">

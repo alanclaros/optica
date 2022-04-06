@@ -2,6 +2,8 @@
 from django.conf import settings
 from datetime import datetime, timedelta, date
 from dateutil.relativedelta import relativedelta
+# conexion directa a la base de datos
+from django.db import connection
 
 months_3digits = {
     'Ene': '01',
@@ -71,6 +73,19 @@ def get_date_system(time='no'):
         segundos = '0' + str(datetime.now().second) if len(str(datetime.now().second)) == 1 else str(datetime.now().second)
 
         fecha += ' ' + hora + ':' + minutos + ':' + segundos
+
+    return fecha
+
+
+def get_date_id():
+    anio = '20' + str(datetime.now().year) if len(str(datetime.now().year)) == 2 else str(datetime.now().year)
+    mes = '0' + str(datetime.now().month) if len(str(datetime.now().month)) == 1 else str(datetime.now().month)
+    dia = '0' + str(datetime.now().day) if len(str(datetime.now().day)) == 1 else str(datetime.now().day)
+    hora = '0' + str(datetime.now().hour) if len(str(datetime.now().hour)) == 1 else str(datetime.now().hour)
+    minutos = '0' + str(datetime.now().minute) if len(str(datetime.now().minute)) == 1 else str(datetime.now().minute)
+    segundos = '0' + str(datetime.now().second) if len(str(datetime.now().second)) == 1 else str(datetime.now().second)
+
+    fecha = anio + mes + dia + hora + minutos + segundos
 
     return fecha
 
@@ -375,6 +390,9 @@ def get_date_show(fecha, formato_ori='yyyy-mm-dd HH:ii:ss', formato='dd-MMM-yyyy
 
     if formato == 'yyyy-mm-dd HH:ii:ss':
         return anio + '-' + mes + '-' + dia + ' ' + hora + ':' + minutos + ':' + segundos
+
+    if formato == 'HH:ii':
+        return hora + ':' + minutos
 
     raise ValueError('Error en formato de fecha ' + fecha + ' (' + formato + ')')
 
@@ -715,3 +733,219 @@ def get_fecha_int(fecha, formato_ori='yyyy-mm-dd HH:ii:ss'):
     valor_int = int(aux_fecha)
 
     return valor_int
+
+
+def next_periodo(periodo):
+    anio = periodo[0:4]
+    mes = periodo[4:6]
+    if mes == '12':
+        n_anio = int(anio) + 1
+        return str(n_anio) + '01'
+    else:
+        n_mes = int(mes) + 1
+        aux_mes = str(n_mes)
+        if len(aux_mes) == 1:
+            aux_mes = '0' + aux_mes
+
+        return anio + aux_mes
+
+
+def previous_periodo(periodo):
+    anio = periodo[0:4]
+    mes = periodo[4:6]
+    if mes == '01':
+        n_anio = int(anio) - 1
+        return str(n_anio) + '12'
+    else:
+        n_mes = int(mes) - 1
+        aux_mes = str(n_mes)
+        if len(aux_mes) == 1:
+            aux_mes = '0' + aux_mes
+
+        return anio + aux_mes
+
+
+def rango_periodos(periodo):
+    periodo_actual = periodo
+    periodo_ant = periodo_actual
+    retorno = []
+    retorno.append(periodo_actual)
+    for i in range(10):
+        periodo_ant = previous_periodo(periodo_ant)
+        retorno.insert(0, periodo_ant)
+
+    periodo_next = next_periodo(periodo_actual)
+    retorno.append(periodo_next)
+    periodo_next = next_periodo(periodo_next)
+    retorno.append(periodo_next)
+
+    return retorno
+
+
+def show_periodo(periodo):
+    """periodo: yyyymm"""
+    anio = periodo[0:4]
+    mes = get_month_3digits(periodo[4:6])
+
+    return mes + '-' + anio
+
+
+def fecha_periodo(periodo, dia):
+    anio = periodo[0:4]
+    mes = periodo[4:6]
+    fecha = anio + '-' + mes + '-' + dia
+
+    return fecha
+
+
+def get_horas(dia):
+    """1-lunes, 7-domingo"""
+    retorno = []
+    sql = f"SELECT reserva_hora_id, hora FROM reservas_horas WHERE reserva_dia_id='{dia}' AND status_id='1' ORDER BY posicion "
+    with connection.cursor() as cursor:
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+        for row in rows:
+            objeto = {}
+            objeto['reserva_hora_id'] = row[0]
+            objeto['hora'] = row[1]
+            retorno.append(objeto)
+
+    return retorno
+
+
+def get_calendario_actividades(periodo, nombres='', apellidos='', telefonos=''):
+    anio = periodo[0:4]
+    mes = periodo[4:6]
+    calendario = get_calendario(mes, anio)
+    # print(calendario)
+    horas_lunes = get_horas(1)
+    horas_martes = get_horas(2)
+    horas_miercoles = get_horas(3)
+    horas_jueves = get_horas(4)
+    horas_viernes = get_horas(5)
+    horas_sabado = get_horas(6)
+    horas_domingo = get_horas(7)
+
+    fecha_ini = fecha_periodo(periodo, '01')
+    fecha_ini = get_date_to_db(fecha=fecha_ini, formato_ori='yyyy-mm-dd', formato='yyyy-mm-dd HH:ii:ss', tiempo='00:00:00')
+    fecha_fin = add_months_datetime(fecha=fecha_ini, formato_ori='yyyy-mm-dd HH:ii:ss', meses=1, formato='yyyy-mm-dd HH:ii:ss')
+    sql_add = f"AND r.fecha_inicio>='{fecha_ini}' AND r.fecha_fin<'{fecha_fin}' "
+    #print('sql_add: ', sql_add)
+
+    # nombres
+    p_nombres = nombres.strip()
+    if p_nombres != "":
+        sql_add += f"AND r.nombres LIKE '%{p_nombres}%' "
+
+    # apellidos
+    p_apellidos = apellidos.strip()
+    if p_apellidos != "":
+        sql_add += f"AND r.apellidos LIKE '%{p_apellidos}%' "
+
+    # telefonos
+    p_telefonos = telefonos.strip()
+    if p_telefonos != "":
+        sql_add += f"AND r.telefonos LIKE '%{p_telefonos}%' "
+
+    # lista del calendario
+    sql = "SELECT r.reserva_id, r.fecha_inicio, r.fecha_fin, r.created_at, r.apellidos, r.nombres, r.telefonos, r.mensaje, "
+    sql += "rd.dia, rh.hora, r.status_id "
+    sql += "FROM reservas r, reservas_dias rd, reservas_horas rh "
+    sql += "WHERE r.reserva_dia_id=rd.reserva_dia_id AND r.reserva_hora_id=rh.reserva_hora_id "
+    sql += sql_add
+
+    sql += "ORDER BY r.fecha_inicio, r.nombres, r.apellidos "
+    #print('sql: ', sql)
+
+    retorno = []
+    with connection.cursor() as cursor:
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+
+        # recorremos todos los dias del calendario
+        semana_add = []
+
+        for semana in calendario:
+            for dia_semana in semana:
+                objeto_dia = {}
+                objeto_dia['posicion'] = dia_semana['posicion']
+                objeto_dia['dia'] = dia_semana['dia']
+                objeto_dia['nombre'] = dia_semana['nombre']
+                objeto_dia['existe'] = dia_semana['existe']
+
+                # horarios
+                if dia_semana['posicion'] == 1:
+                    objeto_dia['horas'] = horas_lunes
+                if dia_semana['posicion'] == 2:
+                    objeto_dia['horas'] = horas_martes
+                if dia_semana['posicion'] == 3:
+                    objeto_dia['horas'] = horas_miercoles
+                if dia_semana['posicion'] == 4:
+                    objeto_dia['horas'] = horas_jueves
+                if dia_semana['posicion'] == 5:
+                    objeto_dia['horas'] = horas_viernes
+                if dia_semana['posicion'] == 6:
+                    objeto_dia['horas'] = horas_sabado
+                if dia_semana['posicion'] == 7:
+                    objeto_dia['horas'] = horas_domingo
+
+                if objeto_dia['existe'] == 1:
+                    #print('dia: ', objeto_dia['dia'])
+                    # dia valido, vemos las actividades
+                    para_dia = str(objeto_dia['dia'])
+                    if len(para_dia) == 1:
+                        para_dia = '0' + para_dia
+
+                    fecha_dia = anio + '-' + mes + '-' + para_dia
+                    lista_actividades = []
+                    #print('fecha dia: ', fecha_dia)
+
+                    for row in rows:
+                        aux_fecha = get_date_to_db(fecha=row[1], formato_ori='yyyy-mm-dd HH:ii:ss', formato='yyyy-mm-dd HH:ii:ss')  # fecha actividad ini
+                        div_aux = aux_fecha.split(' ')
+                        fecha_calendario = div_aux[0]
+                        hora_calendario = div_aux[1]
+                        #print('hora calendario: ', hora_calendario)
+                        # fecha fin calendario
+                        aux_fecha = get_date_to_db(fecha=row[2], formato_ori='yyyy-mm-dd HH:ii:ss', formato='yyyy-mm-dd HH:ii:ss')  # fecha actividad ini
+                        div_aux = aux_fecha.split(' ')
+                        fecha_calendario_fin = div_aux[0]
+                        hora_calendario_fin = div_aux[1]
+                        #print('fecha calendario: ', fecha_calendario, ' ..fecha dia: ', fecha_dia)
+
+                        if fecha_dia == fecha_calendario:
+                            # actividad para el dia
+                            actividad = {}
+                            actividad['reserva_id'] = row[0]
+                            actividad['hora_ini'] = hora_calendario[0:5]
+                            actividad['hora_fin'] = hora_calendario_fin[0:5]
+                            actividad['fecha_reserva'] = row[3]
+                            actividad['apellidos'] = row[4]
+                            actividad['nombres'] = row[5]
+                            actividad['apellidos_min'] = '' if row[4].strip() == '' else row[4].strip()[0:1] + '.'
+                            actividad['nombres_min'] = '' if row[5].strip() == '' else row[5].strip()[0:1] + '.'
+                            actividad['telefonos'] = row[6]
+                            actividad['mensaje'] = row[7]
+                            actividad['dia'] = row[8]
+                            actividad['hora'] = row[9]
+                            actividad['status_id'] = row[10]
+
+                            #print('actividad: ', actividad)
+                            lista_actividades.append(actividad)
+
+                    objeto_dia['lista_actividades'] = lista_actividades
+                    semana_add.append(objeto_dia)
+                else:
+                    objeto_dia['lista_actividades'] = []
+                    semana_add.append(objeto_dia)
+
+            # termina el for de semana
+            retorno.append(semana_add)
+            semana_add = []
+        # termina el for calendario
+        # retorno.append(semana_add)
+
+    # return calendario
+    #print('retorno: ', retorno)
+    return retorno

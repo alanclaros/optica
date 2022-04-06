@@ -10,7 +10,7 @@ import json
 
 
 @require_POST
-@csrf_exempt  # del metodo original
+# @csrf_exempt  # del metodo original
 def send_push(request):
 
     # # metodo original
@@ -48,7 +48,7 @@ def send_push(request):
         #print('division user: ', division_user, ' head: ', head, ' body: ', body, ' payload: ', payload)
 
         for user_send in division_user:
-            print('user send: ', user_send)
+            #print('user send: ', user_send)
             user = get_object_or_404(User, pk=int(user_send))
 
             send_user_notification(user=user, payload=payload, ttl=1000)

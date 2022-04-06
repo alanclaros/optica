@@ -61,6 +61,34 @@
                 
                 <tr class="back1">
                     <td class="right w-20">
+                        N. Actual&nbsp;:&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        <input type="text" {% if operation_x == "delete" %}readonly="readonly" {% endif %} autocomplete="off" class="form-control input right w-60" {% autoescape off %} {{db_tags.numero_actual}} {% endautoescape %}>
+                    </td>
+                    <td class="right w-20">
+                        Costo&nbsp;:&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        <input type="text" {% if operation_x == "delete" %}readonly="readonly" {% endif %} autocomplete="off" class="form-control input right w-60" {% autoescape off %} {{db_tags.costo}} {% endautoescape %}> Bs.
+                    </td>
+                </tr>
+                
+                <tr class="back2">
+                    <td class="right w-20">
+                        Proveedor&nbsp;:&nbsp;
+                    </td>
+                    <td colspan="3" class="left w-80">
+                        <select name="proveedor_id" id="proveedor_id" class="form-control h-35 input w-95 {% if operation_x == 'delete' %}readonly=" readonly"{% endif %}">
+                            {% for proveedor in proveedores_lista %}
+                            <option value="{{proveedor.proveedor_id}}" {% if tipo_montura.proveedor_id.proveedor_id == proveedor.proveedor_id %}selected{% endif %}>{{proveedor.proveedor}}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                
+                <tr class="back2">
+                    <td class="right w-20">
                         Descripci&oacute;n&nbsp;:&nbsp;
                     </td>
                     <td colspan="3" class="left w-80">
@@ -68,7 +96,7 @@
                     </td>
                 </tr>
                 
-                <tr class="back2">
+                <tr class="back1">
                     <td class="right v-top w-20">
                         Imagen&nbsp;:&nbsp;
                     </td>
@@ -83,10 +111,10 @@
                     </td>
                 </tr>
 
-                <tr class="back1">
+                <tr class="back2">
                     <td colspan="4" class="center w-100">&nbsp;</td>
                 </tr>
-                <tr class="back2">
+                <tr class="back1">
                     <td colspan="4" class="center w-100">
                         {% if operation_x == "add" %}
                         <button class="btn btn-secondary btn-sm" name="button_cancel" onclick="backWindow();">
@@ -140,7 +168,7 @@
     {% csrf_token %}
 </form>
 
-<form name="form_img" method="post" action="" target="_blank">
+<form name="form_img" method="post" action="{% url 'index' %}" target="_blank">
     {% csrf_token %}
     <input type="hidden" name="module_x" value="{{module_x}}">
     <input type="hidden" name="id" value="{{id}}">

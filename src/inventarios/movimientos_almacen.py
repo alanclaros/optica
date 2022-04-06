@@ -45,7 +45,7 @@ def movimientos_almacen_index(request):
     # operaciones
     if 'operation_x' in request.POST.keys():
         operation = request.POST['operation_x']
-        if not operation in ['', 'add', 'anular', 'print', 'stock_producto']:
+        if not operation in ['', 'add', 'anular', 'print', 'stock_monturas']:
             return render(request, 'pages/without_permission.html', {})
 
         if operation == 'add':
@@ -79,27 +79,21 @@ def movimientos_almacen_index(request):
                 return render(request, 'pages/without_permission.html', {})
 
             # stock del producto
-        if operation == 'stock_producto':
-            producto_id = request.POST['id'].strip()
-            almacen_id = request.POST['almacen'].strip()
+        if operation == 'stock_monturas':
+            tipo_montura_id = request.POST['tipo_montura_id'].strip()
+            almacen_id = request.POST['almacen_id'].strip()
 
-            stock_producto = stock_controller.stock_producto(producto_id=producto_id, user_perfil=request.user, almacen_id=almacen_id)
-            # lista de ids
-            stock_ids = ''
-            for stock in stock_producto:
-                stock_ids += str(stock.stock_id) + ','
-            if len(stock_ids) > 0:
-                stock_ids = stock_ids[0:len(stock_ids)-1]
+            stock_monturas = stock_controller.get_stock_montura(tipo_montura_id=tipo_montura_id, almacen_id=almacen_id, vendidas=0)
+            filas = []
+            for i in range(1, 51):
+                filas.append(i)
 
             context_stock = {
-                'stock_producto': stock_producto,
-                'stock_ids': stock_ids,
-                'producto_id': producto_id,
-                'vender_fracciones': vender_fracciones,
+                'stock_monturas': stock_monturas,
                 'autenticado': 'si',
-                'stock_js': 'MA',
+                'filas': filas,
             }
-            return render(request, 'inventarios/stock_movimiento.html', context_stock)
+            return render(request, 'inventarios/stock_monturas.html', context_stock)
 
     # verificamos mensajes
     if 'nuevo_mensaje' in request.session.keys():
@@ -115,7 +109,6 @@ def movimientos_almacen_index(request):
     lista_almacenes = lista_controller.get_lista_almacenes(request.user, None)
 
     # lista almacenes todos
-    #lista_almacenes_todos = lista_controller.get_lista_almacenes(user=request.user, module=settings.MOD_MOVIMIENTOS_ALMACEN)
     lista_almacenes_todos = lista_controller.get_lista_almacenes(request.user, None)
 
     # print(zonas_session)
@@ -160,18 +153,17 @@ def movimientos_almacen_add(request):
             # error al adicionar
             messages.add_message(request, messages.SUCCESS, {'type': 'warning', 'title': 'Movimientos Almacen!', 'description': movimiento_almacen_controller.error_operation})
 
-    # lista de productos
-    #lista_productos = producto_controller.lista_productos(combos=1)
-    lista_productos = producto_controller.lista_productos()
+    user_perfil = apps.get_model('permisos', 'UsersPerfiles').objects.get(user_id=request.user)
+    punto = apps.get_model('configuraciones', 'Puntos').objects.get(pk=user_perfil.punto_id)
+
+    # lista de tipos de montura
+    tipos_montura_lista = lista_controller.get_lista_tipos_montura(request.user)
+    lista_almacenes = lista_controller.get_lista_almacenes(request.user, punto.sucursal_id)
+    # almacenes de destino
+    lista_almacenes_destino = lista_controller.get_lista_almacenes(request.user, None)
 
     # restricciones de columna
     db_tags = {}
-
-    # lista de almacenes
-    lista_almacenes = lista_controller.get_lista_almacenes(request.user, None)
-
-    # almacenes de destino
-    lista_almacenes_destino = lista_controller.get_lista_almacenes(request.user, None)
 
     # cantidad de filas, 51 para que llegue a 50
     filas = []
@@ -180,7 +172,7 @@ def movimientos_almacen_add(request):
 
     context = {
         'url_main': '',
-        'lista_productos': lista_productos,
+        'tipos_montura_lista': tipos_montura_lista,
         'lista_almacenes': lista_almacenes,
         'lista_almacenes_destino': lista_almacenes_destino,
         'filas': filas,

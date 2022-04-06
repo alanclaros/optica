@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% load humanize %}
+{% load static %}
+
+{% block title %} | Diseños {% endblock %}
+
+{% block content %}
+
+<div class="row align-items-center">
+    <div class="col-sm-1">&nbsp;</div>
+    <div class="col-sm-10">
+        <!--div contenedor-->
+        <br><br>
+        <p class="index_titulo">Dise&#241;os</p>
+        
+        <div class="row w-100">
+            <div class="col-sm-6 center">
+                <div class="card">
+                    <div class="card-body">
+                        <p>
+                            <span class="index_title">Monofocal</span>
+                        </p>
+                        <img class="img-fluid" src="{% static 'img/disenios/monofocal.jpg' %}">
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 center">
+                <div class="card">
+                    <div class="card-body">
+                        <p>
+                            <span class="index_title">Convencional Flat Top</span>
+                        </p>
+                        <img class="img-fluid" src="{% static 'img/disenios/convencional_flat_top.png' %}">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row w-100">
+            <div class="col-sm-12 center">
+                <div class="card">
+                    <div class="card-body">
+                        <p>
+                            <span class="index_title">Semiprogresivo</span>
+                        </p>
+                        <img class="img-fluid" src="{% static 'img/disenios/semiprogresivo.jpg' %}">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row w-100">
+            <div class="col-sm-12 center">
+                <div class="card">
+                    <div class="card-body">
+                        <p>
+                            <span class="index_title">Convencional Invisible</span>
+                        </p>
+                        <img class="img-fluid" src="{% static 'img/disenios/bifocal_convencional.png' %}">
+                    </div>
+                </div>
+            </div>
+        </div>
+            
+    </div>
+    <!--fin div contenedor-->
+    <div class="col-sm-1">&nbsp;</div>
+</div>
+
+<br><br><br><br><br><br><br><br><br><br>
+<!--pie de pagina-->
+{% include 'pages/pie_pagina.html' %}
+
+{% endblock %}

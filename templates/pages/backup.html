@@ -11,7 +11,7 @@
         <br>
         <br>
 
-        <form name="formulario" method="post" action="" onsubmit="return false;">
+        <form name="formulario" method="post" action="{% url 'index' %}" onsubmit="return false;">
             {% csrf_token %}
             <table class="table3 w-100">
                 <tr>
@@ -40,7 +40,7 @@
     <div class="col-sm-2">&nbsp;</div>
 </div>
 <!--fin div contenedor-->
-<form name="form_operation" method="post" action="{{url_main}}" target="_blank">
+<form name="form_operation" method="post" action="{% url 'index' %}" target="_blank">
     {% csrf_token %}
     <input type="hidden" name="module_x" value="{{module_x}}">
     <input type="hidden" name="module_x2" value="{{module_x2}}">

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% load humanize %}
+{% load jinja_tags %}
+{% block title %} | Reserva {% endblock %}
+
+{% block content %}
+
+<div class="row align-items-center">
+    <div class="col-sm-2">&nbsp;</div>
+    <div class="col-sm-8">
+        <!--div contenedor-->
+        <div id="div_calendario">
+        {% with periodo_actual=periodo_actual periodo_ant=periodo_ant periodo_next=periodo_next calendario=calendario %}
+        {% include 'pages/reserva_calendario.html' %}
+        {% endwith %}
+        </div>
+    </div>
+    <form name="form_calendario" method="post" action="">
+        <input type="hidden" name="search_periodo" value="{{periodo_actual}}">
+        <input type="hidden" name="url_push" value="{{url_push}}">
+        <input type="hidden" name="lista_notificacion" value="{{lista_notificacion}}">
+        {% csrf_token %}
+    </form>
+    <div class="row w-100" style="display: none;">
+        <div id="div_push_result"></div>
+    </div>
+    <!--fin div contenedor-->
+    <div class="col-sm-2">&nbsp;</div>
+</div>
+
+<br><br><br><br><br><br><br><br><br><br>
+<!--pie de pagina-->
+{% include 'pages/pie_pagina.html' %}
+
+{% endblock %}

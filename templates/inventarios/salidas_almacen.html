@@ -131,7 +131,7 @@
                     {{salida.fecha|fecha_mostrar:'dd-MMM-yyyy HH:ii'}}&nbsp;({{salida.registro_id}})
                 </td>
                 <td class="left w-25">
-                    {{salida.almacen_id.almacen}}
+                    {{salida.almacen_id.almacen}}, {{salida.tipo_montura_id.tipo_montura}}
                 </td>
                 <td class="left w-30">
                     {{salida.concepto}}
@@ -178,20 +178,20 @@
 </div>
 
 <BR><BR>
-<form name="form_order" method="post" action="">
+<form name="form_order" method="post" action="{% url 'index' %}">
     {% csrf_token %}
     <input type="hidden" name="{{session.variable_order}}" value="{{session|get_item:session.variable_order}}">
     <input type="hidden" name="{{session.variable_order_type}}" value="{{session|get_item:session.variable_order_type}}">
 </form>
 
-<form name="form_print" method="post" action="{{url_main}}" target="_blank">
+<form name="form_print" method="post" action="{% url 'index' %}" target="_blank">
     {% csrf_token %}
     <input type="hidden" name="module_x" value="{{module_x}}">
     <input type="hidden" name="operation_x" value="">
     <input type="hidden" name="id" value="">
 </form>
 </div>
-<form name="form_operation" method="post" action="{{url_main}}">
+<form name="form_operation" method="post" action="{% url 'index' %}">
     {% csrf_token %}
     <input type="hidden" name="module_x" value="{{module_x}}">
     <input type="hidden" name="module_x2" value="{{module_x2}}">

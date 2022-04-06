@@ -108,7 +108,7 @@
                     </td>
                     <td colspan="3" class="left w-80">
                         {% if operation_x != 'add' %}
-                        <img src="{% static '/media/lineas/' %}{{linea.imagen_thumb}}" class="pointer" onclick="nd(); mostrarImagenLinea('{{linea.linea_id}}');"
+                        <img src="{% static '/media/lineas/' %}{{linea.imagen_thumb}}" class="pointer width_img_form" onclick="nd(); mostrarImagenLinea('{{linea.linea_id}}');"
                                             onMouseOver=" overlib('mostrar imagen',CAPTION,'Imagen',WIDTH,'120',RIGHT); return true" onMouseOut=" nd(); return true">
                                             <br>
                                             {% endif %}
@@ -174,14 +174,14 @@
     {% csrf_token %}
 </form>
 
-<form name="form_img" method="post" action="" target="_blank">
+<form name="form_img" method="post" action="{% url 'index' %}" target="_blank">
     {% csrf_token %}
     <input type="hidden" name="module_x" value="{{module_x}}">
     <input type="hidden" name="id" value="{{id}}">
     <input type="hidden" name="operation_x" value="mostrar_imagen">
 </form>
 
-<form name="form_operation" method="post" action="">
+<form name="form_operation" method="post" action="{% url 'index' %}">
     {% csrf_token %}
     <input type="hidden" name="module_x" value="{{module_x}}">
     <input type="hidden" name="module_x2" value="{{module_x2}}">

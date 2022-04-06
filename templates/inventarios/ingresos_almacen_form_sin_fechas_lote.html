@@ -7,8 +7,8 @@
 <!-- Autosuggest data: -->
 <script type="text/javascript">
     var suggest_custom_array_2 = [
-        {% for producto in lista_productos %}
-    ['{{producto.linea}} - {{producto.producto}}', '{{producto.producto_id}}'],
+        {% for tipo_montura in tipos_montura_lista %}
+    ['{{tipo_montura.proveedor_id.proveedor}} - {{tipo_montura.tipo_montura}} ({{tipo_montura.numero_actual}})', '{{tipo_montura.tipo_montura_id}}'],
         {% endfor %}
     ];
 </script>
@@ -46,7 +46,7 @@
                         Almacen&nbsp;:&nbsp;
                     </td>
                     <td colspan="3" class="left w-80">
-                        <select name="almacen" id="almacen" onchange="seleccionAlmacenIA();" class="form-control input w-90" {% if operation_x == "anular" %}readonly='readonly' {% endif %}>
+                        <select name="almacen" id="almacen" class="form-control input w-99" onchange="iaSeleccionAlmacenMontura();" {% if operation_x == "anular" %}readonly='readonly' {% endif %}>
                             <option value="0">---</option>
                             {% for almacen in lista_almacenes %}
                             <option value="{{almacen.almacen_id}}" {% if registro.almacen_id.almacen_id == almacen.almacen_id %}selected{% endif %}>
@@ -55,107 +55,136 @@
                         </select>
                     </td>
                 </tr>
-
+                
                 <tr class="back2">
+                    <td class="right w-20">
+                        T. Montura&nbsp;:&nbsp;
+                    </td>
+                    <td colspan="3" class="left w-80">
+                        <input type="hidden" name="tipo_montura" id="tipo_montura" value="0" />
+                        <input type="text" autocomplete="off" id="tb2_tipo_montura" class="form-control input search left w-99" value="{{registro.tipo_montura_id.tipo_montura}}" />
+                        <script type="text/javascript"> new autosuggest(suggest_custom_array_2, "tb2_tipo_montura", null, function (index, control) { seleccionPIA('tipo_montura', control.keywords[index], control.values[index]); });
+                        </script>
+                    </td>
+                </tr>
+
+                <tr class="back1">
                     <td class="right w-20">
                         Concepto&nbsp;:&nbsp;
                     </td>
                     <td colspan="3" class="left w-80">
-                        <input type="text" autocomplete="off" value="{{registro.concepto}}" {% if operation_x == 'anular' %}readonly="readonly" {% endif %} class="form-control input left w-90" name="concepto" id="concepto" onkeyup="txtValid(this);"
+                        <input type="text" autocomplete="off" value="{{registro.concepto}}" {% if operation_x == 'anular' %}readonly="readonly" {% endif %} class="form-control input left w-99" name="concepto" id="concepto" onkeyup="txtValid(this);"
                             onblur="txtValid(this);" maxlength="250">
                     </td>
                 </tr>
+                
+                <tr class="back2">
+                    <td class="right w-20">
+                        Cantidad&nbsp;:&nbsp;
+                    </td>
+                    <td class="left w-30">
+                        <input type="text" autocomplete="off" value="{{registro.cantidad_monturas}}" {% if operation_x == 'anular' %}readonly="readonly" {% endif %} class="form-control input right w-50" name="cantidad_montura" id="cantidad_montura" onkeyup="txtValid(this);"
+                            onblur="txtValid(this);" maxlength="2">
+                    </td>
+                    <td class="right w-20">
+                        {% if operation_x == 'add' %}
+                        <button class="btn btn-primary btn-sm" id="btn_generar" onclick="iaGenerar();">
+                            <i class="nav-icon fa fa-table"></i>&nbsp;&nbsp;Generar
+                        </button>
+                        {% endif %}
+                    </td>
+                    <td class="left w-30">
+                        &nbsp;
+                    </td>
+                </tr>
             </table>
+            <table class="table3 w-100">
+                <tr>
+                    <th colspan="4" class="w-100 center">Monturas</th>
+                </tr>
+                <tr class="back1">
+                    <td class="w-50 left">
+                        &nbsp;
+                    </td>
+                    <td class="w-15 right">
+                        <i>Cant.</i>&nbsp;
+                    </td>
+                    <td class="w-15 right">
+                        <i>Costo</i>&nbsp;
+                    </td>
+                    <td class="w-20 right">
+                        <i>Total</i>&nbsp;
+                    </td>
+                </tr>
 
+                {% if operation_x == 'add' %}
+                {% for fila in filas %}
+                <tr class="back{{forloop.counter|back_class}}" id="fila_{{fila}}" style="display: {% if forloop.counter == 1 %}display{% else %}none{% endif %};">
+                    <td class="w-50 left">
+                        <input type="text" autocomplete="off" id="tipo_montura_nombre_{{fila}}" name="tipo_montura_nombre_{{fila}}" class="form-control input left w-99" value="" readonly="readonly" />
+                    </td>
+                    <td class="w-15 right">
+                        <input type="text" name="cantidad_{{fila}}" autocomplete="off" id="cantidad_{{fila}}" class="form-control input w-98 right" value="1" readonly="readonly">
+                    </td>
+                    <td class="w-15 right">
+                        <input type="text" name="costo_{{fila}}" autocomplete="off" id="costo_{{fila}}" class="form-control input w-98 right" onkeyup="validarNumeroPunto(this); calcularTotalesIA();"
+                            value="1">
+                    </td>
+                    <td class="w-20 right">
+                        <input type="text" name="total_{{fila}}" id="total_{{fila}}" class="form-control input w-98 right" readonly="readonly">
+                    </td>
+                </tr>
+                {% endfor %}
+
+                <tr class="back1">
+                    <td class="w-50 right">
+                        <i>Totales :</i>&nbsp;
+                    </td>
+                    <td class="w-15 right">
+                        &nbsp;
+                    </td>
+                    <td class="w-15 right">
+                        &nbsp;
+                    </td>
+                    <td class="w-20 right">
+                        <input type="text" name="total" id="total" class="form-control input right w-98" readonly="readonly">
+                    </td>
+                </tr>
+                {% endif %}
+                {% if operation_x == 'anular' %}
+                {% for detalle in detalles %}
+                <tr class="back{{forloop.counter|back_class}}">
+                    <td class="w-50 left">
+                        {{detalle.nombre_montura}}
+                    </td>
+                    <td class="w-15 right">
+                        {{detalle.cantidad}}
+                    </td>
+                    <td class="w-15 right">
+                        {{detalle.costo}}
+                    </td>
+                    <td class="w-20 right">
+                        {{detalle.total}}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+
+                {% if operation_x == 'anular' %}
+                <tr class="back1">
+                    <td class="right w-50">
+                        Motivo&nbsp;:&nbsp;
+                    </td>
+                    <td colspan="3" class="left w-50">
+                        <input type="text" class="form-control input w-98" onkeyup="txtValid(this);" onblur="txtValid(this);" autocomplete="off" value="" maxlength="250" name="motivo_anula" id="motivo_anula">
+                    </td>
+                </tr>
+                {% endif %}
+
+            </table>
+            
             <div id="div_listap" style="display: {% if operation_x == 'add' %}none{% endif %};">
                 <table class="table3 w-100">
-                    <tr>
-                        <th colspan="4" class="w-100 center">Lista de Productos</th>
-                    </tr>
-                    <tr class="back1">
-                        <td class="w-50 left" id="columna1">
-                            &nbsp;
-                        </td>
-                        <td class="w-15 right" id="columna5">
-                            <i>Cant.</i>&nbsp;
-                        </td>
-                        <td class="w-15 right" id="columna6">
-                            <i>Costo</i>&nbsp;
-                        </td>
-                        <td class="w-20 right" id="columna7">
-                            <i>Total</i>&nbsp;
-                        </td>
-
-                    </tr>
-
-                    {% if operation_x == 'add' %}
-                    {% for fila in filas %}
-                    <tr class="back{{forloop.counter|back_class}}" id="fila_{{fila}}" style="display: {% if forloop.counter == 1 %}display{% else %}none{% endif %};">
-                        <td class="w-50 minw-100 left">
-                            <input type="hidden" name="producto_{{fila}}" id="producto_{{fila}}" value="0" />
-                            <input type="text" autocomplete="off" id="tb2_{{fila}}" class="form-control input search left w-99" value="" onblur="validarFilaIA('{{fila}}');" />
-                            <script type="text/javascript"> new autosuggest("tb2_{{fila}}", null, function (index, control) { seleccionPIA('{{fila}}', control.keywords[index], control.values[index]); });
-                            </script>
-                        </td>
-                        <td class="w-15 minw-40 right">
-                            <input type="text" name="cantidad_{{fila}}" autocomplete="off" id="cantidad_{{fila}}" class="form-control input w-98 right" onkeyup="{% if vender_fracciones == 'si' %}validarNumeroPunto(this);{% else %}validarNumero(this);{% endif %} calcularTotalesIA();"
-                                onblur="validarFilaIA('{{fila}}');">
-                        </td>
-                        <td class="w-15 minw-40 right">
-                            <input type="text" name="costo_{{fila}}" autocomplete="off" id="costo_{{fila}}" class="form-control input w-98 right" onkeyup="validarNumeroPunto(this); calcularTotalesIA();"
-                                onblur="validarFilaIA('{{fila}}');">
-                        </td>
-                        <td class="w-20 minw-60 right">
-                            <input type="text" name="total_{{fila}}" id="total_{{fila}}" class="form-control input w-98 right" readonly="readonly">
-                        </td>
-                    </tr>
-                    {% endfor %}
-
-                    <tr class="back1">
-                        <td class="w-50 right">
-                            <i>Totales :</i>&nbsp;
-                        </td>
-                        <td class="w-15 right">
-                            &nbsp;
-                        </td>
-                        <td class="w-15 right">
-                            &nbsp;
-                        </td>
-                        <td class="w-20 right">
-                            <input type="text" name="total" id="total" class="form-control input right w-98" readonly="readonly">
-                        </td>
-                    </tr>
-                    {% endif %}
-                    {% if operation_x == 'anular' %}
-                    {% for detalle in detalles %}
-                    <tr class="back{{forloop.counter|back_class}}">
-                        <td class="w-50 left">
-                            {{detalle.producto_id.producto}}
-                        </td>
-                        <td class="w-15 right">
-                            {{detalle.cantidad}}
-                        </td>
-                        <td class="w-15 right">
-                            {{detalle.costo}}
-                        </td>
-                        <td class="w-20 right">
-                            {{detalle.total}}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    {% endif %}
-
-                    {% if operation_x == 'anular' %}
-                    <tr class="back1">
-                        <td class="right w-50">
-                            Motivo&nbsp;:&nbsp;
-                        </td>
-                        <td colspan="3" class="left w-50">
-                            <input type="text" class="form-control input w-98" onkeyup="txtValid(this);" onblur="txtValid(this);" autocomplete="off" value="" maxlength="250" name="motivo_anula" id="motivo_anula">
-                        </td>
-                    </tr>
-                    {% endif %}
-
                     <tr class="back2">
                         <td colspan="4" class="center w-100">&nbsp;</td>
                     </tr>
@@ -189,7 +218,6 @@
                             <input type="hidden" name="id" value="{{id}}">
                         </td>
                     </tr>
-
                 </table>
             </div>
         </form>

@@ -1,0 +1,31 @@
+{% load jinja_tags %}
+
+<table class="table3 w-100">
+    <tr>
+        <th colspan="2" class="w-100 center">Monturas</th>
+    </tr>
+    <tr class="back1">
+        <td colspan="2" class="w-100 left">
+            &nbsp;
+            <script type="text/javascript">
+                var suggest_custom_array_stock = [
+                {% for stock in stock_monturas %}
+                ['{{stock.nombre_montura}}', '{{stock.stock_id}}'],
+                {% endfor %}
+                ];
+            </script>
+            
+            
+        </td>
+    </tr>
+    {% for fila in filas %}
+    <tr class="back{{forloop.counter|back_class}}" id="fila_{{fila}}" style="display: {% if forloop.counter == 1 %}display{% else %}none{% endif %};">
+        <td colspan="2" class="w-100 left">
+            <input type="hidden" name="stock_{{fila}}" id="stock_{{fila}}" value="0" />
+            <input type="text" autocomplete="off" id="tb2_{{fila}}" name="tb2_{{fila}}" class="form-control input search left w-99" value="" />
+            <script type="text/javascript"> new autosuggest(suggest_custom_array_stock, "tb2_{{fila}}", null, function (index, control) { saSeleccionStock('{{fila}}', control.keywords[index], control.values[index]); });
+            </script>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
