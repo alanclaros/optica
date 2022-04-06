@@ -246,9 +246,9 @@
                             <div class="titulo_sucursal w-100 center">{% autoescape off %}{{producto.producto}}{% endautoescape %}</div>
                             <div class="datos_sucursal w-100">
                                 {% if producto.imagen_thumb != '' %}
-                                <img class="pointer" onclick="detalleProducto('{{producto.producto_id}}', '{{producto.producto}}');" src="{% static '/media/productos/' %}{{producto.imagen_thumb}}">
+                                <img class="pointer img-fluid" onclick="detalleProducto('{{producto.producto_id}}', '{{producto.producto}}');" src="{% static '/media/productos/' %}{{producto.imagen_thumb}}">
                                 {% else %}
-                                <img class="pointer" onclick="detalleProducto('{{producto.producto_id}}', '{{producto.producto}}');" src="{% static '/img/producto_sin_imagen.jpg' %}">
+                                <img class="pointer img-fluid" onclick="detalleProducto('{{producto.producto_id}}', '{{producto.producto}}');" src="{% static '/img/producto_sin_imagen.jpg' %}">
                                 {% endif %}
                             </div>
                             <div class="datos_sucursal w-100 pointer" onclick="detalleProducto('{{producto.producto_id}}', '{{producto.producto}}');">

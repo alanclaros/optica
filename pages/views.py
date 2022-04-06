@@ -1465,7 +1465,8 @@ def backup(request):
 
     if 'operation_x' in request.POST.keys():
         operation = request.POST['operation_x']
-        lista_tablas = [['auth', 'User', 'auth_user'], ['status', 'Status', 'status'],
+        lista_tablas = [['auth', 'User', 'auth_user'],
+                        ['status', 'Status', 'status'],
 
                         ['permisos', 'Perfiles', 'perfiles'],
                         ['permisos', 'Modulos', 'modulos'],
@@ -1500,23 +1501,30 @@ def backup(request):
                         ['clientes', 'Clientes', 'clientes'],
 
                         ['productos', 'Productos', 'productos'],
-                        ['productos', 'ProductosImagenes', 'productos_imagenes'],
-                        ['productos', 'ProductosRelacionados', 'productos_relacionados'],
                         ['productos', 'ProductosTiposMontura', 'productos_tipos_montura'],
                         ['productos', 'ProductosMateriales', 'productos_materiales'],
+                        ['productos', 'ProductosImagenes', 'productos_imagenes'],
+                        ['productos', 'ProductosRelacionados', 'productos_relacionados'],
 
                         ['inventarios', 'Registros', 'registros'],
                         ['inventarios', 'RegistrosDetalles', 'registros_detalles'],
                         ['inventarios', 'Stock', 'stock'],
 
+                        ['ventas', 'Ventas', 'ventas'],
+                        ['ventas', 'VentasDetalles', 'ventas_detalles'],
+                        ['ventas', 'VentasImagenes', 'ventas_imagenes'],
                         ['ventas', 'Dosificaciones', 'dosificaciones'],
                         ['ventas', 'Facturas', 'facturas'],
                         ['ventas', 'PlanPagos', 'plan_pagos'],
                         ['ventas', 'PlanPagosDetalles', 'plan_pagos_detalles'],
                         ['ventas', 'PlanPagosPagos', 'plan_pagos_pagos'],
-                        ['ventas', 'Ventas', 'ventas'],
-                        ['ventas', 'VentasDetalles', 'ventas_detalles'],
-                        ['ventas', 'VentasImagenes', 'ventas_imagenes'],
+                        
+                        ['pedidos', 'Pedidos', 'pedidos'],
+                        ['pedidos', 'PedidosDetalles', 'pedidos_detalles'],
+                        
+                        ['reservas', 'ReservasDias', 'reservas_dias'],
+                        ['reservas', 'ReservasHoras', 'reservas_horas'],
+                        ['reservas', 'Reservas', 'reservas'],
                         ]
 
         if operation == 'add':
