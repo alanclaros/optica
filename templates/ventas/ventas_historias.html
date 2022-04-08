@@ -177,12 +177,12 @@
                 
                 <div class="row w-100">
                     <div class="col-sm-6 center">
-                        <img src="{% static '/media/ventas/' %}{{imagen.col1.imagen_thumb}}" class="pointer" onclick="nd(); ventasMostrarVentaImagen('{{imagen.col1.imagen_id}}');"
+                        <img src="{% static '/media/ventas/' %}{{imagen.col1.imagen_thumb}}" class="pointer img-fluid" onclick="nd(); ventasMostrarVentaImagen('{{imagen.col1.imagen_id}}');"
                         onMouseOver=" overlib('mostrar imagen',CAPTION,'Imagen',WIDTH,'120',RIGHT); return true" onMouseOut=" nd(); return true">
                     </div>
                     <div class="col-sm-6 center">
                         {% if imagen.col2.imagen_id != 0 %}
-                        <img src="{% static '/media/ventas/' %}{{imagen.col2.imagen_thumb}}" class="pointer" onclick="nd(); ventasMostrarVentaImagen('{{imagen.col2.imagen_id}}');"
+                        <img src="{% static '/media/ventas/' %}{{imagen.col2.imagen_thumb}}" class="pointer img-fluid" onclick="nd(); ventasMostrarVentaImagen('{{imagen.col2.imagen_id}}');"
                         onMouseOver=" overlib('mostrar imagen',CAPTION,'Imagen',WIDTH,'120',RIGHT); return true" onMouseOut=" nd(); return true">
                         {% endif %}
                     </div>
